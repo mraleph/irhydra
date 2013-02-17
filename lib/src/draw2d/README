@@ -1,0 +1,9 @@
+This folder contains parts of Draw2d library translated from Java to Dart.
+
+The translation was mostly done by a java2dart tool and resulting source was
+cleaned up manually. Cleanup is incomplete and the libarary definetely contains
+untested and/or dead code that does not match Dart style guide.
+
+Translated files retain their original license and comments.
+
+Draw2d: http://www.eclipse.org/gef/draw2d/index.php

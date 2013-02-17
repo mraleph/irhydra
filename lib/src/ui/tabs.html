@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html><body>
+  <element name="x-tabs" constructor="Tabs" extends="div">
+    <template>
+      <div>
+        <ul class="nav nav-tabs">
+          <template iterate='tab in tabs'>
+            <li class="{{_class(tab)}}">
+              <a href="#{{tab.attributes['data-href']}}" on-click="activeTab = tab">
+                {{tab.attributes['data-title']}}
+              </a>
+            </li>
+          </template>
+        </ul>
+      </div>
+      <content></content>
+    </template>
+    <script type="application/dart" src='tabs.dart'></script>
+  </element>
+</body></html>

@@ -1,0 +1,4 @@
+name: irhydra
+dependencies:
+  web_ui: any
+  browser: any

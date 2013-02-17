@@ -1,0 +1,50 @@
+.irpane {
+  font-family: monospace;
+  border: 1px solid #EEE;
+}
+
+.irpane > tr > td:first-child,
+.irpane > tbody > tr > td:first-child {
+  background-color: #F7F7F7;
+  border-right: 1px solid #EEE;
+  min-width: 2em;
+  color: #AAA;
+  text-align: right;
+  padding-right: 2px;
+}
+
+.irpane > tr > td:last-child,
+.irpane > tbody > tr > td:last-child {
+  padding-left: 2px;
+  background-color: white;
+  color: #333;
+  text-align: left;
+}
+
+.irpane pre {
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  word-wrap: normal;
+  color: inherit;
+}
+
+.irpane,
+.irpane > tr,
+.irpane > tr > td,
+.irpane > tbody > tr,
+.irpane > tbody > tr > td {
+  margin: 0px;
+  padding: 0px;
+  outline: 0px;
+  border-spacing: 0px;
+  border-collapse: collapse;
+}
+

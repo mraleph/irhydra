@@ -1,0 +1,80 @@
+.sidebar-nav {
+  padding: 9px 0;
+}
+pre { white-space: pre; }
+
+span.boldy {
+  font-weight: bold;
+  line-height: 18px !important;
+}
+
+pre.highlighted-instruction {
+  background: rgba(255, 255, 0, 0.4) !important;
+}
+
+.hir-constant, .native-code-constant {
+  color: purple;
+}
+
+span.hir-range, span.hir-type, span.hir-changes, span.lir-env, span.lir-map {
+  color: rgba(0, 0, 0, 0.25);
+}
+span.hir-changes-all {
+  color: red;
+}
+
+span.lir-env, span.lir-map { display: none; }
+
+pre.lir-line {
+  background: rgba(125, 167, 217, 0.15) !important;
+}
+
+.native-code > td {
+  background: rgba(125, 167, 217, 0.05) !important;
+  font-size: 0.9em;
+}
+
+.highlight-ref {
+  background: gold;
+}
+
+#ir-pane {
+  background: white;
+}
+
+.xref .tooltip-inner {
+  max-width: 100% !important;
+}
+
+.tooltip.in.xref {
+  opacity: 1 !important;
+}
+
+.brand {
+  font-family: 'Roboto';
+}
+
+.tooltip.xref pre {
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: monospace;
+  font-size: inherit;
+  word-wrap: normal;
+  color: inherit;
+}
+
+.popover.xref, .popover.deopt {
+  max-width: 100% !important;
+}
+
+.deopt-marker {
+  cursor: pointer;
+}
+
+

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html><body>
+  <element name="x-irpane" constructor="IRPane" extends="div">
+    <template>
+      <style type='text/css' scoped>
+        /**
+         * Styles are in web/css/irpane.css.
+         *
+         * Not using scoped style for now because we need classes be visible
+         * globally to style xref popup the same way and it is currently created
+         * by bootstrap from a raw HTML not a component.
+         */
+      </style>
+      <div style="display: inline-block; position: relative;">
+        <table class="irpane"></table>
+        <div style="position: absolute; right: 0px; top: 0px;">
+          <content>
+          </content>
+        </div>
+      </div>
+    </template>
+    <script type="application/dart" src='irpane.dart'></script>
+  </element>
+</body></html>

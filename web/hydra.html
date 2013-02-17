@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="components" href="packages/irhydra/src/ui/tabs.html">
+
+    <!--
+      IRPane component comes with global CSS styles. See comments
+      in irpane.html for details on why we are not using scoped styles
+      for now.
+      -->
+    <link rel="components" href="packages/irhydra/src/ui/irpane.html">
+    <link type="text/css" href="css/irpane.css" rel="stylesheet"/>
+
+    <link rel="components" href="packages/irhydra/src/modes/v8/descriptions.html">
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <link href='http://fonts.googleapis.com/css?family=Roboto:900' rel='stylesheet' type='text/css'>
+
+    <link type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/smoothness/jquery-ui.css" rel="Stylesheet" />
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
+
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
+
+    <link type="text/css" href="css/hydra.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="brand" href="#">IR Hydra</a>
+          <a class="btn" id="open-compilation-artifact">Load Compilation Artifact</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span3">
+          <div class="well sidebar-nav">
+            <ul id="methods" class="nav nav-list">
+              <li class="nav-header">Compilation units</li>
+              <template iterate="method in methods">
+                <li>
+                  <h4>
+                    <template instantiate="if method.name.source != null">
+                      <span class="label label-info">{{method.name.source}}</span><br/>
+                    </template>
+                    <template instantiate="if !method.deopts.isEmpty">
+                      <span class="label label-important">deopts</span><br/>
+                    </template>
+                    {{method.name.short}}
+                  </h4>
+                  <ul class="nav nav-list">
+                    <template iterate="phase in method.phases">
+                      <li><a href="#ir" on-click="displayPhase(method, phase);">{{phase.name}}</a></li>
+                    </template>
+                  </ul>
+                </li>
+              </template>
+            </ul>
+          </div><!--/.well -->
+        </div>
+        <div class="span9" id="main-pane">
+          <template instantiate="if currentPhase != null">
+            <div is="x-tabs" id="tabs">
+              <div data-title="IR" data-href="ir">
+                <div class="alert alert-block" style="display: none;" id="unmatched-deopt-warning">
+                  <button type="button" class="close" on-click="$event.target.parent.style.display = 'none';">&times;</button>
+                  <h4>Unable to match deopt to lithium</h4> Need either V8 newer than 3.17.1 or disassembly of optimized code.
+                </div>
+                <div class="ir-quick-links"></div>
+                <div is="x-irpane" id="ir-pane">
+                  <template instantiate="if currentMode.supportedCodeModes.length > 1">
+                    <div class="btn-group">
+                      <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                        {{currentMode.codeMode}}
+                        <span class="caret"></span>
+                      </a>
+                      <ul class="dropdown-menu">
+                        <template iterate="mode in currentMode.supportedCodeModes">
+                          <li><a href="#" on-click="currentMode.codeMode = mode">{{mode}}</a></li>
+                        </template>
+                      </ul>
+                    </div>
+                  </template>
+                </div>
+              </div>
+              <div id="graph-pane" data-title="Graph" data-href="graph"></div>
+            </div>
+          </template>
+          <template instantiate="if currentPhase == null">
+            <div class="hero-unit">
+              <h1><span class="brand">IR Hydra</span></h1>
+              <p class="lead">This is a tool that can display intermediate representations used by V8 and Dart VM optimizing compilers.</p>
+              <p>It is mostly intended for compiler developers but can also be used by JavaScript/Dart developers investigating performance of their applications. Don't be surprised if it seems unfriendly or enters a strange state. Just refresh the page. Feel free to send questions and suggestions to <a href="mailto:me@mrale.ph">me@mrale.ph</a>.</p>
+              <p>How to obtain compilation artifacts:</p>
+              <h2>V8</h2>
+              <p>Run your application with <code>--trace-hydrogen --print-opt-code --code-comments --trace-deopt</code> and collect <code>hydrogen.cfg</code> file and data dumped into the stadard output.</p>
+              <p><code>--print-opt-code</code> requires a special build of V8 with <code>v8_enable_disassembler</code> GYP variable set to <code>1</code>.</p>
+              <p>When running in Chromium use <code>--js-flags="..."</code> to pass V8 flags and <code>--no-sandbox</code> to allow V8 to write <code>hydrogen.cfg</code>.</p>
+              <p>V8 3.17.1 or newer is required to reliably map deoptimizations to lithium instructions when disassembly is not present. Alternatively you can just apply <a href="https://codereview.chromium.org/12217103">this</a> patch.</p>
+              <h2>Dart VM</h2>
+              <p>Run with <code>--print-flow-graph-optimized --disassemble-optimized --code-comments</code> and collect data dumped to the standard output.</p>
+              <p>When running in Dartium use <code>DART_FLAGS</code> environment variable to pass flags.</p>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <div id="v8-ir-descriptions" is="x-v8-ir-descriptions"></div>
+
+    <script type="text/javascript" src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/js/bootstrap.js"></script>
+
+    <script type="application/dart" src="hydra.dart"></script>
+    <script type="text/javascript" src="packages/browser/dart.js"></script>
+    <input type="file" id="compilation-artifact" multiple="multiple" style="opacity: 0;">
+
+  </body>
+</html>
