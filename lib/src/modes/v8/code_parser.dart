@@ -110,8 +110,10 @@ class Parser extends parsing.ParserBase {
 
     // Block start.
     r"^\s+;;+ (B\d+)": (name) {
-      if (block != null) block.end = _code.length;
-      blocks[name] = block = new Range(_code.length);
+      // Block's lithium label is emitted one line before the block comment
+      // itself.
+      if (block != null) block.end = _code.length - 1;
+      blocks[name] = block = new Range(_code.length - 1);
     },
 
     // Comment.
@@ -146,19 +148,20 @@ class Parser extends parsing.ParserBase {
   }
 
   parseComment(comment) {
-    // If the last instruction was a "gap" comment then drop it.
-    // Empty gaps do not carry any interesting information.
-    if (_code.last is Comment && _code.last.comment.contains(": gap.")) {
-      _code.removeLast();
+    // If the last instruction was a "gap" or "label" comment then drop it.
+    // Empty labels and gaps do not carry any interesting information.
+    if (_code.last is Comment) {
+      final lastComment = _code.last.comment;
+      if (lastComment.contains(": gap.") ||
+          lastComment.contains(": label.")) {
+        _code.removeLast();
+      }
     }
 
     // Check if we reached code epilogue containing deferred code.
     if (comment.startsWith("Deferred") && block != null) {
       block.end = _code.length;
       block = null;
-    } else if (comment.contains(": label.")) {
-      // Drop comments for "label" lithium instructions.
-      return;
     }
 
     _code.add(new Comment(comment));
