@@ -24,12 +24,14 @@
 
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" rel="stylesheet">
 
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/spin.js/1.2.7/spin.min.js"></script>
+
     <link type="text/css" href="css/hydra.css" rel="stylesheet">
   </head>
   <body>
     <div class="navbar">
       <div class="navbar-inner">
-        <div class="container-fluid">
+        <div class="container">
           <a class="brand" href="#">IR Hydra</a>
           <a class="btn" id="open-compilation-artifact">Load Compilation Artifact</a>
         </div>
@@ -96,6 +98,7 @@
               <h1><span class="brand">IR Hydra</span></h1>
               <p class="lead">This is a tool that can display intermediate representations used by V8 and Dart VM optimizing compilers.</p>
               <p>It is mostly intended for compiler developers but can also be used by JavaScript/Dart developers investigating performance of their applications. Don't be surprised if it seems unfriendly or enters a strange state. Just refresh the page. Feel free to send questions and suggestions to <a href="mailto:me@mrale.ph">me@mrale.ph</a>.</p>
+              <p>You can also try loading a sample <a href="#demo-1">demo file (v8 @ x64)</a> to explore IRHydra's features.</p>
               <p>How to obtain compilation artifacts:</p>
               <h2>V8</h2>
               <p>Run your application with <code>--trace-hydrogen --print-opt-code --code-comments --trace-deopt</code> and collect <code>hydrogen.cfg</code> file and data dumped into the stadard output.</p>

@@ -16,8 +16,9 @@ import "dart:async" as async;
 import "dart:html" as html;
 import "dart:uri";
 
-import "package:irhydra/src/modes/v8/v8.dart" as v8;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
+import "package:irhydra/src/modes/v8/v8.dart" as v8;
+import "package:irhydra/src/spinner.dart" as spinner;
 
 import "package:js/js.dart" as js;
 
@@ -58,6 +59,24 @@ loadData(text) {
   watchers.dispatch();
 }
 
+/** Load compilation artifact from the remote location with a [HttpRequest]. */
+loadUrl(url) =>
+  html.HttpRequest.getString(url).then(loadData);
+
+/** Available demos. Files expected to reside in demos/ directory. */
+const DEMO_FILES = const {
+  "demo-1": const ["1.v8.hydrogen.cfg", "1.v8.code.asm"]
+};
+
+/** Load demo files for the given [demoId]. */
+loadDemo(demoId) {
+  if (DEMO_FILES.containsKey(demoId)) {
+    final files = DEMO_FILES[demoId].map((file) => "demos/$file");
+    spinner.start();
+    async.Future.forEach(files, loadUrl).whenComplete(spinner.stop);
+  }
+}
+
 main () {
   // Connect file input and "Open IR" button.
   html.InputElement compilation_artifact = html.query('#compilation-artifact');
@@ -80,6 +99,11 @@ main () {
   html.window.onHashChange.listen((e) {
     final from = new Uri(e.oldUrl).fragment;
     final to = new Uri(e.newUrl).fragment;
+
+    if (to.startsWith("demo-")) {
+      loadDemo(to);
+      return;
+    }
 
     // If we are on the same tab then there is nothing to do.
     if (from == to ||
@@ -104,4 +128,12 @@ main () {
 
     watchers.dispatch();  // Notify web_ui to keep tabs state in sync.
   });
+
+  final currentFragment = new Uri(html.window.location.href).fragment;
+  if (currentFragment.startsWith("demo-")) {
+    // Wait until web_ui is fully initialized.
+    new async.Timer(const Duration(milliseconds: 10), (timer) {
+      loadDemo(currentFragment);
+    });
+  }
 }
