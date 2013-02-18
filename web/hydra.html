@@ -75,22 +75,22 @@
                 </div>
                 <div class="ir-quick-links"></div>
                 <div is="x-irpane" id="ir-pane">
-                  <template instantiate="if currentMode.supportedCodeModes.length > 1">
-                    <div class="btn-group">
-                      <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                        {{currentMode.codeMode}}
-                        <span class="caret"></span>
-                      </a>
-                      <ul class="dropdown-menu">
-                        <template iterate="mode in currentMode.supportedCodeModes">
-                          <li><a href="#" on-click="currentMode.codeMode = mode">{{mode}}</a></li>
-                        </template>
-                      </ul>
-                    </div>
-                  </template>
                 </div>
               </div>
               <div id="graph-pane" data-title="Graph" data-href="graph"></div>
+              <template instantiate="if currentMode.supportedCodeModes.length > 1" class="after-tabs">
+                <div class="btn-group">
+                  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                    {{currentMode.codeMode}}
+                    <span class="caret" style="border-top-color: black;"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <template iterate="mode in currentMode.supportedCodeModes">
+                      <li><a href="#" on-click="currentMode.codeMode = mode">{{mode}}</a></li>
+                    </template>
+                  </ul>
+                </div>
+              </template>
             </div>
           </template>
           <template instantiate="if currentPhase == null">
