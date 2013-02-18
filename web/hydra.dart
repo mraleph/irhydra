@@ -27,6 +27,9 @@ import "package:web_ui/watcher.dart" as watchers;
 /** All supported modes. */
 final MODES = [new dartvm.Mode(), new v8.Mode()];
 
+/** Currently loaded set of files. */
+var currentFiles;
+
 /** Currently active mode. */
 var currentMode;
 
@@ -35,6 +38,27 @@ var methods = [];
 
 /** Currently displayed phase. */
 var currentPhase;
+
+/** Resets state to the initial empty one. */
+resetUI() {
+  currentMode = currentPhase = null;
+  methods = [];
+  watchers.dispatch();  // Notify web_ui.
+}
+
+/** Returns names of currently loaded files. */
+currentFileNames() =>
+  currentFiles.map((file) => file.name).join(', ');
+
+/** Reloads set of files. */
+reloadCurrentFiles() {
+  resetUI();
+  for (var file in currentFiles) {
+    final reader = new html.FileReader();
+    reader.onLoad.listen((e) => loadData(reader.result));
+    reader.readAsText(file);
+  }
+}
 
 /** Display given phase using active mode. */
 displayPhase(method, phase) {
@@ -81,14 +105,12 @@ main () {
   // Connect file input and "Open IR" button.
   html.InputElement compilation_artifact = html.query('#compilation-artifact');
   compilation_artifact.onChange.listen((event) {
-    for (var file in compilation_artifact.files) {
-      final reader = new html.FileReader();
-      reader.onLoad.listen((e) => loadData(reader.result));
-      reader.readAsText(file);
-    }
+    currentFiles = compilation_artifact.files;
+    reloadCurrentFiles();
   });
 
   html.query("#open-compilation-artifact").onClick.listen((event) {
+    html.query("#compilation-artifact-form").reset();
     js.scoped(() {
       js.context.jQuery(compilation_artifact).click();
     });

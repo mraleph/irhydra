@@ -33,7 +33,10 @@
       <div class="navbar-inner">
         <div class="container">
           <a class="brand" href="#">IR Hydra</a>
-          <a class="btn" id="open-compilation-artifact">Load Compilation Artifact</a>
+          <a class="btn" id="open-compilation-artifact">Load Compilation Artifacts</a>
+          <template instantiate="if currentFiles != null">
+            <a class="btn" href="#" on-click="reloadCurrentFiles();"><i class="icon-repeat"></i> Reload {{currentFileNames()}}</a>
+          </template>
         </div>
       </div>
     </div>
@@ -120,7 +123,8 @@
 
     <script type="application/dart" src="hydra.dart"></script>
     <script type="text/javascript" src="packages/browser/dart.js"></script>
-    <input type="file" id="compilation-artifact" multiple="multiple" style="opacity: 0;">
-
+    <form id="compilation-artifact-form">
+      <input type="file" id="compilation-artifact" multiple="multiple" style="opacity: 0;">
+    </form>
   </body>
 </html>
