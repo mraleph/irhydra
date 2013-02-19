@@ -317,10 +317,10 @@ class HorizontalPlacement extends SpanningTreeVisitor {
     new TightSpanningTreeSolver().visit(prime);
     RankAssignmentSolver solver = new RankAssignmentSolver();
     solver.visit(prime);
-    graph.size.width = graphRight.rank;
     balanceClusters();
     prime.nodes.adjustRankSimple(-graphLeft.rank);
     applyGPrime();
     calculateCellLocations();
+    graph.size.width = graphRight.rank;
   }
 }
