@@ -16,16 +16,6 @@ part of graph;
  * @since 2.1.2
  */
 class GraphUtilities {
-  static Subgraph getCommonAncestor(Node left, Node right) {
-    Subgraph parent;
-    if (right is Subgraph) parent = right; else parent = right.getParent();
-    while (parent != null) {
-      if (parent.isNested(left)) return parent;
-      parent = parent.getParent();
-    }
-    return null;
-  }
-
   /**
    * Counts the number of edge crossings in a DirectedGraph
    * @param graphthe graph whose crossed edges are counted
@@ -82,12 +72,6 @@ class GraphUtilities {
     return nodes.contains(source);
   }
   static bool isConstrained(Node left, Node right) {
-    Subgraph common = left.getParent();
-    while (common != null && !common.isNested(right)) {
-      left = left.getParent();
-      common = left.getParent();
-    }
-    while (right.getParent() != common) right = right.getParent();
     return (left.rowOrder != -1 && right.rowOrder != -1) && left.rowOrder != right.rowOrder;
   }
 }

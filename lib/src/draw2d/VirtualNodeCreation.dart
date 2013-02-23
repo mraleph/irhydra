@@ -27,16 +27,12 @@ class VirtualNodeCreation extends RevertableChange {
     Node prevNode = edge.source;
     Node currentNode;
     Edge currentEdge;
-    nodes = new List<Node>(size); // fixedLength
-    edges = new List<Edge>(size + 1);  // fixedLength
+    nodes = new List<Node>.fixedLength(size);
+    edges = new List<Edge>.fixedLength(size + 1);
     Insets padding = new Insets(0, edge.padding, 0, edge.padding);
-    Subgraph s = GraphUtilities.getCommonAncestor(edge.source, edge.target);
     for (int i = 0; i < size; i++) {
-      nodes[i] = currentNode = new Node(data: "Virtual$i:$edge", parent: s);
+      nodes[i] = currentNode = new Node(data: "Virtual$i:$edge");
       currentNode.width = edge.width;
-      if (s != null) {
-        currentNode.nestingIndex = s.nestingIndex;
-      }
       currentNode.height = 0;
       currentNode.setPadding(padding);
       currentNode.rank = offset + i;

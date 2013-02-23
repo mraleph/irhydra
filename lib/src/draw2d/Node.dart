@@ -85,7 +85,7 @@ class Node {
    * Clients may use this field to mark the Node with an arbitrary data
    * object.
    */
-  Object data;
+  var data;
   bool flag = false;
   /**
    * The height of this node. This value should be set prior to laying out the
@@ -113,7 +113,6 @@ class Node {
    */
   EdgeList outgoing = new EdgeList();
   Insets padding;
-  Subgraph parent;
   int rank = 0;
   /**
    * @deprecated for internal use only
@@ -136,11 +135,7 @@ class Node {
    */
   int y = 0;
 
-  Node({this.data: null, Subgraph this.parent: null}) {
-    this.data = data;
-    this.parent = parent;
-    if (parent != null) parent.addMember(this);
-  }
+  Node({this.data: null});
 
   /**
    * Returns the incoming attachment point. This is the distance from the left
@@ -173,14 +168,6 @@ class Node {
     return padding;
   }
   /**
-   * Returns the parent Subgraph or <code>null</code> if there is no parent.
-   * Subgraphs are only for use in {@link CompoundDirectedGraphLayout}.
-   * @return the parent or <code>null</code>
-   */
-  Subgraph getParent() {
-    return parent;
-  }
-  /**
    * For internal use only. Returns <code>true</code> if the given node is
    * equal to this node. This method is implemented for consitency with
    * Subgraph.
@@ -198,14 +185,7 @@ class Node {
   void setPadding(Insets padding) {
     this.padding = padding;
   }
-  /**
-   * Sets the parent subgraph. This method should not be called directly. The
-   * constructor will set the parent accordingly.
-   * @param parentthe parent
-   */
-  void setParent(Subgraph parent) {
-    this.parent = parent;
-  }
+
   /**
    * Sets the row sorting constraint for this node. By default, a node's
    * constraint is <code>-1</code>. If two nodes have different values both >=
