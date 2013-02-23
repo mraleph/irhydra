@@ -59,12 +59,6 @@ part "Rectangle.dart";
 part "Transform.dart";
 part "PositionConstants.dart";
 
-List<int> NewIntList(len) {
-  final result = new List<int>(len);
-  for (var i = 0; i < len; i++) result[i] = 0;
-  return result;
-}
-
 class Integer {
   static const MAX_VALUE = (1 << 30) - 1;
   static const MIN_VALUE = -MAX_VALUE;

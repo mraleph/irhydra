@@ -79,8 +79,8 @@ class NeighborsIterator {
  */
 class Node {
   Node left, right;
-  List<Object> workingData = new List<Object>(3);  // fixedLength
-  List<int> workingInts = NewIntList(4); // fixedLength
+  List<Object> workingData = new List<Object>.fixedLength(3);
+  List<int> workingInts = new List<int>.fixedLength(4, fill: 0);
   /**
    * Clients may use this field to mark the Node with an arbitrary data
    * object.

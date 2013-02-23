@@ -232,10 +232,12 @@ class HorizontalPlacement extends SpanningTreeVisitor {
     }
   }
   void calculateCellLocations() {
-    graph.cellLocations = new List<List<int>>(graph.ranks.length + 1); // fixedLength
+    graph.cellLocations =
+        new List<List<int>>.fixedLength(graph.ranks.length + 1);
     for (int row = 0; row < graph.ranks.length; row++) {
       Rank rank = graph.ranks[row];
-      List<int> locations = graph.cellLocations[row] = NewIntList(rank.length + 1); // fixedLength
+      List<int> locations = graph.cellLocations[row] =
+          new List<int>.fixedLength(rank.length + 1, fill: 0);
       int cell;
       Node node = null;
       for (cell = 0; cell < rank.length; cell++) {
