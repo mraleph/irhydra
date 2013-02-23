@@ -65,7 +65,18 @@ class ClusterSet {
     isRight = seed.weightedTotal > 0;
     if (!addCluster(seed)) {
       int delta = rawPull ~/ pullWeight;
-      if (delta < 0) delta = Math.max(delta, -freedom); else delta = Math.min(delta, freedom);
+      if (delta < 0) {
+        delta = Math.max(delta, -freedom);
+      } else {
+        delta = Math.min(delta, freedom);
+      }
+
+      if (isRight) {
+        delta = Math.min(0, delta);
+      } else {
+        delta = Math.max(0, delta);
+      }
+
       if (delta != 0) {
         for (int i = 0; i < members.length; i++) {
           NodeCluster c = members[i];
