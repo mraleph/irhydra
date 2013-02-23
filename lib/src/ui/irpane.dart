@@ -13,8 +13,12 @@
 // limitations under the License.
 
 import 'dart:html';
+import 'dart:math' as math;
 
 import 'package:irhydra/src/html_utils.dart' show toHtml;
+
+import 'package:js/js.dart' as js;
+
 import 'package:web_ui/web_ui.dart';
 
 /**
@@ -76,7 +80,10 @@ class IRPane extends WebComponent {
     gutter = new Element.html("<pre/>")..append(
         new AnchorElement()
           ..name = href(id)
-          ..nodes.add(gutter));
+          ..nodes.add(gutter)
+          ..onClick.listen((event) {
+            if (id != null) showRefsTo(id);
+          }));
 
 
     // Second column content: text.
@@ -139,12 +146,72 @@ class IRPane extends WebComponent {
   String rangeContentAsHtmlFull(String id) =>
     rangeContentAsHtml(id, fullRow: true);
 
-
   /** Remove all lines from the pane */
   clear() {
     _table.nodes.clear();
     _lines.clear();
     _ranges.clear();
+    closeRefsPanel();
+  }
+
+  /** Currently visible [_RefsPanel] showing rows referencing the given row. */
+  var _refsPanel;
+
+  /**
+   * Display a [_RefsPanel] on the side of this panel showing
+   * out of line all rows containing references (links) to the given row id.
+   */
+  showRefsTo(id) {
+    closeRefsPanel();
+
+    // Find all table rows referencing given identifier and clone their content.
+    final refs = document.queryAll("a[href='#${href(id)}']")
+                         .map((node) {
+                           while (node != null &&
+                                  node is! TableRowElement) {
+                             node = node.parent;
+                           }
+                           return node;
+                         })
+                         .where((node) => (node != null))
+                         .toSet()
+                         .map((node) => node.clone(true))
+                         .toList();
+
+    if (refs.isEmpty) {
+      return;  // No references to display.
+    }
+
+    // Convert row anchors to links that jump to the given row.
+    for (var node in refs) {
+      final anchor = node.query("a[name]");
+      anchor.href = "#${anchor.name}";
+    }
+
+    // Create IRPane styled table that will contain references.
+    final refsTable = new TableElement();
+    refsTable.classes.add("irpane");
+    refsTable.nodes.addAll(refs);
+
+    // Calculate middle baseline for _RefsPanel. It'll be centered at
+    // referenced row.
+    var baselineOffset;
+    js.scoped(() {
+      final gutter = line(id).gutter;
+      baselineOffset = js.context.jQuery(gutter).offset().top +
+        gutter.clientHeight ~/ 2;
+    });
+
+    // Show the panel.
+    _refsPanel = new _RefsPanel(baselineOffset, _table, refsTable);
+  }
+
+  /** Close currently visible [_RefsPanel]. */
+  closeRefsPanel() {
+    if (_refsPanel != null) {
+      _refsPanel.close();
+      _refsPanel = null;
+    }
   }
 }
 
@@ -163,3 +230,92 @@ class _Range {
 }
 
 _wrapElement(val) => val is String ? new Text(val) : val;
+
+/**
+ * A floating panel used to display rows referencing some other row.
+ *
+ * Horizontally it is positioned between left border of the page and left
+ * border of the parent [IRPane]. Vertically it is initially centered at
+ * [baselineOffset] but it stays visible even if the window is scrolled
+ * vertically.
+ */
+class _RefsPanel {
+  /** The root [DivElement] of the panel. */
+  final root = new Element.html(
+      '<div class="irpane-refs">'
+      '  <button type="button" class="close">X</button>'
+      '  <br style="clear: both;"/>'
+      '  <div class="irpane-refs-inner"></div>'
+      '</div>');
+
+  /** Subscription to the window's onScroll event stream. */
+  var onScroll;
+
+  /** Subscription to the window's onResize event stream. */
+  var onResize;
+
+  /** Baseline for the vertical positioning. */
+  var baselineOffset;
+
+  /** Element serving as the right border for the horizontal positioning. */
+  var rightBorder;
+
+  /** Padding between panel and surrounding borders. */
+  const PADDING = 5;
+
+  _RefsPanel(this.baselineOffset, this.rightBorder, content) {
+    onScroll = document.window.onScroll.listen((e) => position());
+    onResize = document.window.onResize.listen((e) => position());
+
+    root.query(".close").onClick.listen((e) => close());
+    root.query(".irpane-refs-inner").nodes.add(content);
+
+    document.body.nodes.add(root);
+
+    position();
+  }
+
+  /** Destroy this panel. */
+  close() {
+    if (root.parent != null) {
+      onResize.cancel();
+      onScroll.cancel();
+      root.parent.nodes.remove(root);
+    }
+  }
+
+  /** Recompute fixed position and max-width for the panel. */
+  position() {
+    js.scoped(() {
+      // Height of the panel.
+      final height = root.getBoundingClientRect().height;
+
+      final window = js.context.jQuery(js.context.window);
+
+      // Offset within the page of the rightBorder.
+      final leftBorderOffset = js.context.jQuery(rightBorder).offset().left;
+
+      // Convert offsets with in a page to offsets within a window with respect
+      // to window's scroll position.
+
+      // Right offset of the panel is essentially right offset of border plus
+      // padding. Panel stays glued to this position even if window is scrolled
+      // horizontally.
+      final right = window.scrollLeft() + (window.width() - leftBorderOffset) +
+          PADDING;
+
+      // If possible table glues itself to the baseline but it also tries to
+      // stay visible as window is scrolled vertically thus top offset must
+      // never be smaller than PADDING and bottom offset must never be bigger
+      // than window's height.
+      final baselineTop = baselineOffset - window.scrollTop() - (height ~/ 2);
+      final maxTop = window.height() - PADDING - height;
+      final minTop = PADDING;
+      final top = math.min(math.max(baselineTop, minTop), maxTop);
+
+      root.style.right = "${right}px";
+      root.style.top = "${top}px";
+      root.style.maxWidth = "${leftBorderOffset - 3 * PADDING}px";
+    });
+  }
+}
