@@ -44,8 +44,6 @@ class DirectedGraph {
   Insets margin = new Insets.round(0);
   List<int> rankLocations;
   List<List<int>> cellLocations;
-  int tensorStrength = 0;
-  int tensorSize = 0;
   Dimension size = new Dimension(0, 0);
   /**
    * Returns the default padding for nodes.
@@ -72,18 +70,9 @@ class DirectedGraph {
   Insets getMargin() {
     return margin;
   }
-  /**
-   * Returns the effective padding for the given node. If the node has a
-   * specified padding, it will be used, otherwise, the graph's defaultPadding
-   * is returned. The returned value must not be modified.
-   * @param nodethe node
-   * @return the effective padding for that node
-   */
-  Insets getPadding(Node node) {
-    Insets pad = node.getPadding();
-    if (pad == null) return defaultPadding;
-    return pad;
-  }
+
+  Insets getPadding(Node node) =>
+    node.padding == null ? defaultPadding : node.padding;
 
   Node getNode(int rank, int index) {
     if (ranks.length <= rank) return null;

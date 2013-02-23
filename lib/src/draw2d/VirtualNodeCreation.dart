@@ -32,22 +32,20 @@ class VirtualNodeCreation extends RevertableChange {
     Insets padding = new Insets(0, edge.padding, 0, edge.padding);
     for (int i = 0; i < size; i++) {
       nodes[i] = currentNode = new Node(data: "Virtual$i:$edge");
-      currentNode.width = edge.width;
+      currentNode.width = 1;
       currentNode.height = 0;
-      currentNode.setPadding(padding);
+      currentNode.padding = padding;
       currentNode.rank = offset + i;
       graph.ranks[offset + i].add(currentNode);
       currentEdge = new Edge(prevNode, currentNode, 1, edge.weight * LONG_EDGE_X);
       if (i == 0) {
         currentEdge.weight = edge.weight * INNER_EDGE_X;
-        currentEdge.offsetSource = edge.offsetSource;
       }
       graph.edges.add(edges[i] = currentEdge);
       graph.nodes.add(currentNode);
       prevNode = currentNode;
     }
     currentEdge = new Edge(prevNode, edge.target, 1, edge.weight * INNER_EDGE_X);
-    currentEdge.offsetTarget = edge.offsetTarget;
     graph.edges.add(edges[edges.length - 1] = currentEdge);
     graph.removeEdge(edge);
   }

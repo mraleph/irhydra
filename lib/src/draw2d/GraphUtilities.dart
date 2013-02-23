@@ -71,7 +71,4 @@ class GraphUtilities {
     nodes.resetFlags();
     return nodes.contains(source);
   }
-  static bool isConstrained(Node left, Node right) {
-    return (left.rowOrder != -1 && right.rowOrder != -1) && left.rowOrder != right.rowOrder;
-  }
 }

@@ -119,7 +119,6 @@ class RankSorter {
     this.g = g;
     for (int i = 0; i < g.ranks.length; i++) {
       rank = g.ranks[i];
-      rank.list.sort((x, y) => x.rowOrder - y.rowOrder);
       postSort();
     }
   }
@@ -141,7 +140,6 @@ class RankSorter {
   bool swap(int i) {
     Node left = rank[i];
     Node right = rank[i + 1];
-    if (GraphUtilities.isConstrained(left, right)) return false;
     if (left.sortValue <= right.sortValue) return false;
     rank[i] = right;
     rank[i + 1] = left;

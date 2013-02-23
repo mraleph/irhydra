@@ -20,8 +20,8 @@ class RouteEdges extends GraphVisitor {
   void revisit(DirectedGraph g) {
     for (int i = 0; i < g.edges.length; i++) {
       Edge edge = g.edges[i];
-      edge.start = new Point(edge.getSourceOffset() + edge.source.x, edge.source.y + edge.source.height);
-      edge.end = new Point(edge.getTargetOffset() + edge.target.x, edge.target.y);
+      edge.start = new Point(edge.sourceOffset + edge.source.x, edge.source.y + edge.source.height);
+      edge.end = new Point(edge.targetOffset + edge.target.x, edge.target.y);
       if (edge.vNodes != null) {
         routeLongEdge(edge, g);
       } else {

@@ -120,8 +120,8 @@ class HorizontalPlacement extends SpanningTreeVisitor {
     ne.y = (u.y + u.height + v.y) ~/ 2;
     Node uPrime = get(u);
     Node vPrime = get(v);
-    int uOffset = e.getSourceOffset();
-    int vOffset = e.getTargetOffset();
+    int uOffset = e.sourceOffset;
+    int vOffset = e.targetOffset;
     Edge eu = new Edge(ne, uPrime, 0, e.weight * weight);
     Edge ev = new Edge(ne, vPrime, 0, e.weight * weight);
     int dw = uOffset - vOffset;
@@ -313,7 +313,6 @@ class HorizontalPlacement extends SpanningTreeVisitor {
     prime = new DirectedGraph();
     prime.nodes.add(graphLeft = new Node());
     prime.nodes.add(graphRight = new Node());
-    if (g.tensorStrength != 0) prime.edges.add(new Edge(graphLeft, graphRight, g.tensorSize, g.tensorStrength));
     buildGPrime();
     new InitialRankSolver().visit(prime);
     new TightSpanningTreeSolver().visit(prime);

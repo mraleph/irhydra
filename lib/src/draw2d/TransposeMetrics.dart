@@ -20,7 +20,9 @@ class TransposeMetrics extends GraphVisitor {
       temp = node.width;
       node.width = node.height;
       node.height = temp;
-      if (node.getPadding() != null) node.setPadding(node.getPadding().getTransposed());
+      if (node.padding != null) {
+        node.padding = node.padding.getTransposed();
+      }
     }
   }
   void revisit(DirectedGraph g) {
@@ -35,7 +37,9 @@ class TransposeMetrics extends GraphVisitor {
       temp = node.y;
       node.y = node.x;
       node.x = temp;
-      if (node.getPadding() != null) node.setPadding(node.getPadding().getTransposed());
+      if (node.padding != null) {
+        node.padding = node.padding.getTransposed();
+      }
     }
     for (int i = 0; i < g.edges.length; i++) {
       Edge edge = g.edges[i];

@@ -93,7 +93,7 @@ _toDirectedGraph(blocks) {
   for (var block in blocks.values) {
     final node = new graph.Node(data: block);
     node.width = node.height = BLOCK_SIZE;
-    node.setPadding(new graph.Insets.round(BLOCK_MARGIN));
+    node.padding = new graph.Insets.round(BLOCK_MARGIN);
     g.nodes.add(node);
   }
 

@@ -18,7 +18,6 @@ part of graph;
  */
 class LocalOptimizer extends GraphVisitor {
   bool shouldSwap(Node current, Node next) {
-    if (GraphUtilities.isConstrained(current, next)) return false;
     int crossCount = 0;
     int invertedCrossCount = 0;
     EdgeList currentEdges = current.incoming;
@@ -31,7 +30,7 @@ class LocalOptimizer extends GraphVisitor {
       for (int j = 0; j < nextEdges.length; j++) {
         iNext = nextEdges[j].getIndexForRank(rank);
         if (iNext < iCurrent) crossCount++; else if (iNext > iCurrent) invertedCrossCount++; else {
-          int offsetDiff = nextEdges[j].getSourceOffset() - currentEdge.getSourceOffset();
+          int offsetDiff = nextEdges[j].sourceOffset - currentEdge.sourceOffset;
           if (offsetDiff < 0) crossCount++; else if (offsetDiff > 0) invertedCrossCount++;
         }
       }
@@ -45,7 +44,7 @@ class LocalOptimizer extends GraphVisitor {
       for (int j = 0; j < nextEdges.length; j++) {
         iNext = nextEdges[j].getIndexForRank(rank);
         if (iNext < iCurrent) crossCount++; else if (iNext > iCurrent) invertedCrossCount++; else {
-          int offsetDiff = nextEdges[j].getTargetOffset() - currentEdge.getTargetOffset();
+          int offsetDiff = nextEdges[j].targetOffset - currentEdge.targetOffset;
           if (offsetDiff < 0) crossCount++; else if (offsetDiff > 0) invertedCrossCount++;
         }
       }
