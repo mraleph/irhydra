@@ -46,7 +46,19 @@
         <div class="span3">
           <div class="well sidebar-nav">
             <ul class="nav nav-list">
-              <input id="methods-filter" type="text" class="search-query" placeholder="Filter methods">
+              <input id="methods-filter" type="text" class="search-query pull-left" placeholder="Filter methods">
+              <ul class="nav nav-pills pull-right">
+                <li class="dropdown">
+                  <a id="sort-by" class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    sort by timestamp<b class="caret"></b>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><a id="sort-by-timestamp" href="#">sort by timestamp</a></li>
+                    <li><a id="sort-by-reopts" href="#">sort by reopts</a></li>
+                  </ul>
+                </li>
+              </ul>
+              <br style="clear: both;"/>
               <div id="methods">
               </div>
             </ul>

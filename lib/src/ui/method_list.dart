@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/** Displaing a list of methods with filtering and sorting. */
+/** Displaying a list of methods with filtering and sorting. */
 library method_list;
 
 import "package:irhydra/src/delayed_reaction.dart";
@@ -25,21 +25,38 @@ var currentMethods;
 /** [InputTextElement] that contains filter text. */
 var _filterInput;
 
+/** [AnchorElement] that reflects current sorting criteria. */
+var _sortByDropDown;
+
+/** Sort method list in ascending order by timestamp. */
+const SORT_BY_TIME = "sort-by-timestamp";
+
+/** Sort method list in descending order by number of method reoptimizations. */
+const SORT_BY_REOPTS = "sort-by-reopts";
+
+/** Current sorting criteria: either [SORT_BY_TIME] or [SORT_BY_REOPTS]. */
+var _sortCriteria;
+
 /**
  * Display the given list of methods in the #methods element.
  * Connect phases references to the given [displayPhase] callback.
  */
 display(methods, displayPhase) {
+  var timestamp = 0;
   currentMethods = methods.map((method) =>
-      new _MethodWrapper(method, displayPhase));
+      new _MethodWrapper(timestamp++, method, displayPhase)).toList();
   _resetHeader();
   _updateView();
 }
 
 /** Update the displayed list of methods applying the filter. */
 _updateView() {
-  final filter = _createFilter();
+  // Update sorting criteria dropdown to reflect current criteria.
+  // currentMethods are assumed to be already sorted in this order.
+  _sortByDropDown.nodes[0].text =
+      _sortByDropDown.parent.query("#${_sortCriteria}").text;
 
+  final filter = _createFilter();
   document.query("#methods").nodes
     ..clear()
     ..addAll(currentMethods.where(filter).map((wrapper) => wrapper.node));
@@ -79,7 +96,88 @@ _resetHeader() {
     });
   }
 
+  if (_sortByDropDown == null) {
+    // Connect event listeners to the sorting criteria dropdown.
+    _sortByDropDown = document.query("#sort-by");
+    for (var criteria in [SORT_BY_TIME, SORT_BY_REOPTS]) {
+      document.query("#${criteria}").onClick.listen((e) {
+        _setSortCriteria(criteria);
+      });
+    }
+  }
+
   _filterInput.value = "";
+  _sortCriteria = SORT_BY_TIME;
+}
+
+/** Switch current sorting criteria to the new one and sort [currentMethods]. */
+_setSortCriteria(criteria) {
+  if (criteria == _sortCriteria) {
+    return;  // Nothing changed.
+  }
+
+  _sortCriteria = criteria;
+  currentMethods.sort(_createComparator());
+  _updateView();
+}
+
+/** Create comparator callback from the [_sortCriteria]. */
+_createComparator() {
+  switch (_sortCriteria) {
+    case SORT_BY_TIME:
+      return (a, b) => a.timestamp - b.timestamp;
+
+    case SORT_BY_REOPTS:
+      _computeReopts();
+      return (a, b) {
+        final result = b.reopts - a.reopts;
+        if (result == 0) {
+          return a.firstTimestamp - b.firstTimestamp;
+        }
+        return result;
+      };
+  }
+}
+
+/**
+ * Computes reoptimization counts and timestamps of the first compilation.
+ * Methods with empty names are skipped because it is impossible to distinguish
+ * them.
+ */
+_computeReopts() {
+  if (currentMethods.isEmpty ||
+      currentMethods.first.reopts is int) {
+    // Nothing to do.
+    return;
+  }
+
+
+  var timestamp = {}, reopts = {};
+
+  for (var wrapper in currentMethods) {
+    final fullName = wrapper.method.name.full;
+    if (fullName == "") continue;
+
+    final val = reopts[fullName];
+    if (val != null) {
+      reopts[fullName] = val + 1;
+    } else {
+      timestamp[fullName] = wrapper.timestamp;
+      reopts[fullName] = wrapper.method.deopts.isEmpty ? 0 : 1;
+    }
+  }
+
+  for (var wrapper in currentMethods) {
+    final fullName = wrapper.method.name.full;
+    if (fullName == "") {
+      wrapper.reopts = 0;
+      wrapper.firstTimestamp = 0;
+      continue;
+    }
+
+    wrapper.reopts = reopts[fullName];
+    wrapper.firstTimestamp = timestamp[fullName];
+  }
 }
 
 /**
@@ -87,6 +185,15 @@ _resetHeader() {
  * it in the list of methods and its filterable name.
  */
 class _MethodWrapper {
+  /** Abstract timestamp of this method used for sorting. */
+  final timestamp;
+
+  /** Number of reopts that occurred to the method (based on its name). */
+  var reopts;
+
+  /** Timestamp of the first compilation of the method (based on its name). */
+  var firstTimestamp;
+
   /** [IR.Method] corresponding to this wrapper. */
   final method;
 
@@ -96,7 +203,7 @@ class _MethodWrapper {
   /** Filterable name: concatenation of source and short parts of [IR.Name]. */
   final name;
 
-  _MethodWrapper(method, displayPhase)
+  _MethodWrapper(this.timestamp, method, displayPhase)
       : method = method,
         node = _createMethodNode(method, displayPhase),
         name = _createName(method.name);
