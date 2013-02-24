@@ -18,16 +18,18 @@ library xref;
 import 'dart:async';
 import 'dart:html';
 
+import "package:irhydra/src/delayed_reaction.dart";
+
 import 'package:js/js.dart' as js;
 
 /** Resolution callback mapping cross-referenced identifier to its data. */
 typedef String ResolutionCallback(String id);
 
 /** Display cross-reference content in the Bootstrap popover. */
-const POPOVER = 0;
+const POPOVER = const _Popover();
 
 /** Display cross-reference content in the Bootstrap tooltip. */
-const TOOLTIP = 1;
+const TOOLTIP = const _Tooltip();
 
 /**
  * Create a function that allows to turn any HTML element into a
@@ -38,28 +40,20 @@ const TOOLTIP = 1;
  * it displayed.
  */
 makeAttachableReferencer(ResolutionCallback getContent, {type: POPOVER}) {
-  final uiElement = type == POPOVER ? const _Popover() : const _Tooltip();
-
-  var timer;  // Timer that delays display of the uiElement.
-  setTimer(newTimer) {
-    if (timer != null) {
-      timer.cancel();
-    }
-    timer = newTimer;
-  }
+  final delayed = new DelayedReaction();
 
   mouseOver(target, id) {
-    setTimer(new Timer(500, (timer) {
+    delayed.schedule(() {
       final content = getContent(id);
       if (content != null) {
-        uiElement.show(target, content);
+        type.show(target, content);
       }
-    }));
+    });
   }
 
   mouseOut(target, id) {
-    setTimer(null);
-    uiElement.destroy(target);
+    delayed.cancel();
+    type.destroy(target);
   }
 
   return (node, id) {

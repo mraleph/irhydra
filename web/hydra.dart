@@ -19,6 +19,7 @@ import "dart:uri";
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
 import "package:irhydra/src/spinner.dart" as spinner;
+import "package:irhydra/src/ui/method_list.dart" as method_list;
 
 import "package:js/js.dart" as js;
 
@@ -33,16 +34,12 @@ var currentFiles;
 /** Currently active mode. */
 var currentMode;
 
-/** Methods that were recovered from parsed compilation artifacts. */
-var methods = [];
-
 /** Currently displayed phase. */
 var currentPhase;
 
 /** Resets state to the initial empty one. */
 resetUI() {
   currentMode = currentPhase = null;
-  methods = [];
   watchers.dispatch();  // Notify web_ui.
 }
 
@@ -80,55 +77,9 @@ loadData(text) {
   }
 
   // Parse.
-  methods = currentMode.parse(text);
+  final methods = currentMode.parse(text);
 
-  // Build list of methods under #methods element.
-  // TODO: we are building it manually instead of using web_ui templating
-  // because it has scalability issues (see web-ui issue #371).
-  final header =
-      new html.Element.html('<li class="nav-header">Compilation units</li>');
-
-  makeLabel(type, text) =>
-    new html.Element.html('<span class="label label-${type}">${text}</span>');
-
-  final nodes = methods.map((method) {
-      final li = new html.Element.html('<li>'
-                                       '<h4></h4>'
-                                       '<ul class="nav nav-list"></ul>'
-                                       '</li>');
-
-      final labels = [];
-
-      if (method.name.source != null) {
-        labels.add(makeLabel('info', method.name.source));
-      }
-
-      if (!method.deopts.isEmpty) {
-        labels.add(makeLabel('important', 'deopts'));
-      }
-
-      if (!labels.isEmpty) {
-        li.nodes.first.nodes.addAll(labels);
-        li.nodes.first.nodes.add(new html.BRElement());
-      }
-
-      li.nodes.first.appendText(method.name.short);
-      final ul = li.nodes.last;
-
-      for (var phase in method.phases) {
-        final anchor = new html.AnchorElement(href: "#ir")
-            ..appendText(phase.name)
-            ..onClick.listen((e) => displayPhase(method, phase));
-        ul.nodes.add(new html.LIElement()..nodes.add(anchor));
-      }
-
-      return li;
-  });
-
-  html.document.query("#methods").nodes
-      ..clear()
-      ..add(header)
-      ..addAll(nodes);
+  method_list.display(methods, displayPhase);
 }
 
 /** Load compilation artifact from the remote location with a [HttpRequest]. */
