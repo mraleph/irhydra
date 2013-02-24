@@ -43,26 +43,70 @@ IR.Name parse(String full) {
   return new IR.Name(full, source, short);
 }
 
+/** Matches file name pattern with 'dart' extension. */
+final fileNameRe = new RegExp(r"^([-\w]+\.dart)_(.*)$");
+
+/** Matches dart:library-name prefix that is used for internal libraries. */
+final dartSchemeRe = new RegExp(r"^(dart:_?[-a-zA-Z0-9]+)_(.*)$");
+
+/** Matches accessor name which is the last part of the full name. */
+final accessorRe = new RegExp(r"([gs]et)_(_?)([a-z0-9]+|[A-Z0-9_]+)$");
+
 /** Splits name into individual components: file, class and method names. */
 List<String> _splitName(String name) {
   final comps = <String>[];
 
-  var prefix;  // Tracks get: and set: prefixes.
+  var prefix = [];  // Tracks _ prefixes.
 
-  for (var part in name.split("_")
-                       .where((part) => part.length > 0)
-                       .map((part) => part.replaceAll(demangleRe, ""))) {
+  // Try to match a normal file name.
+  final fileNameMatch = fileNameRe.firstMatch(name);
+  if (fileNameMatch != null) {
+    comps.add(fileNameMatch.group(1));
+    name = fileNameMatch.group(2);
+  } else {
+    // Try to match dart: scheme.
+    final dartSchemeMatch = dartSchemeRe.firstMatch(name);
+    if (dartSchemeMatch != null) {
+      comps.add(dartSchemeMatch.group(1));
+      name = dartSchemeMatch.group(2);
+    }
+  }
+
+  // Split out the accessor part from the end of the name.
+  final accessorMatch = accessorRe.firstMatch(name);
+  if (accessorMatch != null) {
+    name = name.substring(0, accessorMatch.start);
+  }
+
+  for (var part in name.split("_")) {
+    part = part.replaceAll(demangleRe, "");
+
     // Skip global namespace symbol.
-    if (part == "::") continue;
-
-    // Merge accessor prefixes into the next part of the name.
-    if (part == "get" || part == "set") {
-      assert(prefix == null);
-      prefix = part;
+    if (part == "::") {
       continue;
     }
 
-    comps.add(prefix != null ? "${prefix}:${part}" : part);
+    // Empty parts relate to multiple underscores in a row.
+    if (part == "") {
+      prefix.add("_");
+      continue;
+    }
+
+    // Apply pending prefix if any.
+    if (!prefix.isEmpty) {
+      part = "${prefix.join()}${part}";
+      prefix.clear();
+    }
+
+    comps.add(part);  // Emit component.
+  }
+
+  // Emit accessor name as the last component.
+  if (accessorMatch != null) {
+    final keyword = accessorMatch.group(1);
+    final privacy = accessorMatch.group(2);
+    final name = accessorMatch.group(3);
+    comps.add("${keyword}:${privacy}${name}");
   }
 
   return comps;
