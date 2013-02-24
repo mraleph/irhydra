@@ -46,25 +46,6 @@
         <div class="span3">
           <div class="well sidebar-nav">
             <ul id="methods" class="nav nav-list">
-              <li class="nav-header">Compilation units</li>
-              <template iterate="method in methods">
-                <li>
-                  <h4>
-                    <template instantiate="if method.name.source != null">
-                      <span class="label label-info">{{method.name.source}}</span><br/>
-                    </template>
-                    <template instantiate="if !method.deopts.isEmpty">
-                      <span class="label label-important">deopts</span><br/>
-                    </template>
-                    {{method.name.short}}
-                  </h4>
-                  <ul class="nav nav-list">
-                    <template iterate="phase in method.phases">
-                      <li><a href="#ir" on-click="displayPhase(method, phase);">{{phase.name}}</a></li>
-                    </template>
-                  </ul>
-                </li>
-              </template>
             </ul>
           </div><!--/.well -->
         </div>
