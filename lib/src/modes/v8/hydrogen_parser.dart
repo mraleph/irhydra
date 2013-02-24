@@ -57,8 +57,7 @@ List<IR.Method> preparse(String str) {
       // This is the cfg record containing blocks. No need to create substring
       // right away: its content will be needed only when this phase is
       // displayed.
-      final end = match.start;
-      final substr = () => str.substring(start, end);
+      final substr = _deferSubstring(str, start, match.start);
 
       // Extract phase's name from the first line of the cfg record.
       final firstLine = str.substring(start, str.indexOf("\n", start));
@@ -70,6 +69,10 @@ List<IR.Method> preparse(String str) {
 
   return methods;
 }
+
+/** Create a substring thunk. */
+_deferSubstring(str, start, end) =>
+  () => str.substring(start, end);
 
 /** Parse given phase IR stored in the deferred substring thunk. */
 Map parse(Function ir) =>

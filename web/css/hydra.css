@@ -77,4 +77,22 @@ pre.lir-line {
   cursor: pointer;
 }
 
+#methods {
+  overflow: auto;
+}
+
+#methods::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+#methods::-webkit-scrollbar-track,
+#methods::-webkit-scrollbar-corner {
+  background: inherit;
+}
+
+#methods::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+}
 

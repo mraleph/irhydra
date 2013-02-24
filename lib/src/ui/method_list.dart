@@ -15,15 +15,23 @@
 /** Displaying a list of methods with filtering and sorting. */
 library method_list;
 
+import "dart:html";
+
 import "package:irhydra/src/delayed_reaction.dart";
 
-import 'dart:html';
+import "package:js/js.dart" as js;
 
 /** Methods that were recovered from parsed compilation artifacts. */
 var currentMethods;
 
+/** [Element] that hosts lists of methods on the page. */
+var _methodsList;
+
 /** [InputTextElement] that contains filter text. */
 var _filterInput;
+
+/** Currently active filter for the list of methods. */
+var _currentFilter;
 
 /** [AnchorElement] that reflects current sorting criteria. */
 var _sortByDropDown;
@@ -57,57 +65,83 @@ _updateView() {
       _sortByDropDown.parent.query("#${_sortCriteria}").text;
 
   final filter = _createFilter();
-  document.query("#methods").nodes
+  _methodsList.nodes
     ..clear()
     ..addAll(currentMethods.where(filter).map((wrapper) => wrapper.node));
 }
 
 /**
- * Create filtering callback for the text in the [_filterInput].
+ * Create filtering callback for the text in the [_currentFilter].
  * Filters are case insensitive and treat white space as a wildcard * character.
  */
 _createFilter() {
-  final value = _filterInput.value;
-
-  if (value == "") {
+  if (_currentFilter == "") {
     return (wrapper) => true;
   }
 
   final pattern =
-      new RegExp(value.replaceAllMapped(new RegExp(r"[-+$]"),
-                                        (m) => "\\${m.group(0)}")
-                       .replaceAll(new RegExp(r" +"), ".*"),
+      new RegExp(_currentFilter.replaceAllMapped(new RegExp(r"[-+$]"),
+                                                 (m) => "\\${m.group(0)}")
+                               .replaceAll(new RegExp(r" +"), ".*"),
                  caseSensitive: false);
 
   return (wrapper) => pattern.hasMatch(wrapper.name);
 }
 
+/** Update the current filter and updates UI if necessary. */
+_updateCurrentFilter() {
+  if (_currentFilter == _filterInput.value) {
+    return;
+  }
+
+  _currentFilter = _filterInput.value;
+  _updateView();
+}
+
 /** Reset the header of the list of methods (state of sorting and filter). */
 _resetHeader() {
-  if (_filterInput == null) {
-    // Connect event listeners to _filterInput.
-    _filterInput = document.query("#methods-filter");
+  _filterInput.value = "";
+  _currentFilter = "";
+  _sortCriteria = SORT_BY_TIME;
+}
 
-    final delayed = new DelayedReaction(delay: 200);
-    _filterInput.onKeyUp.listen((e) => delayed.schedule(_updateView));
-    _filterInput.onChange.listen((e) {
-      delayed.cancel();
-      _updateView();
+/** Connect to DOM elements representing the list of methods. */
+connectDOM() {
+  if (_methodsList != null) {
+    return;
+  }
+
+  // Connect to method list and ensure that it has proper size.
+  _methodsList = document.query("#methods");
+  _resizeMethodsList();
+  document.window.onResize.listen((e) => _resizeMethodsList());
+
+  // Connect event listeners to _filterInput.
+  _filterInput = document.query("#methods-filter");
+
+  final delayed = new DelayedReaction(delay: 200);
+  _filterInput.onKeyUp.listen((e) => delayed.schedule(_updateCurrentFilter));
+  _filterInput.onChange.listen((e) {
+    delayed.cancel();
+    _updateCurrentFilter();
+  });
+
+  // Connect event listeners to the sorting criteria dropdown.
+  _sortByDropDown = document.query("#sort-by");
+  for (var criteria in [SORT_BY_TIME, SORT_BY_REOPTS]) {
+    document.query("#${criteria}").onClick.listen((e) {
+      _setSortCriteria(criteria);
     });
   }
+}
 
-  if (_sortByDropDown == null) {
-    // Connect event listeners to the sorting criteria dropdown.
-    _sortByDropDown = document.query("#sort-by");
-    for (var criteria in [SORT_BY_TIME, SORT_BY_REOPTS]) {
-      document.query("#${criteria}").onClick.listen((e) {
-        _setSortCriteria(criteria);
-      });
-    }
-  }
-
-  _filterInput.value = "";
-  _sortCriteria = SORT_BY_TIME;
+/** Keeps method list height within windows size boundaries. */
+_resizeMethodsList() {
+  js.scoped(() {
+    final top = js.context.jQuery(_methodsList).offset().top;
+    final windowHeight = js.context.jQuery(js.context.window).height();
+    _methodsList.style.height = "${windowHeight - top - 20}px";
+  });
 }
 
 /** Switch current sorting criteria to the new one and sort [currentMethods]. */

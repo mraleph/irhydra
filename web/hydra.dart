@@ -101,6 +101,8 @@ loadDemo(demoId) {
 }
 
 main () {
+  method_list.connectDOM();
+
   // Connect file input and "Open IR" button.
   html.InputElement compilation_artifact = html.query('#compilation-artifact');
   compilation_artifact.onChange.listen((event) {
