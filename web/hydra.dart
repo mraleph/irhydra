@@ -64,6 +64,7 @@ reloadCurrentFiles() {
 displayPhase(method, phase) {
   currentPhase = phase;
   watchers.dispatch();  // Notify web_ui.
+  html.document.window.scrollTo(0, 0);  // Reset the scroll position.
   currentMode.displayPhase(method, phase);
 }
 
