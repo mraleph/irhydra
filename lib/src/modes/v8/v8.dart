@@ -55,7 +55,7 @@ class Mode extends BaseMode {
     if (hydrogen_parser.canRecognize(text)) {
       // This is hydrogen.cfg containing IR.
       if (hydrogenLoaded) _reset();  // Drop currently loaded IR data.
-      _merge(hydrogen_parser.parse(text), methods);
+      _merge(hydrogen_parser.preparse(text), methods);
       hydrogenLoaded = true;
     } else if (code_parser.canRecognize(text)) {
       // This is an stdout dump containing native code and deopts.
@@ -69,10 +69,10 @@ class Mode extends BaseMode {
 
   displayPhase(method, phase) {
     currentMethod = method;
-    ir = phase.ir;
+    ir = hydrogen_parser.parse(phase.ir);
     code = code_parser.parse(phase.code);
     updateIRView();
-    _displayGraph(phase);
+    _displayGraph();
   }
 
   updateIRView() {
@@ -80,10 +80,10 @@ class Mode extends BaseMode {
     view.displayIR(pane, currentMethod, ir, code, codeMode);
   }
 
-  _displayGraph(phase) {
+  _displayGraph() {
     final attachRef =
         xref.makeAttachableReferencer(pane.rangeContentAsHtmlFull);
-    graphview.display(graphPane, phase.ir, attachRef);
+    graphview.display(graphPane, ir, attachRef);
   }
 
   _reset() {
