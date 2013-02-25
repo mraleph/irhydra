@@ -164,9 +164,12 @@ _createComparator() {
     case SORT_BY_REOPTS:
       _computeReopts();
       return (a, b) {
-        final result = b.reopts - a.reopts;
+        var result = b.reopts - a.reopts;
         if (result == 0) {
-          return a.firstTimestamp - b.firstTimestamp;
+          result = a.firstTimestamp - b.firstTimestamp;
+          if (result == 0) {
+            result = a.timestamp - b.timestamp;
+          }
         }
         return result;
       };
