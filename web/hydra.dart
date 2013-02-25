@@ -60,9 +60,10 @@ reloadCurrentFiles() {
 /** Display given phase using active mode. */
 displayPhase(method, phase) {
   currentPhase = phase;
-  watchers.dispatch();  // Notify web_ui.
+  watchers.dispatch();  // Notify web_ui to create #ir and #graph panes.
   html.document.window.scrollTo(0, 0);  // Reset the scroll position.
   currentMode.displayPhase(method, phase);
+  watchers.dispatch();  // Notify web_ui to show/hide code splicing dropdown.
 }
 
 /** Load data from the given textual artifact if any mode can handle it. */
@@ -78,7 +79,6 @@ loadData(text) {
 
   // Parse.
   final methods = currentMode.parse(text);
-
   method_list.display(methods, displayPhase);
 }
 
