@@ -63,10 +63,8 @@ class IRParser extends parsing.ParserBase {
     },
 
     // BranchInstr
-    r"if (\w+)[^\(]*(\(.*\)) goto[^\s]*\s+.(\d+), (\d+).$": (cond_op,
-                                                             cond_args,
-                                                             true_successor,
-                                                             false_successor) {
+    r"if (\w+)[^\(]*(\(.*\)).+goto[^\s]*\s+.(\d+), (\d+).$":
+        (cond_op, cond_args, true_successor, false_successor) {
       true_successor = "B${true_successor}";
       false_successor = "B${false_successor}";
 
