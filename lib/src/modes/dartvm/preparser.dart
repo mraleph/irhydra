@@ -19,75 +19,81 @@ import 'package:irhydra/src/modes/dartvm/name_parser.dart' as name_parser;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
-/** Start of the IR dump section. */
-const MARKER_IR = "After Optimizations:";
-
-/** Start of the disassembly dump section. */
-const MARKER_CODE = "Code for optimized function ";
-
 canRecognize(text) =>
-  text.contains(MARKER_IR) || text.contains(MARKER_CODE);
+  text.contains("*** BEGIN CFG") || text.contains("*** BEGIN CODE");
 
-parse(text) =>
-  (new PreParser(text)..parse()).functions;
+/** Preparse given dump extracting information about compiled functions. */
+parse(str) {
+  // Matches tags that start/end cfg and code dumps.
+  final tagRe = new RegExp(r"\*\*\* (BEGIN|END) (CFG|CODE)\n");
 
-class PreParser extends parsing.ParserBase {
+  // Matches name of the function printed in a flow graph dump.
+  final cfgNameRe = new RegExp(r"^==== (.*)$");
+
+  // Matches name of the function printed in a code dump.
+  final codeNameRe = new RegExp(r"'(.*)' {$");
+
+  // List of all functions and the last one.
   final functions = <IR.Method>[];
 
-  PreParser(text) : super(text.split('\n'));
-
-  get patterns => {
-    // Start of the IR dump.
-    r"^After Optimizations:": () {
-      var functionName;
-      enter({
-        // Function name marker.
-        r"^==== (.*)$": (name) => functionName = name,
-
-        // Instruction prefixed by a lifetime position marker.
-        r"^\s*\d+:\s+.*$": () {
-          if (currentLine.endsWith("{")) {
-            // Joins have phi section attached to them: it is wrapped in curly
-            // braces, one phi on a line. Skip lines until phi section is
-            // closed.
-            enter({ r"^}$": () => leave() });
-          }
-        },
-
-        // If no previous expression matches we reached the end of the dump.
-        r"": () {
-          functions.add(_createMethod(functionName, ir: subrange()));
-          leave(backtrack: 1);  // Current line can be a start of the next dump.
-        }
-      });
-    },
-
-    // Start of the disassembly listing.
-    r"^Code for optimized function '(.*)' {$": (functionName) {
-      enter({
-        r"^}$": () {  // Listing ends with a curly brace.
-          final code = subrange();
-          if (!functions.isEmpty && functions.last.name.full == functionName) {
-            // IR for this function was already parsed. Merge disassembly
-            // listing into it.
-            functions.last.phases.last.code = code;
-          } else {
-            // No IR information was parsed for this function.
-            functions.add(_createMethod(functionName, code: code));
-          }
-          leave();
-        }
-      });
+  // Create a new function if needed.
+  createFunction(name, {phaseName}) {
+    if (functions.isEmpty ||
+        functions.last.name.full != name ||
+        functions.last.phases.last.name == phaseName) {
+      final function = new IR.Method(name_parser.parse(name));
+      functions.add(function);
     }
-  };
-
-  _createMethod(fullname, {ir, code}) {
-    // Currently Dart VM dumps information only at the very end of compilation.
-    // Thus create a single artificial phase hosting both IR and code.
-    final name = name_parser.parse(fullname);
-    return new IR.Method(name)..phases.add(
-        new IR.Phase("After optimizations", ir: ir, code: code));
+    return functions.last;
   }
+
+  // Start position of the current record.
+  var start;
+
+  // Find all tags in the string.
+  for (var match in tagRe.allMatches(str)) {
+    final tag = match.group(0);
+
+    if (tag.startsWith("*** B")) {
+      start = match.end;  // Just remember the start and wait for the end tag.
+    } else if (tag == "*** END CFG\n") {
+      // Control flow graph dump.
+
+      // Extract the phase name from the first line.
+      final firstLF = str.indexOf("\n", start);
+      final phaseName = str.substring(start, firstLF);
+
+      // Extract the function name from the second line.
+      final secondLF = str.indexOf("\n", firstLF + 1);
+      final secondLine = str.substring(firstLF + 1, secondLF);
+      final name = cfgNameRe.firstMatch(secondLine).group(1);
+
+      // Create a phase with substring thunk for an IR.
+      final substr = _deferSubstring(str, secondLF + 1, match.start);
+      final phase = new IR.Phase(phaseName, ir: substr);
+
+      createFunction(name, phaseName: phaseName).phases.add(phase);
+    } else if (tag == "*** END CODE\n") {
+      // Code dump.
+      final substr = _deferSubstring(str, start, match.start);
+
+      // Extract function name from the first line of the code dump.
+      final firstLine = str.substring(start, str.indexOf("\n", start));
+      final name = codeNameRe.firstMatch(firstLine).group(1);
+
+      // Create function to host the phase.
+      final function = createFunction(name, phaseName: "Code");
+      if (!function.phases.isEmpty) {
+        function.phases.last.code = substr;
+      } else {
+        function.phases.add(new IR.Phase("Code", code: substr));
+      }
+    }
+  }
+
+  return functions;
 }
 
-
+/** Create substring thunk. */
+_deferSubstring(str, start, end) =>
+  () => str.substring(start, end);

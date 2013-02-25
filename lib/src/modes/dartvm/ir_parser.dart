@@ -23,8 +23,8 @@ import 'package:irhydra/src/parsing.dart' as parsing;
 import 'package:irhydra/src/xref.dart' as xref;
 
 /** Parse given IR dumps. */
-parse(List<String> lines) {
-  final blocks = (new IRParser(lines)..parse()).builder.blocks;
+parse(text) {
+  final blocks = (new IRParser(text())..parse()).builder.blocks;
 
   // Add explicit edge from the graph entry to the first block.
   final graphEntry = blocks.values.first;
@@ -39,7 +39,7 @@ class IRParser extends parsing.ParserBase {
 
   IR.Block currentBlock;
 
-  IRParser(lines) : super(lines);
+  IRParser(text) : super(text.split('\n'));
 
   /** Regular expression stripping lifetime position from the line. */
   final lineRe = new RegExp(r"^\s*\d+:\s+(.*)$");

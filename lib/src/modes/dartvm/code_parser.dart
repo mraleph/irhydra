@@ -19,8 +19,8 @@ import 'package:irhydra/src/modes/code.dart';
 import 'package:irhydra/src/parsing.dart' as parsing;
 
 /** Parse given disassembly dump. */
-parse(List<String> text) => text != null ?
-    (new CodeParser(text)..parse()).code : new Code.empty();
+parse(text) => text != null ?
+    (new CodeParser(text())..parse()).code : new Code.empty();
 
 class CodeParser extends parsing.ParserBase {
   final _code = [];
@@ -32,7 +32,7 @@ class CodeParser extends parsing.ParserBase {
   /** Current basic block range. */
   Range block;
 
-  CodeParser(lines) : super(lines);
+  CodeParser(text) : super(text.split('\n'));
 
   get patterns => {
     // Jump instruction.
