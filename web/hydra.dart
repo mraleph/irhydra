@@ -155,7 +155,7 @@ main () {
   final currentFragment = new Uri(html.window.location.href).fragment;
   if (currentFragment.startsWith("demo-")) {
     // Wait until web_ui is fully initialized.
-    new async.Timer(const Duration(milliseconds: 10), (timer) {
+    new async.Timer(const Duration(milliseconds: 10), () {
       loadDemo(currentFragment);
     });
   }

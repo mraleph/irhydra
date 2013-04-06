@@ -36,7 +36,7 @@ class DelayedReaction {
    * Schedule an [action] callback. If there is already an action pending
    * it will be evicted.
    */
-  schedule(action) => _setTimer(new Timer(delay, (timer) => action()));
+  schedule(action) => _setTimer(new Timer(delay, () => action()));
 
   /** Cancel pending action if any. */
   cancel() => _setTimer(null);

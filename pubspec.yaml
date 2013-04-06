@@ -1,4 +1,5 @@
 name: irhydra
 dependencies:
-  web_ui: any
+  js: any
   browser: any
+  web_ui: any
