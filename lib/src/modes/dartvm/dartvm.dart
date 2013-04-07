@@ -15,6 +15,7 @@
 /** Dart VM mode */
 library dartvm;
 
+import 'package:irhydra/src/modes/code.dart';
 import 'package:irhydra/src/modes/dartvm/code_parser.dart' as code_parser;
 import 'package:irhydra/src/modes/dartvm/ir_parser.dart' as ir_parser;
 import 'package:irhydra/src/modes/dartvm/preparser.dart' as preparser;
@@ -34,15 +35,38 @@ class Mode extends BaseMode {
     ir = ir_parser.parse(phase.ir);
     code = code_parser.parse(phase.code);
 
+    blockTicks = ticks = null;
+    if (profile != null) {
+      var profiles = profile.where((p) => p.name == method.name.full);
+      if (profiles.length > 1) {
+        final lastOffset = code.code.where((val) => val is Instruction).last.offset;
+        profiles = profiles.where((p) => p.lastOffset == lastOffset);
+      }
+
+      if (profiles.length == 1) {
+        ticks = profiles.first.ticks;
+
+        blockTicks = new Map();
+        for (var name in code.blocks.keys) {
+          blockTicks[name] = 0;
+          for (var instr in code.codeOf(name).where((val) => val is Instruction)) {
+            if (ticks.containsKey(instr.offset)) {
+              blockTicks[name] += ticks[instr.offset];
+            }
+          }
+        }
+      }
+    }
+
     updateIRView();
 
     final attachRef =
         xref.makeAttachableReferencer(pane.rangeContentAsHtmlFull);
-    graphview.display(graphPane, ir, attachRef);
+    graphview.display(graphPane, ir, attachRef, blockTicks: blockTicks);
   }
 
   updateIRView() {
     pane.clear();
-    view.display(pane, ir, code, codeMode);
+    view.display(pane, ir, code, codeMode, ticks: ticks, blockTicks: blockTicks);
   }
 }

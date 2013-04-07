@@ -119,7 +119,7 @@ connectDOM() {
   // Connect event listeners to _filterInput.
   _filterInput = document.query("#methods-filter");
 
-  final delayed = new DelayedReaction(delay: 200);
+  final delayed = new DelayedReaction(delay: const Duration(milliseconds: 200));
   _filterInput.onKeyUp.listen((e) => delayed.schedule(_updateCurrentFilter));
   _filterInput.onChange.listen((e) {
     delayed.cancel();

@@ -19,6 +19,7 @@ import 'dart:html' as html;
 
 import 'package:irhydra/src/modes/code.dart' show CodeSplicer;
 import 'package:irhydra/src/modes/ir.dart' as IR;
+import 'package:irhydra/src/modes/llprof.dart' as llprof;
 
 /**
  * Modes encapsulate the way to parse and display compilation artifacts.
@@ -35,6 +36,15 @@ abstract class BaseMode {
 
   /** Currently displayed code. */
   var _code;
+
+  /** Ticks information for the currently displayed code. */
+  var ticks;
+
+  /** Aggregated ticks information for each block. */
+  var blockTicks;
+
+  /** Profiling data. */
+  var profile;
 
   /** Currently active mode of code rendering. */
   var _codeMode = 0;
@@ -83,4 +93,9 @@ abstract class BaseMode {
   /** Return the list of all supported code rendering modes */
   get supportedCodeModes =>
       (_code != null && !_code.isEmpty) ? CodeSplicer.CODE_MODES : const [];
+
+  /** Load output of the llprof.py script. */
+  loadProfile(data) {
+    profile = llprof.parse(data);
+  }
 }

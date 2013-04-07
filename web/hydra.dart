@@ -47,13 +47,18 @@ resetUI() {
 currentFileNames() =>
   currentFiles.map((file) => file.name).join(', ');
 
+/** Load given file. */
+readAsText(file, callback) {
+  final reader = new html.FileReader();
+  reader.onLoad.listen((e) => callback(reader.result));
+  reader.readAsText(file);
+}
+
 /** Reloads set of files. */
 reloadCurrentFiles() {
   resetUI();
   for (var file in currentFiles) {
-    final reader = new html.FileReader();
-    reader.onLoad.listen((e) => loadData(reader.result));
-    reader.readAsText(file);
+    readAsText(file, loadData);
   }
 }
 
@@ -70,7 +75,7 @@ displayPhase(method, phase) {
 loadData(text) {
   // Normalize line endings.
   text = text.replaceAll(new RegExp(r"\r\n|\r"), "\n");
-  
+
   // Select mode that can handle it.
   currentMode = null;
   for (var mode in MODES) {
@@ -83,6 +88,8 @@ loadData(text) {
   // Parse.
   final methods = currentMode.parse(text);
   method_list.display(methods, displayPhase);
+
+  watchers.dispatch();  // Notify web_ui.
 }
 
 /** Load compilation artifact from the remote location with a [HttpRequest]. */
@@ -103,22 +110,29 @@ loadDemo(demoId) {
   }
 }
 
+connectToFileInput(name, action) {
+  final input = html.query('#${name}-artifact');
+  input.onChange.listen((event) => action(input.files));
+
+  return () {
+    html.query("#${name}-artifact-form").reset();
+    js.scoped(() {
+      js.context.jQuery(input).click();
+    });
+  };
+}
+
+final openCompilation = connectToFileInput("compilation", (files) {
+  currentFiles = files;
+  reloadCurrentFiles();
+});
+
+final openProfile = connectToFileInput("llprof", (files) {
+  readAsText(files[0], currentMode.loadProfile);
+});
+
 main () {
   method_list.connectDOM();
-
-  // Connect file input and "Open IR" button.
-  html.InputElement compilation_artifact = html.query('#compilation-artifact');
-  compilation_artifact.onChange.listen((event) {
-    currentFiles = compilation_artifact.files;
-    reloadCurrentFiles();
-  });
-
-  html.query("#open-compilation-artifact").onClick.listen((event) {
-    html.query("#compilation-artifact-form").reset();
-    js.scoped(() {
-      js.context.jQuery(compilation_artifact).click();
-    });
-  });
 
   // Listen for onHashChange events to allow cross-references between ir and
   // graph tabs.

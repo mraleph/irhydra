@@ -36,7 +36,7 @@ const LABEL_STYLE = "font-family: Monaco, Menlo, Consolas, "
  *
  * Attaching cross-references to individual blocks using [attachRef].
  */
-display(pane, blocks, attachRef) {
+display(pane, blocks, attachRef, {blockTicks}) {
   // Convert blocks into Draw2d DirectedGraph and layout it.
   final g = _toDirectedGraph(blocks);
   _layoutDirectedGraph(g);
@@ -44,6 +44,16 @@ display(pane, blocks, attachRef) {
   // Compute loop nesting depth for each block. It will be used to
   // select appropriate fill color from the Brewer's palette.
   final loopNesting = _computeLoopNesting(blocks);
+
+  var hotness = null;
+  if (blockTicks != null) {
+    hotness = {};
+
+    final maxPercentage = blockTicks.values.fold(0.0, math.max);
+    for (var block in blockTicks.keys) {
+      hotness[block] = (blockTicks[block] / maxPercentage * 5).ceil();
+    }
+  }
 
   // Clear the pane and create root svg element.
   pane.nodes.clear();
@@ -63,7 +73,7 @@ display(pane, blocks, attachRef) {
     final rect = _createRect(x: node.x, y: node.y,
                              width: node.width, height: node.height,
                              r: 5,
-                             fill: _selectFill(loopNesting[block.id]));
+                             fill: _selectFill(hotness == null ? loopNesting[block.id] : hotness[block.name]));
 
     final label = _createLabel(x: node.x + (node.width ~/ 2),
                                y: node.y + (node.height ~/ 2),

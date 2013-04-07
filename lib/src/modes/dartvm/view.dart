@@ -24,8 +24,8 @@ import 'package:irhydra/src/html_utils.dart';
 import 'package:irhydra/src/parsing.dart' as parsing;
 import 'package:irhydra/src/xref.dart' as xref;
 
-display(pane, blocks, code, codeMode) {
-  new _Renderer(pane, codeMode, blocks, code).display();
+display(pane, blocks, code, codeMode, {ticks, blockTicks}) {
+  new _Renderer(pane, codeMode, blocks, code, ticks, blockTicks).display();
 }
 
 class _Renderer {
@@ -41,6 +41,12 @@ class _Renderer {
   /** Native code. */
   final code;
 
+  /** Profiling ticks percentages per instruction. */
+  final ticks;
+
+  /** Profiling ticks percentages per block. */
+  final blockTicks;
+
   /** [xref] referencer producing anchor elements for definition uses. */
   final makeDefinitionRef;
 
@@ -50,7 +56,7 @@ class _Renderer {
   /** [formatting.Formatter] for IR instruction operands. */
   var formatOperands;
 
-  _Renderer(pane, this.codeMode, this.blocks, this.code)
+  _Renderer(pane, this.codeMode, this.blocks, this.code, this.ticks, this.blockTicks)
       : pane = pane,
         makeDefinitionRef = xref.makeReferencer(pane.rangeContentAsHtml,
                                                 pane.href,
@@ -87,7 +93,14 @@ class _Renderer {
 
     // Block name.
     pane.add(" ", " ");
-    pane.add(span("boldy", block.name), " ", id: block.name);
+
+    var blockComment = "";
+    if (blockTicks != null && blockTicks[block.name] > 0.0) {
+      final percentage = blockTicks[block.name];
+      blockComment = new Element.html("<em>(${percentage.toStringAsFixed(2)}% ticks)</em>");
+    }
+
+    pane.add(span("boldy", block.name), blockComment, id: block.name);
 
     // Block HIR body. Dart VM has no LIR.
     for (var instr in block.hir) {
