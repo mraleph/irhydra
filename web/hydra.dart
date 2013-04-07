@@ -68,6 +68,9 @@ displayPhase(method, phase) {
 
 /** Load data from the given textual artifact if any mode can handle it. */
 loadData(text) {
+  // Normalize line endings.
+  text = text.replaceAll(new RegExp(r"\r\n|\r"), "\n");
+  
   // Select mode that can handle it.
   currentMode = null;
   for (var mode in MODES) {
