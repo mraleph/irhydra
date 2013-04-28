@@ -21,7 +21,7 @@ class VerticalPlacement extends GraphVisitor {
     Insets pad;
     int currentY = g.getMargin().top;
     int row, rowHeight;
-    g.rankLocations = new List<int>.fixedLength(g.ranks.length + 1, fill: 0);
+    g.rankLocations = new List<int>.filled(g.ranks.length + 1, 0);
     for (row = 0; row < g.ranks.length; row++) {
       g.rankLocations[row] = currentY;
       Rank rank = g.ranks[row];

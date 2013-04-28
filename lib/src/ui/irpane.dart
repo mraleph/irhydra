@@ -137,7 +137,7 @@ class IRPane extends WebComponent {
     final table = new TableElement();
     table.classes.add("irpane");
     table.nodes.addAll(
-        _table.nodes.getRange(range.start, range.length)
+        _table.nodes.getRange(range.start, range.start + range.length)
                     .map((elem) => elem.clone(true)));
     return toHtml(table);
   }

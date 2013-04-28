@@ -17,13 +17,14 @@ part of graph;
  */
 class EdgeList {
   final list = new List<Edge>();
-  noSuchMethod(mirror) => mirror.invokeOn(list);
+  noSuchMethod(invocation) =>
+      mirrors.reflect(list).delegate(invocation);
 
 
   int getSourceIndex(int i) {
     return this[i].source.index;
   }
-  
+
   int getTargetIndex(int i) {
     return this[i].target.index;
   }
@@ -57,7 +58,7 @@ class EdgeList {
   void setFlags(bool value) {
     for (final edge in this) edge.flag = value;
   }
-  
-  // TODO(vegorov) remove when dartbug.com/8075 is fixed 
+
+  // TODO(vegorov) remove when dartbug.com/8075 is fixed
   remove(e) => Collections.remove(list, e);
 }

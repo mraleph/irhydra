@@ -17,7 +17,8 @@ part of graph;
  */
 class NodeList {
   final list = new List<Node>();
-  noSuchMethod(mirror) => mirror.invokeOn(list);
+  noSuchMethod(invocation) =>
+      mirrors.reflect(list).delegate(invocation);
   
   NodeList([NodeList other]) {
     if (other != null) {

@@ -50,7 +50,7 @@ abstract class ParserBase {
   /** Initial set of patterns to be provided by child classes. See [enter]. */
   Map get patterns;
 
-  ParserBase(List<String> this.lines) {
+  ParserBase(Iterable<String> lines) : lines = lines.toList() {
     enter(patterns);  // Enter initial state.
   }
 
@@ -83,8 +83,8 @@ abstract class ParserBase {
   /** Return range of lines covered by the current state. */
   subrange({bool inclusive: false}) {
     final start = _states.last.start + (inclusive ? 0 : 1);
-    final end = lineno - (inclusive ? 0 : 1);
-    return lines.getRange(start, end - start + 1);
+    final end = lineno + (inclusive ? 1 : 0);
+    return lines.getRange(start, end);
   }
 
   /** Leave [nstates] current states stepping back [backtrack] lines. */

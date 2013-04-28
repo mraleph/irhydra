@@ -436,7 +436,7 @@ class Path {
   Path getSubPath(Segment currentSegment) {
     Path newPath = new Path(start: currentSegment.start, end: end);
     final idx = grownSegments.indexOf(currentSegment);
-    newPath.grownSegments = grownSegments.getRange(idx, grownSegments.length - idx);
+    newPath.grownSegments = grownSegments.getRange(idx, grownSegments.length);
     grownSegments = grownSegments.getRange(0, idx + 1);
     end = currentSegment.end;
     subPath = newPath;

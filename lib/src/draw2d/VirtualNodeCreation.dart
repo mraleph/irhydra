@@ -27,8 +27,8 @@ class VirtualNodeCreation extends RevertableChange {
     Node prevNode = edge.source;
     Node currentNode;
     Edge currentEdge;
-    nodes = new List<Node>.fixedLength(size);
-    edges = new List<Edge>.fixedLength(size + 1);
+    nodes = new List<Node>(size);
+    edges = new List<Edge>(size + 1);
     Insets padding = new Insets(0, edge.padding, 0, edge.padding);
     for (int i = 0; i < size; i++) {
       nodes[i] = currentNode = new Node(data: "Virtual$i:$edge");

@@ -28,5 +28,6 @@ class RankList {
     return ranks[rank];
   }
 
-  noSuchMethod(mirror) => mirror.invokeOn(ranks);
+  noSuchMethod(invocation) =>
+      mirrors.reflect(ranks).delegate(invocation);
 }

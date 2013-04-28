@@ -224,12 +224,12 @@ _createPath(path, color) {
 
 /** Compute loop nesting depth for every block */
 List<int> _computeLoopNesting(blocks) {
-  final loopNesting = new List.fixedLength(blocks.length, fill: 0);
+  final loopNesting = new List.filled(blocks.length, 0);
 
   final worklist = [];
   for (var block in blocks.values) {
     if (_isLoopHeader(block)) {
-      final marked = new List.fixedLength(blocks.length, fill: false);
+      final marked = new List.filled(blocks.length, false);
       loopNesting[block.id]++;
       marked[block.id] = true;
 

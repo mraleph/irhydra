@@ -80,12 +80,12 @@ class NeighborsIterator {
 class Node {
   int x = 0;
   int y = 0;
-  
+
   int width = 50;
   int height = 40;
 
   Insets padding;
-  
+
   /** Arbitrary data attached to this node. */
   var data;
   bool flag = false;
@@ -95,13 +95,13 @@ class Node {
 
   /** The edges for which this node is the source. */
   EdgeList outgoing = new EdgeList();
-  
+
   int index = 0;
   int rank = 0;
   double sortValue = 0.0;
   Node left, right;
-  List<Object> workingData = new List<Object>.fixedLength(3);
-  List<int> workingInts = new List<int>.fixedLength(4, fill: 0);
+  List<Object> workingData = new List<Object>(3);
+  List<int> workingInts = new List<int>.filled(4, 0);
 
   Node({this.data: null});
 

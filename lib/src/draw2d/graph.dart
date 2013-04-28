@@ -15,6 +15,7 @@
 library graph;
 
 import 'dart:math' as math;
+import 'dart:mirrors' as mirrors;
 
 part "BreakCycles.dart";
 part "CollapsedEdges.dart";

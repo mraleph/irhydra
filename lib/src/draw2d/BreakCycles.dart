@@ -159,7 +159,7 @@ class BreakCycles extends GraphVisitor {
     while (insert < list.length && list[insert].sortValue > node.sortValue) {
       insert++;
     }
-    list.insertRange(insert, 1, node);
+    list.insert(insert, node);
   }
 
   void updateIncoming(Node n) {

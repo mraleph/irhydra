@@ -39,17 +39,17 @@ class Code {
   bool get isEmpty => code.isEmpty;
 
   /** Return all instructions generated for the given block [name].  */
-  List codeOf(String name) => blocks.containsKey(name) ?
-      code.getRange(blocks[name].start, blocks[name].length) : const [];
+  Iterable codeOf(String name) => blocks.containsKey(name) ?
+      code.getRange(blocks[name].start,
+                    blocks[name].start + blocks[name].length) : const [];
 
   /** Return instructions emitted before the very first block. */
-  List get prologue => blocks.isEmpty ? const [] :
+  Iterable get prologue => blocks.isEmpty ? const [] :
       code.getRange(0, blocks.values.first.start);
 
   /** Return instructions emitted after the very last block */
-  List get epilogue => blocks.isEmpty ? const [] :
-      code.getRange(blocks.values.last.end,
-                    code.length - blocks.values.last.end);
+  Iterable get epilogue => blocks.isEmpty ? const [] :
+      code.getRange(blocks.values.last.end, code.length);
 }
 
 /** Instruction range. */
@@ -129,7 +129,7 @@ class CodeSplicer {
   /** Instructions for the current code region (block, prologue or epilogue). */
   final Iterator instructions;
 
-  CodeSplicer(this.pane, this.code, List instructions, this.mode)
+  CodeSplicer(this.pane, this.code, Iterable instructions, this.mode)
     : instructions = instructions.iterator;
 
   /**

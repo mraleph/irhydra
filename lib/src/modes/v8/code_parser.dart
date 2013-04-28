@@ -30,7 +30,7 @@ List<IR.Method> preparse(String text) =>
   (new PreParser(text)..parse()).methods;
 
 /** Parse given code dump. */
-Code parse(List<String> lines) => lines != null ?
+Code parse(Iterable<String> lines) => lines != null ?
   (new Parser(lines)..parse()).code : new Code.empty();
 
 /** Class that recognizes code disassembly and deoptimization events */
