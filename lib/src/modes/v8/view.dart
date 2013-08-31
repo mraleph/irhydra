@@ -65,6 +65,7 @@ displayIR(pane, method, ir, code, codeMode) {
                                            pane.href,
                                            type: xref.TOOLTIP);
   
+  // TODO(mraleph): allow makeFormatter to forward group captures to the formatting callbacks.
   final RANGE = new RegExp(r"^range:(-?\d+)_(-?\d+)(_m0)?$");
 
   // Formatter for HIR operands.
@@ -81,7 +82,7 @@ displayIR(pane, method, ir, code, codeMode) {
       return range;
     },
     r"changes\[[^\]]+\]": (val) => span(val == "changes[*]" ? 'hir-changes-all' : 'hir-changes', val),
-    r"type\[[^\]]+\]": (val) => span('hir-type', val),
+    r"type:\w+": (val) => span('hir-type', val.split(':').last),
   });
 
   // Formatter for LIR operands.
