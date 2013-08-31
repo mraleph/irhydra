@@ -11,3 +11,4 @@ packages
 .DS_Store
 .buildlog
 web/out
+deploy/
