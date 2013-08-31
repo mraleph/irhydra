@@ -41,19 +41,28 @@ class PreParser extends parsing.ParserBase {
 
   PreParser(text) : super(text.split('\n'));
 
+  enterMethod(name) {
+    currentMethod = new IR.Method(new IR.Name(name, null, name));
+    methods.add(currentMethod);
+  }
+
+  leaveMethod() { currentMethod = null; }
+
   get patterns => {
     // Start of the dump.
     r"^\-\-\- Optimized code \-\-\-$": {
       r"^name = ([\w.]*)$": (name) {  // Function name.
-        currentMethod = new IR.Method(new IR.Name(name, null, name));
-        methods.add(currentMethod);
+        enterMethod(name);
       },
 
       r"^Instructions": {  // Disassembly of the body.
         r"^\s+;;; Safepoint table": () {
           // Code is produced during the very last compilation phase.
+          if (currentMethod == null) {
+            enterMethod("");
+          }
           currentMethod.phases.add(new IR.Phase("Z_Code generation", code: subrange()));
-
+          leaveMethod();
           // Leave this (instructions) and outer (code) states.
           leave(nstates: 2);
         }
