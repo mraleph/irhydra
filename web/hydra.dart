@@ -14,7 +14,6 @@
 
 import "dart:async" as async;
 import "dart:html" as html;
-import "dart:uri";
 
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
@@ -137,8 +136,8 @@ main () {
   // Listen for onHashChange events to allow cross-references between ir and
   // graph tabs.
   html.window.onHashChange.listen((e) {
-    final from = new Uri(e.oldUrl).fragment;
-    final to = new Uri(e.newUrl).fragment;
+    final from = Uri.parse(e.oldUrl).fragment;
+    final to = Uri.parse(e.newUrl).fragment;
 
     if (to.startsWith("demo-")) {
       loadDemo(to);
@@ -169,7 +168,7 @@ main () {
     watchers.dispatch();  // Notify web_ui to keep tabs state in sync.
   });
 
-  final currentFragment = new Uri(html.window.location.href).fragment;
+  final currentFragment = Uri.parse(html.window.location.href).fragment;
   if (currentFragment.startsWith("demo-")) {
     // Wait until web_ui is fully initialized.
     new async.Timer(const Duration(milliseconds: 10), () {

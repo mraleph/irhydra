@@ -383,7 +383,7 @@ class DeoptAnnotator {
   }
 
   /** Marker matching the start of lithium environment. */
-  const LIR_ENVIROMENT_MARKER = "[id=";
+  static const LIR_ENVIROMENT_MARKER = "[id=";
 
   /** Returns [true] if bailout information is present in hydrogen.cfg. */
   _irContainsDeoptMapping() {

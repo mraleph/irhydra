@@ -274,7 +274,8 @@ _createMethodNode(method, displayPhase) {
     li.nodes.first.nodes.add(new BRElement());
   }
 
-  li.nodes.first.appendText(method.name.short);
+  final name = method.name.short.isEmpty ? "[?]" : method.name.short; 
+  li.nodes.first.appendText(name);
   final ul = li.nodes.last;
 
   for (var phase in method.phases) {

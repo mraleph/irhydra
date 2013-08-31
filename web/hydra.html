@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="components" href="packages/irhydra/src/ui/tabs.html">
+    <link rel="import" href="packages/irhydra/src/ui/tabs.html">
 
     <!--
       IRPane component comes with global CSS styles. See comments
       in irpane.html for details on why we are not using scoped styles
       for now.
       -->
-    <link rel="components" href="packages/irhydra/src/ui/irpane.html">
+    <link rel="import" href="packages/irhydra/src/ui/irpane.html">
     <link type="text/css" href="css/irpane.css" rel="stylesheet"/>
 
-    <link rel="components" href="packages/irhydra/src/modes/v8/descriptions.html">
+    <link rel="import" href="packages/irhydra/src/modes/v8/descriptions.html">
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -121,6 +121,7 @@
     <script type="text/javascript" src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/js/bootstrap.js"></script>
 
     <script type="application/dart" src="hydra.dart"></script>
+    <script src="packages/browser/interop.js"></script> 
     <script type="text/javascript" src="packages/browser/dart.js"></script>
     <form id="compilation-artifact-form"><input type="file" id="compilation-artifact" multiple="multiple" style="opacity: 0;"></form>
     <form id="llprof-artifact-form"><input type="file" id="llprof-artifact" style="opacity: 0;"></form>

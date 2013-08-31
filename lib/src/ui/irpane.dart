@@ -137,7 +137,7 @@ class IRPane extends WebComponent {
     final table = new TableElement();
     table.classes.add("irpane");
     table.nodes.addAll(
-        _table.nodes.getRange(range.start, range.start + range.length)
+        _table.nodes.sublist(range.start, range.start + range.length)
                     .map((elem) => elem.clone(true)));
     return toHtml(table);
   }
@@ -261,7 +261,7 @@ class _RefsPanel {
   var rightBorder;
 
   /** Padding between panel and surrounding borders. */
-  const PADDING = 5;
+  static const PADDING = 5;
 
   _RefsPanel(this.baselineOffset, this.rightBorder, content) {
     onScroll = document.window.onScroll.listen((e) => position());
