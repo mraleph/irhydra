@@ -64,7 +64,7 @@ displayIR(pane, method, ir, code, codeMode) {
   final makeValueRef = xref.makeReferencer(pane.rangeContentAsHtml,
                                            pane.href,
                                            type: xref.TOOLTIP);
-  
+
   // TODO(mraleph): allow makeFormatter to forward group captures to the formatting callbacks.
   final RANGE = new RegExp(r"^range:(-?\d+)_(-?\d+)(_m0)?$");
 
@@ -78,7 +78,7 @@ displayIR(pane, method, ir, code, codeMode) {
       final range = span('hir-range', "[${m.group(1)}, ${m.group(2)}]");
       if (m.group(3) != null) {
         range.appendHtml("&cup;{-0}");
-      }      
+      }
       return range;
     },
     r"changes\[[^\]]+\]": (val) => span(val == "changes[*]" ? 'hir-changes-all' : 'hir-changes', val),
@@ -187,9 +187,6 @@ decomposeLIR(lir, cb) {
 
 /** Annotates [IRPane] with deoptization markers. */
 class DeoptAnnotator {
-  /** [true] if deoptimization information is for 32bit platform. */
-  final is32Bit;
-
   /** [IRPane] that contains IR and native code to be annotated. */
   final pane;
 
@@ -202,8 +199,7 @@ class DeoptAnnotator {
 
   DeoptAnnotator(pane, method, this.ir, this.code)
       : pane = pane,
-        method = method,
-        is32Bit = are32BitDeopts(method.deopts);
+        method = method;
 
   annotateDeopts() {
     for (var deopt in method.deopts) {
@@ -211,24 +207,7 @@ class DeoptAnnotator {
     }
   }
 
-  /** Matches code comment outputted as a part of the deopt information. */
-  final lirReferenceRe = new RegExp(r"^\s+;+.*@(\d+)");
   annotateDeopt(deopt) {
-    // If we are on 32bit we can rely on the second line of the deopt
-    // that contains comment with lir reference.
-    if (is32Bit && deopt.raw.length > 2) {
-      final m = lirReferenceRe.firstMatch(deopt.raw[1]);
-      if (m != null) {
-        final lirId = _translateLirId(m.group(1));
-        createMarkerAt(lirId, deopt);
-        return;
-      }
-    }
-
-    // Either we are on x64 where comment printed together with the deopt
-    // has nothing to do with the actual deopt place or we are on ia32
-    // but there is a comment in between deopt point and a comment with a
-    // reference. In both cases we need to compute reverse mapping.
     if (bailoutsMapping == null) {
       // TODO(vegorov): fallback to ast id matching.
       document.query("#unmatched-deopt-warning").style.display = "block";
@@ -343,7 +322,7 @@ class DeoptAnnotator {
       }
     }
 
-    if (!is32Bit) {
+    if (!are32BitDeopts(method.deopts)) {
       // On x64 deoptimization jumps are indirect:
       //
       //   55 jo 174

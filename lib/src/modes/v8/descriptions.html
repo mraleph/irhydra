@@ -22,6 +22,11 @@
         <p>Conversion from a tagged representation to a 32-bit signed integer. Can be either truncating or exact (see if hydrogen counterpart is marked with <code>truncating-int32</code>.</p>
         <p>Deoptimizes when source is not representable in this format. Truncating conversions deoptimize when value is too big for an int32 type or not a number or <code>undefined</code>. Exact conversions deoptimize if <code>ToInt32(val) != val</code></p>
       </div>
+      <div data-lir="check-smi">
+        <p>Checks that value is a tagged smi (<b>sm</b>all <b>i</b>nteger): it is a tagged integer representation used by V8.</p>
+        <p>On 32bit platforms smi can contain 31-bit signed integers and on 64bit platforms they are wide enough for 32bit signed integers.</p>
+        <p>If numeric value does not fit into a smi it has to be boxed as a <em>heap number</em>.</p>
+      </div>
     </template>
     <script type="application/dart">
       import 'package:web_ui/web_ui.dart';

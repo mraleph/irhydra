@@ -61,11 +61,10 @@ class PreParser extends parsing.ParserBase {
     },
 
     // Start of the deoptimization event (we drop no-name deopts)
-    r"\*+ DEOPT: ([\w.]+) at bailout #(\d+),"
-    r" address 0x\d+, frame size \d+$": (method_name, bailout_id) {
+    r"^\[deoptimizing \(DEOPT \w+\): begin 0x[a-f0-9]+ ([\w$.]+) @(\d+)": (method_name, bailout_id) {
       // TODO(vegorov): add warning about lost deopts.
       enter({
-        r"^\[deoptimizing: end": () {
+        r"^\[deoptimizing \(\w+\): end": () {
           final deopt =
               new IR.Deopt(int.parse(bailout_id), subrange(inclusive: true));
 
@@ -109,11 +108,9 @@ class Parser extends parsing.ParserBase {
     },
 
     // Block start.
-    r"^\s+;;+ (B\d+)": (name) {
-      // Block's lithium label is emitted one line before the block comment
-      // itself.
-      if (block != null) block.end = _code.length - 1;
-      blocks[name] = block = new Range(_code.length - 1);
+    r"^\s+;;; <@\d+,#\d+> \-+ (B\d+)": (name) {
+      if (block != null) block.end = _code.length;
+      blocks[name] = block = new Range(_code.length);
     },
 
     // Comment.
