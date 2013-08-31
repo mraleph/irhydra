@@ -25,6 +25,8 @@ import 'package:irhydra/src/xref.dart' as xref;
 
 import 'package:js/js.dart' as js;
 
+final lirIdMarker = new RegExp(r"<@(\d+),#\d+>");
+
 /** Display given [ir] and [code] belonging to the [method]. */
 displayIR(pane, method, ir, code, codeMode) {
   final descriptions = document.query("#v8-ir-descriptions").xtag;
@@ -115,11 +117,22 @@ displayIR(pane, method, ir, code, codeMode) {
     decomposeLIR(block.lir, (id, opcode, operands) {
       // Lithium ids are multiplied by 2 in the hydrogen.cfg (artifact of
       // the register allocation architecture).
-      codeSplicer.emitUntil("@${int.parse(id) ~/ 2}");
+      final lirId = int.parse(id) ~/ 2;
+      codeSplicer.emitUntil("@${lirId}");
 
       var ln = add("lir", id, opcode, operands, formatLir);
       ln.gutter.classes.add("lir-gutter");
       ln.text.classes.add("lir-line");
+
+      // If we found marker that signifies start of the instructions emitted for
+      // this lithium instruction then emit this instructions until something
+      // that looks like a marker for the next instruction is reached.
+      // This tries to workaround cases when some instructions from lithium
+      // level (e.g. goto) produce no code and their markers are not present in the
+      // resulting code comments.
+      if (codeSplicer.isAfterMarker("@${lirId}")) {
+        codeSplicer.emitWhile((comment) => !lirIdMarker.hasMatch(comment));
+      }
     });
 
     // Rest of the native code for the block (jumps and parallel moves).

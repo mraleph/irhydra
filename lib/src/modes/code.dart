@@ -127,15 +127,19 @@ class CodeSplicer {
   final Code code;
 
   /** Instructions for the current code region (block, prologue or epilogue). */
-  final Iterator instructions;
+  final List instructions;
+  var currentPos = 0;
 
   CodeSplicer(this.pane, this.code, Iterable instructions, this.mode)
-    : instructions = instructions.iterator;
+    : instructions = instructions.toList();
 
   /**
    * If code is displayed inline ([mode] is [CODE_MODE_INLINE]) then display
    * instructions from the current code region until a comment containing
    * given textual marker is reached.
+   *
+   * If marker is not found then nothing is displayed. This is used to battle situations
+   * when IR instructions that are present in IR-dump are not present in the generated code.
    *
    * Marker itself will not be displayed because it is assumed to contain the
    * same information that a displayed IR-instruction has.
@@ -145,8 +149,31 @@ class CodeSplicer {
       return;
     }
 
-    while (instructions.moveNext() && !_atMarker(marker)) {
-      _display(instructions.current);
+    final nextPos = _nextMarker(marker);
+    if (nextPos == null) return;
+
+    for (var i = currentPos; i < nextPos; i++) {
+      _display(instructions[i]);
+    }
+
+    currentPos = nextPos + 1;
+  }
+
+  /**
+   * If code is diplayed inline then display instructions until [test] function
+   * returns [false] for one of the encountered comments.
+   */
+  emitWhile(Function test) {
+    if (mode != CODE_MODE_INLINE) {
+      return;
+    }
+
+    while (currentPos < instructions.length) {
+      final current = instructions[currentPos++];
+      if (current is Comment && !test(current.comment)) {
+        break;
+      }
+      _display(current);
     }
   }
 
@@ -154,15 +181,31 @@ class CodeSplicer {
   emitRest() {
     if (mode == CODE_MODE_NONE) return;
 
-    while (instructions.moveNext()) {
-      _display(instructions.current);
+    for (var i = currentPos; i < instructions.length; i++) {
+      _display(instructions[i]);
     }
   }
 
-  /** Check if we reached a [Comment] containing given textual marker. */
-  _atMarker(String marker) =>
-    instructions.current is Comment &&
-    instructions.current.comment.contains(marker);
+  /**
+   * Check if we reached a [Comment] containing given textual marker and
+   * standing right after it.
+   */
+  isAfterMarker(marker) =>
+      0 < currentPos && currentPos < instructions.length &&
+      _atMarker(instructions[currentPos - 1], marker);
+
+  static _atMarker(instr, marker) =>
+    instr is Comment && instr.comment.contains(marker);
+
+  /** Find next occurence of the given marker in comments. */
+  _nextMarker(marker) {
+    for (var i = currentPos; i < instructions.length; i++) {
+      if (_atMarker(instructions[i], marker)) {
+        return i;
+      }
+    }
+    return null;
+  }
 
   /** Output a single instruction to the [IRPane]. */
   _display(instr) {
