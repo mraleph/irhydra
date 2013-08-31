@@ -64,13 +64,22 @@ displayIR(pane, method, ir, code, codeMode) {
   final makeValueRef = xref.makeReferencer(pane.rangeContentAsHtml,
                                            pane.href,
                                            type: xref.TOOLTIP);
+  
+  final RANGE = new RegExp(r"^range:(-?\d+)_(-?\d+)(_m0)?$");
 
   // Formatter for HIR operands.
   final formatHir = formatting.makeFormatter({
     r"0x[a-f0-9]+": (val) => span('hir-constant', val),
     r"B\d+\b": makeBlockRef,
-    r"[xtvid]\d+\b": makeValueRef,
-    r"range\[[^\]]+\]": (val) => span('hir-range', val),
+    r"[xstvid]\d+\b": makeValueRef,
+    r"range:[^\s]+": (val) {
+      final m = RANGE.firstMatch(val);
+      final range = span('hir-range', "[${m.group(1)}, ${m.group(2)}]");
+      if (m.group(3) != null) {
+        range.appendHtml("&cup;{-0}");
+      }      
+      return range;
+    },
     r"changes\[[^\]]+\]": (val) => span(val == "changes[*]" ? 'hir-changes-all' : 'hir-changes', val),
     r"type\[[^\]]+\]": (val) => span('hir-type', val),
   });
@@ -129,7 +138,7 @@ displayIR(pane, method, ir, code, codeMode) {
 }
 
 /** Single HIR instruction from the hydrogen.cfg. */
-final hirLineRe = new RegExp(r"^\s+\d+\s+\d+\s+([xtvid]\d+)\s+([-\w]+)\s*(.*)<");
+final hirLineRe = new RegExp(r"^\s+\d+\s+\d+\s+([xstvid]\d+)\s+([-\w]+)\s*(.*)<");
 
 /** Parses hydrogen instructions into SSA name, opcode and operands. */
 decomposeHIR(hir, cb) {
