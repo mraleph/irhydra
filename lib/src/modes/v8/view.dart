@@ -215,6 +215,7 @@ class DeoptAnnotator {
         method = method;
 
   annotateDeopts() {
+    document.query("#unmatched-deopt-warning").style.display = "none";
     for (var deopt in method.deopts) {
       annotateDeopt(deopt);
     }
@@ -222,7 +223,6 @@ class DeoptAnnotator {
 
   annotateDeopt(deopt) {
     if (bailoutsMapping == null) {
-      // TODO(vegorov): fallback to ast id matching.
       document.query("#unmatched-deopt-warning").style.display = "block";
       return;
     }
@@ -287,101 +287,28 @@ class DeoptAnnotator {
   final commentLirReferenceRe = new RegExp(r"@(\d+)");
 
   /**
-   * Try computing bailout id to lir id mapping.
-   *
-   * For newer V8 (from 3.17.1) this information can be extracted from lithium
-   * environments dumped to hydrogen.cfg.
-   *
-   * For older V8's it can only be extracted from native code disassembly by
-   * finding [bailoutRe] comments.
+   * Try computing bailout id to lir id mapping based on the deopt_ids
+   * emitted as part of Lithium environments (available since 3.17.1).
    */
   computeBailoutsMapping() {
     // On newer V8 deopt id is printed as part of the lithium environment.
-    if (_irContainsDeoptMapping()) {
-      final mapping = new Map<int, String>();
-      recordMapping(lirId, deoptId) =>
-          mapping[int.parse(deoptId)] = lirId;
-
-      for (var block in ir.values) {
-        if (block.lir != null) {
-          for (var line in block.lir) {
-            parsing.match(line, deoptIdRe, recordMapping);
-          }
-        }
-      }
-
-      return mapping;
-    }
-
-    // Disassembly is not available. There is no other reliable way to compute
-    // required mapping. Give up.
-    if (code == null) {
+    if (!_irContainsDeoptMapping()) {
       return null;
     }
 
-    // First find all comments mentioning bailout id.
-    final bailoutPos = new Map<int, int>();
+    final mapping = new Map<int, String>();
+    recordMapping(lirId, deoptId) =>
+        mapping[int.parse(deoptId)] = lirId;
 
-    final instructions = code.code;
-    for (var i = 0; i < instructions.length; i++) {
-      final instr = instructions[i];
-      if ((instr is Instruction || instr is Jump) && instr.comment != null) {
-        parsing.match(instr.comment, bailoutRe, (bailout) {
-          final id = int.parse(bailout);
-          if (!bailoutPos.containsKey(id)) {
-            bailoutPos[id] = i;
-          }
-        });
-      }
-    }
-
-    if (!are32BitDeopts(method.deopts)) {
-      // On x64 deoptimization jumps are indirect:
-      //
-      //   55 jo 174
-      //     ...
-      //  174 REX.W movq r10, 0x2564c493c00a    ;; deoptimization bailout 1
-      //  160 jnz 213
-      //
-
-      // Build reverse mapping of offsets to bailouts.
-      final bailoutByOffs = new Map<int, int>();
-      for (var id in bailoutPos.keys) {
-        final pos = bailoutPos[id];
-        final instr = instructions[pos];
-        bailoutByOffs[instr.offset] = id;
-      }
-
-      bailoutPos.clear();  // Discard everything collected so far.
-
-      // Find jumps that lead to bailout jumps and record them as bailouts.
-      for (var i = 0; i < instructions.length; i++) {
-        final instr = instructions[i];
-        if (instr is Jump && bailoutByOffs.containsKey(instr.target)) {
-          final id = bailoutByOffs[instr.target];
-          bailoutPos[id] = i;
+    for (var block in ir.values) {
+      if (block.lir != null) {
+        for (var line in block.lir) {
+          parsing.match(line, deoptIdRe, recordMapping);
         }
       }
     }
 
-    // Now relate bailout positions to lir instructions searching backwards from
-    // the bailout point for a comment that contains lir id reference.
-    final bailoutToLir = new Map<int, String>();
-
-    for (var id in bailoutPos.keys) {
-      recordMapping(lirId) => bailoutToLir[id] = _translateLirId(lirId);
-
-      for (var pos = bailoutPos[id]; pos >= 0; pos--) {
-        final instr = instructions[pos];
-        if (instr is Comment &&
-            instr.comment != null &&
-            parsing.match(instr.comment, commentLirReferenceRe, recordMapping)) {
-          break;
-        }
-      }
-    }
-
-    return bailoutToLir;
+    return mapping;
   }
 
   /** Marker matching the start of lithium environment. */

@@ -73,7 +73,9 @@
               <div data-title="IR" data-href="ir">
                 <div class="alert alert-block" style="display: none;" id="unmatched-deopt-warning">
                   <button type="button" class="close" on-click="$event.target.parent.style.display = 'none';">&times;</button>
-                  <h4>Unable to match deopt to lithium</h4> Need either V8 newer than 3.17.1 or disassembly of optimized code.
+                  <h4>Unable to match deopt to lithium</h4>
+                  <p>This function has deoptimizations recorded but this phase does not contain information needed to match deopt position to LIR instruction</p>
+                  <p>Make sure that you are using at least V8 3.17.1 and open <em>Code Generation</em> phase.</p>
                 </div>
                 <div class="ir-quick-links"></div>
                 <div is="x-irpane" id="ir-pane">
