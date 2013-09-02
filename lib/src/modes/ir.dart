@@ -66,7 +66,10 @@ class Deopt {
   /** Additional textual information about the deoptimization. */
   final raw;
 
-  Deopt(this.id, this.raw);
+  /** [true] is this deoptimization was lazy (forced on return to this execution frame). */
+  final bool isLazy;
+
+  Deopt(this.id, this.raw, { this.isLazy: false });
 }
 
 /**

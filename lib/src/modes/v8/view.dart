@@ -235,9 +235,12 @@ class DeoptAnnotator {
   createMarkerAt(lirId, deopt) {
     assert(lirId != null);
 
+    // Consider lazy deoptimizations less important compared to eager (check failures) deopts.
+    final labelType = deopt.isLazy ? 'label-warning' : 'label-important';
+
     // Create a marker with a popover containing raw deopt information.
     final marker = new SpanElement()
-        ..classes.addAll(['label', 'label-important', 'deopt-marker'])
+        ..classes.addAll(['label', labelType, 'deopt-marker'])
         ..text = "deopt";
 
     js.scoped(() {
@@ -257,7 +260,7 @@ class DeoptAnnotator {
 
     // Create quick link to the deopt line.
     final link = new AnchorElement(href: "#${pane.href(lirId)}")
-        ..classes.addAll(['label', 'label-important'])
+        ..classes.addAll(['label', labelType])
         ..text = "deopt @${lirId}";
     document.query(".ir-quick-links").nodes.add(link);
   }

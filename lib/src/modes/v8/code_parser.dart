@@ -70,12 +70,12 @@ class PreParser extends parsing.ParserBase {
     },
 
     // Start of the deoptimization event (we drop no-name deopts)
-    r"^\[deoptimizing \(DEOPT \w+\): begin 0x[a-f0-9]+ ([\w$.]+) @(\d+)": (method_name, bailout_id) {
+    r"^\[deoptimizing \(DEOPT (\w+)\): begin 0x[a-f0-9]+ ([\w$.]+) @(\d+)": (type, method_name, bailout_id) {
       // TODO(vegorov): add warning about lost deopts.
       enter({
         r"^\[deoptimizing \(\w+\): end": () {
           final deopt =
-              new IR.Deopt(int.parse(bailout_id), subrange(inclusive: true));
+              new IR.Deopt(int.parse(bailout_id), subrange(inclusive: true), isLazy: type == "lazy");
 
           // There is no reliable way to match deopt to the code where it
           // occured so we just attach it to the last code object with the
