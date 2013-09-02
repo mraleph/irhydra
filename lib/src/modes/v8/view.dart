@@ -75,7 +75,7 @@ displayIR(pane, method, ir, code, codeMode) {
     r"0x[a-f0-9]+": (val) => span('hir-constant', val),
     r"B\d+\b": makeBlockRef,
     r"[xstvid]\d+\b": makeValueRef,
-    r"range:[^\s]+": (val) {
+    r"range:[-\d_m]+": (val) {
       final m = RANGE.firstMatch(val);
       final range = span('hir-range', "[${m.group(1)}, ${m.group(2)}]");
       if (m.group(3) != null) {
