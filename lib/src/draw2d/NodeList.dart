@@ -15,30 +15,27 @@ part of graph;
  * @author hudsonr
  * @since 2.1.2
  */
-class NodeList {
-  final list = new List<Node>();
-  noSuchMethod(invocation) =>
-      mirrors.reflect(list).delegate(invocation);
-  
+class NodeList extends ListBase<Node> {
+
   NodeList([NodeList other]) {
     if (other != null) {
       list.addAll(other.list);
     }
   }
-  
+
   void adjustRankSimple(int delta) {
     if (delta == 0) return;
     for (var node in this) node.rank += delta;
   }
-  
+
   void resetSortValues() {
     for (var node in this) node.sortValue = 0.0;
   }
-  
+
   void resetIndices() {
     for (var node in this) node.index = 0;
   }
-  
+
   void normalizeRanks() {
     int minRank = Integer.MAX_VALUE;
     for (var node in this) {
@@ -46,13 +43,10 @@ class NodeList {
     }
     adjustRankSimple(-minRank);
   }
-  
+
   void resetFlags() {
     for (var node in this) {
       node.flag = false;
     }
   }
-  
-  // TODO(vegorov) remove when dartbug.com/8075 is fixed 
-  remove(e) => Collections.remove(list, e);
 }

@@ -15,7 +15,7 @@
 library graph;
 
 import 'dart:math' as math;
-import 'dart:mirrors' as mirrors;
+import 'dart:collection' as collection;
 
 part "BreakCycles.dart";
 part "CollapsedEdges.dart";
@@ -113,4 +113,14 @@ class NullMap {
     if (key == null) { nullValue = value; return; }
     map[key] = value;
   }
+}
+
+/** A helper class to quickly implement lists backed by built-in list type. */
+class ListBase<T> extends collection.ListBase<T> {
+  final list = new List<T>();
+
+  T operator[] (index) => list[index];
+  operator[]=(index, T value) { list[index] = value; }
+  get length => list.length;
+  set length(value) { list.length = value; }
 }

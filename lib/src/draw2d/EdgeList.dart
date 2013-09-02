@@ -15,12 +15,7 @@ part of graph;
  * @author hudsonr
  * @since 2.1.2
  */
-class EdgeList {
-  final list = new List<Edge>();
-  noSuchMethod(invocation) =>
-      mirrors.reflect(list).delegate(invocation);
-
-
+class EdgeList extends ListBase<Edge> {
   int getSourceIndex(int i) {
     return this[i].source.index;
   }

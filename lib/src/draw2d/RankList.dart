@@ -15,19 +15,14 @@ part of graph;
  * @author hudsonr
  * @since 2.1.2
  */
-class RankList {
-  final ranks = <Rank>[];
-
+class RankList extends ListBase<Rank> {
   /**
    * Returns the specified rank.
    * @param rankthe row
    * @return the rank
    */
   Rank operator [](int rank) {
-    while (ranks.length <= rank) ranks.add(new Rank());
-    return ranks[rank];
+    while (list.length <= rank) list.add(new Rank());
+    return list[rank];
   }
-
-  noSuchMethod(invocation) =>
-      mirrors.reflect(ranks).delegate(invocation);
 }
