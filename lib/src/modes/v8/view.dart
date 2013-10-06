@@ -327,9 +327,8 @@ class DeoptAnnotator {
     for (var block in ir.values) {
       if (block.lir != null) {
         for (var line in block.lir) {
-          if (line.contains(LIR_ENVIROMENT_MARKER)) {
-            // Does environment contain a deopt_id data?
-            return deoptIdRe.hasMatch(line);
+          if (line.contains(LIR_ENVIROMENT_MARKER) && deoptIdRe.hasMatch(line)) {
+            return true;
           }
         }
       }

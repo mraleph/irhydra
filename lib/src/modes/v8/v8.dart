@@ -113,6 +113,10 @@ class Mode extends BaseMode {
       // always contains only one.
       ir[i].phases.last.code = code[j].phases.last.code;
       ir[i].deopts.addAll(code[j].deopts);
+
+      // There can be no other code objects attributed to this IR.
+      // Advance past it.
+      i++;
     }
 
     methods = ir;
