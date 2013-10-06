@@ -4,19 +4,19 @@ packages:
   analyzer_experimental:
     description: analyzer_experimental
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   args:
     description: args
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   barback:
     description: barback
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   browser:
     description: browser
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   csslib:
     description: csslib
     source: hosted
@@ -24,7 +24,7 @@ packages:
   custom_element:
     description: custom_element
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   html5lib:
     description: html5lib
     source: hosted
@@ -32,56 +32,52 @@ packages:
   js:
     description: js
     source: hosted
-    version: "0.0.24"
+    version: "0.0.25"
   logging:
     description: logging
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   mdv:
     description: mdv
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   meta:
     description: meta
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   mutation_observer:
     description: mutation_observer
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   observe:
     description: observe
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   path:
     description: path
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   pathos:
     description: pathos
     source: hosted
     version: "0.6.3+1"
-  serialization:
-    description: serialization
-    source: hosted
-    version: "0.6.21+3"
   source_maps:
     description: source_maps
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   unittest:
     description: unittest
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   unmodifiable_collection:
     description: unmodifiable_collection
     source: hosted
-    version: "0.6.21+3"
+    version: "0.7.5"
   web_ui:
     description: web_ui
     source: hosted
-    version: "0.4.18+2"
+    version: "0.4.21"
