@@ -106,17 +106,24 @@ class Mode extends BaseMode {
     // graph.
     var i = 0;
     for (var j = 0; j < code.length; j++) {
-      while (code[j].name.full != ir[i].name.full) i++;
+      var currentIr = i;
+      while (currentIr < ir.length && code[j].name.full != ir[currentIr].name.full) currentIr++;
 
-      // Move code and deopt information to the method with IR as it
-      // can contain information about multiple phases and method with code
-      // always contains only one.
-      ir[i].phases.last.code = code[j].phases.last.code;
-      ir[i].deopts.addAll(code[j].deopts);
+      // We are going to ignore code objects without IR artifacts.
+      if (currentIr < ir.length) {
+        // Move code and deopt information to the method with IR as it
+        // can contain information about multiple phases and method with code
+        // always contains only one.
+        ir[currentIr].phases.last.code = code[j].phases.last.code;
+        ir[currentIr].deopts.addAll(code[j].deopts);
 
-      // There can be no other code objects attributed to this IR.
-      // Advance past it.
-      i++;
+        // There can be no other code objects attributed to this IR.
+        // Advance past it.
+        i = currentIr + 1;
+      } else {
+        // Report ignored code object to console for debugging purposes.
+        print("Ignoring code artifact for '${code[j].name.full}'. It doesn't have IR graph.");
+      }
     }
 
     methods = ir;
