@@ -11,4 +11,5 @@ packages
 .DS_Store
 .buildlog
 web/out
+web/precompiled.js
 deploy/
