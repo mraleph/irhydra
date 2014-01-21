@@ -137,11 +137,9 @@ connectDOM() {
 
 /** Keeps method list height within windows size boundaries. */
 _resizeMethodsList() {
-  js.scoped(() {
-    final top = js.context.jQuery(_methodsList).offset().top;
-    final windowHeight = js.context.jQuery(js.context.window).height();
-    _methodsList.style.height = "${windowHeight - top - 20}px";
-  });
+  final top = js.context.jQuery(_methodsList).offset().top;
+  final windowHeight = js.context.jQuery(js.context.window).height();
+  _methodsList.style.height = "${windowHeight - top - 20}px";
 }
 
 /** Switch current sorting criteria to the new one and sort [currentMethods]. */

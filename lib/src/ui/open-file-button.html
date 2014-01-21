@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<polymer-element name="open-file-button" apply-author-styles>
+  <template>
+    <style scoped>
+      input[type=file] {
+        visibility: hidden;
+        width: 0px;
+        height: 0px;
+        margin: 0px;
+        padding: 0px;
+      }
+
+      span {
+        position: absolute;
+        width: 0px;
+        height: 0px;
+        overflow: hidden;
+      }
+
+      button {
+        background: #2C3E50;
+        border: 0px;
+        color: white;
+        width: 40px;
+        height: 40px;
+        font-size: 16pt;
+      }
+
+      button:hover {
+        background: #34495E;
+      }
+    </style>
+    <span>
+      <input id="file-input" type="file" multiple="multiple" on-change="{{changed}}">
+    </span>
+    <button on-click="{{clicked}}"><content></content></button>
+  </template>
+  <script src="open-file-button.dart" type="application/dart"></script>
+</polymer-element>

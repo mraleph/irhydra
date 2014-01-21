@@ -15,6 +15,7 @@
 /** Parser for hydrogen.cfg files. */
 library hydrogen_parser;
 
+import 'package:irhydra/src/formatting.dart' as formatting;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
@@ -88,6 +89,8 @@ class CfgParser extends parsing.ParserBase {
     r"begin_block": {
       r'name "([^"]*)"': (name) {
         block = builder.block(name);
+        block.hirParser = parseHir;
+        block.lirParser = parseLir;
       },
 
       r"successors(.*)$": (successors) {
@@ -125,4 +128,198 @@ class CfgParser extends parsing.ParserBase {
       }
     },
   };
+}
+
+/** Single HIR instruction from the hydrogen.cfg. */
+final hirLineRe = new RegExp(r"^\s+\d+\s+\d+\s+(\w\d+)\s+([-\w]+)\s*(.*)<");
+
+class Constant extends IR.Operand {
+  final text;
+  Constant(this.text);
+
+  get tag => "constant";
+}
+
+class Range extends IR.Operand {
+  final low;
+  final high;
+  final m0;
+  Range(this.low, this.high, this.m0);
+
+  get tag => "range";
+  get text => "[${low}, ${high}]" + (m0 ? "\u222A{-0}" : "");
+}
+
+class Changes extends IR.Operand {
+  final changes;
+  Changes(this.changes);
+
+  get changesAll => changes == "changes[*]";
+
+  get tag => changesAll ? "changes-all" : "changes";
+  get text => changes;
+}
+
+class Type extends IR.Operand {
+  final text;
+  Type(this.text);
+
+  get tag => "type";
+}
+
+final hirOperands = formatting.makeSplitter({
+  r"0x[a-f0-9]+": (val) => new Constant(val),
+  r"B\d+\b": (val) => new IR.BlockRef(val),
+  r"\w\d+\b": (val) => new IR.ValRef(val),
+  r"range:(-?\d+)_(-?\d+)(_m0)?": (low, high, m0) => new Range(low, high, m0 != null),
+  r"changes\[[^\]]+\]": (val) => new Changes(val),
+  r"type:\w+": (val) => new Type(val.split(':').last),
+});
+
+/** Parses hydrogen instructions into SSA name, opcode and operands. */
+parseHir(hir) {
+  return hir.map((line) {
+    final m = hirLineRe.firstMatch(line);
+    if (m == null) return null;
+
+    final id = m.group(1);
+    final opcode = m.group(2);
+    final operands = m.group(3);
+
+    return new IR.Instruction(line, id, opcode, hirOperands(operands));
+  }).where((instr) => instr != null);
+}
+
+/** Single LIR instruction from hydrogen.cfg. */
+final lirLineRe = new RegExp(r"^\s+(\d+)\s+([-\w]+)\s*(.*)<");
+
+/** Matches ignored gap moves inserted by lithium-allocator. */
+final lirLineIgnoredMovesRe = new RegExp(r"\(0\) = \[[^\]]+\];");
+
+/** Matches redundant gap moves inserted by lithium-allocator. */
+final lirLineRedundantMovesRe = new RegExp(r"([^ ])\[[^\]]+\];");
+
+class DeoptEnv extends IR.Operand {
+  final text;
+  DeoptEnv(this.text);
+
+  get tag => "env";
+}
+
+class StackMap extends IR.Operand {
+  final text;
+  StackMap(this.text);
+
+  get tag => "map";
+}
+
+// Formatter for LIR operands.
+final lirOperands = formatting.makeSplitter({
+  r"\[id=.+\]?\]": (val) => new DeoptEnv(val),
+  r"{[^}]+}": (val) => new StackMap(val),
+  r"B\d+\b": (val) => new IR.BlockRef(val),
+});
+
+parseLir(lir) {
+  return lir.map((line) {
+    final m = lirLineRe.firstMatch(line);
+    if (m == null) return null;
+
+    // Lithium ids are multiplied by 2 in the hydrogen.cfg (artifact of
+    // the register allocation architecture).
+    final id = int.parse(m.group(1)) ~/ 2;
+    final opcode = m.group(2);
+
+    var operands = m.group(3);
+    if (opcode == "label" || opcode == "gap") {
+      operands = operands.replaceAll(lirLineIgnoredMovesRe, "")
+                         .replaceAll("()", "")
+                         .replaceAllMapped(lirLineRedundantMovesRe,
+                                           (m) => m.group(1))
+                         .replaceAll(new RegExp(r"\s+"), " ");
+      if (!operands.contains("=")) return null;  // No moves left?
+    }
+
+    return new IR.Instruction(line, "$id", opcode, lirOperands(operands));
+  }).where((instr) => instr != null);
+}
+
+class DeoptMatcher {
+  final ir;
+  
+  static resolve(deopts, ir) => new DeoptMatcher(ir).matchAll(deopts);
+
+  DeoptMatcher(this.ir) {
+    bailoutsMapping = computeBailoutsMapping();
+  }
+
+  matchAll(deopts) => deopts.forEach(match);
+
+  match(IR.Deopt deopt) {
+    if (bailoutsMapping == null) {
+      return;
+    }
+
+    deopt.lirId = bailoutsMapping[deopt.id];
+  }
+  
+  /** A mapping from bailout ids to lir ids. */
+  var bailoutsMapping;
+
+  /** Matches bailout id comment attached to the jump or mov instructions. */
+  final bailoutRe = new RegExp(r"^deoptimization bailout (\d+)");
+
+  /** Matches deopt_id data stored in lithium environment in hydrogen.cfg. */
+  final deoptIdRe = new RegExp(r"^\s+(\d+)\s+.*deopt_id=(\d+)");
+
+  /** Matches lir id embedded into code comment. */
+  final commentLirReferenceRe = new RegExp(r"@(\d+)");
+
+  /**
+   * Try computing bailout id to lir id mapping based on the deopt_ids
+   * emitted as part of Lithium environments (available since 3.17.1).
+   */
+  computeBailoutsMapping() {
+    // On newer V8 deopt id is printed as part of the lithium environment.
+    if (!_irContainsDeoptMapping()) {
+      return null;
+    }
+
+    final mapping = new Map<int, String>();
+    recordMapping(lirId, deoptId) =>
+        mapping[int.parse(deoptId)] = lirId;
+
+    for (var block in ir.values) {
+      if (block.lir != null) {
+        for (var line in block.lir) {
+          parsing.match(line, deoptIdRe, recordMapping);
+        }
+      }
+    }
+
+    return mapping;
+  }
+
+  /** Marker matching the start of lithium environment. */
+  static const LIR_ENVIROMENT_MARKER = "[id=";
+
+  /** Returns [true] if bailout information is present in hydrogen.cfg. */
+  _irContainsDeoptMapping() {
+    if (ir == null) {
+      return false;
+    }
+
+    // Try every lir line for a match with environment marker.
+    for (var block in ir.values) {
+      if (block.lir != null) {
+        for (var line in block.lir) {
+          if (line.contains(LIR_ENVIROMENT_MARKER) && deoptIdRe.hasMatch(line)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
 }

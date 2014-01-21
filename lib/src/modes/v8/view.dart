@@ -29,25 +29,23 @@ final lirIdMarker = new RegExp(r"<@(\d+),#\d+>");
 
 /** Display given [ir] and [code] belonging to the [method]. */
 displayIR(pane, method, ir, code, codeMode) {
-  final descriptions = document.query("#v8-ir-descriptions").xtag;
+  //final descriptions = document.query("#v8-ir-descriptions").xtag;
 
   // Format IR instruction opcode. If description is available link create a
   // popover.
   formatOpcode(ns, opcode) {
     final element = span('boldy', opcode);
 
-    final desc = descriptions.lookup(ns, opcode);
+    final desc = null; // descriptions.lookup(ns, opcode);
     if (desc != null) {
-      js.scoped(() {
-        js.context.jQuery(element).popover(js.map({
-          "title": opcode,
-          "content": desc,
-          "trigger": "hover",
-          "placement": "bottom",
-          "html": true,
-          "container": "body"
-        }));
-      });
+      js.context.jQuery(element).popover(js.map({
+        "title": opcode,
+        "content": desc,
+        "trigger": "hover",
+        "placement": "bottom",
+        "html": true,
+        "container": "body"
+      }));
     }
 
     return element;
@@ -74,7 +72,7 @@ displayIR(pane, method, ir, code, codeMode) {
   final formatHir = formatting.makeFormatter({
     r"0x[a-f0-9]+": (val) => span('hir-constant', val),
     r"B\d+\b": makeBlockRef,
-    r"[xstvid]\d+\b": makeValueRef,
+    r"\w\d+\b": makeValueRef,
     r"range:[-\d_m]+": (val) {
       final m = RANGE.firstMatch(val);
       final range = span('hir-range', "[${m.group(1)}, ${m.group(2)}]");
@@ -145,14 +143,14 @@ displayIR(pane, method, ir, code, codeMode) {
   new CodeSplicer(pane, code, code.epilogue, codeMode).emitRest();
 
   // Create deoptimiztion markers and quick links to them.
-  document.query(".ir-quick-links").nodes.clear();
+  // document.query(".ir-quick-links").nodes.clear();
   if (!method.deopts.isEmpty) {
     DeoptAnnotator.annotate(pane, method, ir, code);
   }
 }
 
 /** Single HIR instruction from the hydrogen.cfg. */
-final hirLineRe = new RegExp(r"^\s+\d+\s+\d+\s+([xstvid]\d+)\s+([-\w]+)\s*(.*)<");
+final hirLineRe = new RegExp(r"^\s+\d+\s+\d+\s+(\w\d+)\s+([-\w]+)\s*(.*)<");
 
 /** Parses hydrogen instructions into SSA name, opcode and operands. */
 decomposeHIR(hir, cb) {
@@ -243,18 +241,16 @@ class DeoptAnnotator {
         ..classes.addAll(['label', labelType, 'deopt-marker'])
         ..text = "deopt";
 
-    js.scoped(() {
-      final divElement = new PreElement()
-          ..appendText(deopt.raw.join('\n'));
-      final raw = toHtml(divElement);
-      js.context.jQuery(marker).popover(js.map({
-        "title": "",
-        "content": "${raw}",
-        "placement": "bottom",
-        "html": true,
-        "container": 'body'
-      })).data('popover').tip().addClass('deopt');
-    });
+    final divElement = new PreElement()
+        ..appendText(deopt.raw.join('\n'));
+    final raw = toHtml(divElement);
+    js.context.jQuery(marker).popover(js.map({
+      "title": "",
+      "content": "${raw}",
+      "placement": "bottom",
+      "html": true,
+      "container": 'body'
+    })).data('popover').tip().addClass('deopt');
 
     pane.line(lirId).text.append(marker);
 

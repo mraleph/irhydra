@@ -115,9 +115,7 @@ connectToFileInput(name, action) {
 
   return () {
     html.query("#${name}-artifact-form").reset();
-    js.scoped(() {
-      js.context.jQuery(input).click();
-    });
+    js.context.jQuery(input).click();
   };
 }
 

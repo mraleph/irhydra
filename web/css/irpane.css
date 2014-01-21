@@ -1,13 +1,12 @@
 .irpane {
   font-family: monospace;
-  border: 1px solid #EEE;
 }
 
 .irpane > tr > td:first-child,
 .irpane > tbody > tr > td:first-child {
   background-color: #F7F7F7;
   border-right: 1px solid #EEE;
-  min-width: 2em;
+  min-width: 4em;
   color: #AAA;
   text-align: right;
   padding-right: 2px;

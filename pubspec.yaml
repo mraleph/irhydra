@@ -1,5 +1,9 @@
 name: irhydra
 dependencies:
-  js: any
   browser: any
-  web_ui: any
+  js: any
+  polymer: any
+transformers:
+- polymer:
+    entry_points: web/index.html
+

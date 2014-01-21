@@ -72,7 +72,7 @@ display(pane, blocks, attachRef, {blockTicks}) {
 
     final rect = _createRect(x: node.x, y: node.y,
                              width: node.width, height: node.height,
-                             r: 5,
+                             r: 0,
                              fill: _selectFill(hotness == null ? loopNesting[block.id] : hotness[block.name]));
 
     final label = _createLabel(x: node.x + (node.width ~/ 2),
@@ -93,6 +93,7 @@ display(pane, blocks, attachRef, {blockTicks}) {
 
   // Add SVG root to the pane.
   pane.nodes.add(svg);
+  pane.style.width = "${svg.attributes['width']}px";
 }
 
 /** Creates draw2d DirectedGraph from the map of blocks */
