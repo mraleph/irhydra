@@ -77,6 +77,8 @@ makeReferencer(ResolutionCallback getContent,
                {type: POPOVER}) {
   final attach = makeAttachableReferencer(getContent, type: type);
   return (id) {
+    // TODO(mraleph) this does not work when anchor is hidden inside the
+    // Shadow DOM. Scroll by capturing on-click handler.
     final link = new AnchorElement()
         ..href = '#${getAnchor(id)}'
         ..appendText(id);
@@ -91,24 +93,20 @@ class _Popover {
   const _Popover();
 
   show(target, content) {
-    js.scoped(() {
-      final data = js.context.jQuery(target).popover(js.map({
-        "title": '',
-        "content": content,
-        "trigger": "manual",
-        "placement": "bottom",
-        "html": true,
-        "container": 'body'
-      })).data('popover');
-      data.tip().addClass('xref');
-      data.show();
-    });
+    final data = js.context.jQuery(target).popover(js.map({
+      "title": '',
+      "content": content,
+      "trigger": "manual",
+      "placement": "bottom",
+      "html": true,
+      "container": 'body'
+    })).data('bs.popover');
+    data.tip().addClass('xref');
+    data.show();
   }
 
   destroy(target) {
-    js.scoped(() {
-      js.context.jQuery(target).popover('destroy');
-    });
+    js.context.jQuery(target).popover('destroy');
   }
 }
 
@@ -118,22 +116,18 @@ class _Tooltip {
   const _Tooltip();
 
   show(target, content) {
-    js.scoped(() {
-      final data = js.context.jQuery(target).tooltip(js.map({
-        "title": content,
-        "trigger": "manual",
-        "placement": "bottom",
-        "html": true,
-        "container": 'body'
-      })).data('tooltip');
-      data.tip().addClass('xref');
-      data.show();
-    });
+    final data = js.context.jQuery(target).tooltip(js.map({
+      "title": content,
+      "trigger": "manual",
+      "placement": "bottom",
+      "html": true,
+      "container": 'body'
+    })).data('bs.tooltip');
+    data.tip().addClass('xref');
+    data.show();
   }
 
   destroy(target) {
-    js.scoped(() {
-      js.context.jQuery(target).tooltip('destroy');
-    });
+    js.context.jQuery(target).tooltip('destroy');
   }
 }

@@ -46,56 +46,14 @@ abstract class BaseMode {
   /** Profiling data. */
   var profile;
 
-  /** Currently active mode of code rendering. */
-  var _codeMode = 0;
-
   /** Determines if the mode can recognize and handle given textual artifact. */
   bool canRecognize(String text);
 
   /** Parses textual artifact into the list of [IR.Method] */
   List<IR.Method> parse(String text);
 
-  /** Displays all compilation artifacts available for the given phase */
-  displayPhase(IR.Method method, IR.Phase phase);
-
-  /** Update IR pane to reflect change in rendering configuration */
-  updateIRView();
-
-  /** Returns [IRPane] that all contain IR and disassembly artifacts */
-  get pane => html.document.query('#ir-pane').xtag;
-
-  /** Returns HTML element that will contain rendered control flow graph */
-  get graphPane => html.document.query("#graph-pane");
-
-  /**
-   * Get or set current disassembly artifact.
-   *
-   * Code rendering mode is reset to [CodeSplicer.CODE_MODE_NONE] when
-   * new artifact is set.
-   */
-  get code => _code;
-  set code(new_code) {
-    _codeMode = CodeSplicer.CODE_MODE_NONE;
-    _code = new_code;
-  }
-
-  /**
-   * Get or set current code rendering mode.
-   *
-   * When code rendering mode updated [updateIRView] is called.
-   */
-  get codeMode => _codeMode;
-  set codeMode(val) {
-    _codeMode = val;
-    updateIRView();
-  }
-
-  /** Return the list of all supported code rendering modes */
-  get supportedCodeModes =>
-      (_code != null && !_code.isEmpty) ? CodeSplicer.CODE_MODES : const [];
-
   /** Load output of the llprof.py script. */
   loadProfile(data) {
-    profile = llprof.parse(data);
+    //llprof.parse(data);
   }
 }

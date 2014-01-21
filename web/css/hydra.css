@@ -25,7 +25,7 @@ span.hir-changes-all {
 
 span.lir-env, span.lir-map { display: none; }
 
-pre.lir-line {
+.lir-line {
   background: rgba(125, 167, 217, 0.15) !important;
 }
 
@@ -75,25 +75,6 @@ pre.lir-line {
 
 .deopt-marker {
   cursor: pointer;
-}
-
-#methods {
-  overflow: auto;
-}
-
-#methods::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
-}
-
-#methods::-webkit-scrollbar-track,
-#methods::-webkit-scrollbar-corner {
-  background: inherit;
-}
-
-#methods::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 5px;
 }
 
 #graph-pane {

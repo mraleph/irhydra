@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<polymer-element name="tab-pane">
+  <template>
+    <style>
+      a {
+        text-decoration: none;
+      }
+
+      #tab-headers {
+        padding-left: 0;
+        margin-bottom: 0;
+        margin-top: 0;
+        list-style: none;
+        background-color: #2C3E50;
+        border-bottom: 1px solid #2C3E50;
+      }
+
+      #tab-headers:before,
+      #tab-headers:after {
+        display: table;
+        content: " ";
+      }
+
+      #tab-headers:after {
+        clear: both;
+      }
+
+      #tab-headers:before,
+      #tab-headers:after {
+        display: table;
+        content: " ";
+      }
+
+      #tab-headers:after {
+        clear: both;
+      }
+
+      #tab-headers > li {
+        position: relative;
+        display: block;
+        text-align: center;
+        min-width: 4em;
+        float: left;
+        margin-bottom: -1px;
+      }
+
+      #tab-headers > li > a {
+        font-family: 'Lato';
+        font-weight: bold;
+        letter-spacing: 0.05em;
+        position: relative;
+        display: block;
+        padding: 10px 8px;
+        color: #ffffff;
+        margin-right: 2px;
+        line-height: 1.428571429;
+        border: 0px solid transparent;
+      }
+
+      #tab-headers > li > a:hover {
+        color: #1ABC9C;
+      }
+
+      #tab-headers > li.active > a,
+      #tab-headers > li.active > a:hover,
+      #tab-headers > li.active > a:focus {
+        color: #ffffff;
+        cursor: default;
+        background-color: #16A085;
+        border: 0px solid #16A085;
+        border-bottom-color: transparent;
+      }
+    </style>
+    <div>
+      <ul id="tab-headers">
+        <template repeat="{{tab in tabs}}">
+          <li class="{{ { 'active': tab.href == activeTab } }}">
+            <a href="#{{tab.href}}" on-click="{{switchTabAction}}" data-target="{{tab.href}}">
+              {{tab.title}}
+            </a>
+          </li>
+        </template>
+        <content select=".after-tabs"></content>
+      </ul>
+    </div>
+    <content id="tabs"></content>
+  </template>
+  <script type="application/dart" src='tab-pane.dart'></script>
+</polymer-element>

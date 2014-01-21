@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:web_ui/component_build.dart';
+import 'package:polymer/builder.dart';
 import 'dart:io';
 
 const OPT_CHANGED = "--changed=";
 
 void main() {
+  /*
   final args = new Options().arguments;
   final changed = args.where((opt) => opt.startsWith(OPT_CHANGED))
                       .map((opt) => opt.substring(OPT_CHANGED.length));
@@ -27,7 +28,7 @@ void main() {
   if (changed.isEmpty ||
       !changed.where((file) => !file.startsWith("web/out")).isEmpty) {
     Process.run("./bin/build.sh", []);
-  }
+  }*/
 
-  build(new Options().arguments, ['web/hydra.html']);
+  build(entryPoints: ['web/index.html']);
 }

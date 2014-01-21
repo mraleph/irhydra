@@ -165,7 +165,9 @@ class Parser extends parsing.ParserBase {
     }
 
     // Check if we reached code epilogue containing deferred code.
-    if (comment.startsWith("Deferred") && block != null) {
+    if ((comment.startsWith("Deferred") ||
+         comment.contains("-- Jump table --")) &&
+        block != null) {
       block.end = _code.length;
       block = null;
     }

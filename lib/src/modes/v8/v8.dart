@@ -15,6 +15,8 @@
 /** Mode for parsing V8's hydrogen.cfg and code dumps. */
 library v8;
 
+import 'package:irhydra/src/modes/ir.dart' as ir;
+import 'package:irhydra/src/modes/code.dart' show CodeCollector;
 import 'package:irhydra/src/modes/mode.dart';
 import 'package:irhydra/src/modes/v8/code_parser.dart' as code_parser;
 import 'package:irhydra/src/modes/v8/hydrogen_parser.dart' as hydrogen_parser;
@@ -54,12 +56,12 @@ class Mode extends BaseMode {
   parse(text) {
     if (hydrogen_parser.canRecognize(text)) {
       // This is hydrogen.cfg containing IR.
-      if (hydrogenLoaded) _reset();  // Drop currently loaded IR data.
+      if (hydrogenLoaded) reset();  // Drop currently loaded IR data.
       _merge(hydrogen_parser.preparse(text), methods);
       hydrogenLoaded = true;
     } else if (code_parser.canRecognize(text)) {
       // This is an stdout dump containing native code and deopts.
-      if (codeLoaded) _reset();  // Drop current native code data.
+      if (codeLoaded) reset();  // Drop current native code data.
       _merge(methods, code_parser.preparse(text));
       codeLoaded = true;
     }
@@ -67,26 +69,46 @@ class Mode extends BaseMode {
     return methods;
   }
 
-  displayPhase(method, phase) {
-    currentMethod = method;
-    ir = hydrogen_parser.parse(phase.ir);
-    code = code_parser.parse(phase.code);
-    updateIRView();
-    _displayGraph();
+  toIr(method, phase) {
+    final blocks = hydrogen_parser.parse(phase.ir);
+    final code = code_parser.parse(phase.code);
+
+    final lirIdMarker = new RegExp(r"<@(\d+),#\d+>");
+
+    attachCode(block, lir) {
+      final codeCollector = new CodeCollector(code.codeOf(block.name));
+
+      var previous;
+      for (var instr in lir) {
+        codeCollector.collectUntil("@${instr.id}");
+
+        if (!codeCollector.isEmpty) {
+          if (previous.code == null) previous.code = [];
+          previous.code.addAll(codeCollector.collected);
+        }
+
+        // If we found marker that signifies start of the instructions emitted for
+        // this lithium instruction then emit this instructions until something
+        // that looks like a marker for the next instruction is reached.
+        // This tries to workaround cases when some instructions from lithium
+        // level (e.g. goto) produce no code and their markers are not present in the
+        // resulting code comments.
+        if (codeCollector.isAfterMarker("@${instr.id}")) {
+          codeCollector.collectWhile((comment) => !lirIdMarker.hasMatch(comment));
+          instr.code = codeCollector.collected;
+        }
+        previous = instr;
+      }
+    }
+    
+    if (!method.deopts.isEmpty) {
+      hydrogen_parser.DeoptMatcher.resolve(method.deopts, blocks);
+    }
+
+    return new ir.ParsedIr(blocks, code, attachCode, method.deopts);
   }
 
-  updateIRView() {
-    pane.clear();
-    view.displayIR(pane, currentMethod, ir, code, codeMode);
-  }
-
-  _displayGraph() {
-    final attachRef =
-        xref.makeAttachableReferencer(pane.rangeContentAsHtmlFull);
-    graphview.display(graphPane, ir, attachRef);
-  }
-
-  _reset() {
+  reset() {
     methods = null;
     codeLoaded = hydrogenLoaded = false;
   }

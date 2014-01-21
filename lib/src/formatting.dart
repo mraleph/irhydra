@@ -23,6 +23,9 @@ import 'dart:html';
 /** Formatting function that turns text into HTML element based on some rules */
 typedef Element Formatter(String text);
 
+/** Formatting function that turns text into HTML element based on some rules */
+typedef Object Callback(String text);
+
 /**
  * Make a formatter for the given [map] of rules.
  *
@@ -36,12 +39,34 @@ makeFormatter(Map<String, Formatter> map) {
   final actions = map.values.toList();
   final patterns = map.keys.map((re) => new RegExp("^${re}")).toList();
 
+  final split = makeSplitter(map, other: (val) => new Text(val));
+
+  return (text) =>
+    new SpanElement()..nodes.addAll(split(text));
+}
+
+makeSplitter(Map<String, Callback> map, {Callback other}) {
+  final actions = map.values.toList();
+  final patterns = map.keys.map((re) => new RegExp("^${re}")).toList();
+
+  if (other == null) {
+    other = (val) => val;
+  }
+
+  apply(action, args) {
+    if (args is List) {
+      return Function.apply(action, args);
+    } else {
+      assert(args is String);
+      return action(args);
+    }
+  }
+
   return (text) {
-    final result = new SpanElement();
+    final result = [];
 
     _apply(patterns, text, (idx, val) {
-      result.nodes.add((idx != null) ?
-        actions[idx](val) : new Text(val));
+      result.add((idx != null) ? apply(actions[idx], val) : other(val));
     });
 
     return result;
@@ -65,15 +90,14 @@ _apply(List<RegExp> patterns, String text, Function callback) {
     for (var i = 0; i < patterns.length; i++) {
       final m = patterns[i].firstMatch(text);
       if (m != null) {
-        final value = m.group(0);
-
         if (!unmatched.isEmpty) {  // There is a pending unmatched substring.
           callback(null, unmatched.join());
           unmatched.clear();
         }
 
+        final value = m.groupCount == 0 ? m.group(0) : m.groups(new List.generate(m.groupCount, (idx) => idx + 1));
         callback(i, value);
-        text = text.substring(value.length);  // Skip matched part.
+        text = text.substring(m.group(0).length);  // Skip matched part.
         continue outer;
       }
     }

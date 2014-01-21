@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<polymer-element name="dropdown-element">
+  <template>
+    <style>
+      a {
+        text-decoration: none;
+      }
+
+      .x-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        display: none;
+        float: left;
+        min-width: 160px;
+        padding: 5px 0;
+        margin: 2px 0 0;
+        font-size: 14px;
+        list-style: none;
+
+        background-color: #2C3E50;
+        background-clip: padding-box;
+      }
+
+      ::content li > a {
+        display: block;
+        padding: 3px 20px;
+        clear: both;
+        font-weight: normal;
+        line-height: 1.428571429;
+        color: #fff;
+        white-space: nowrap;
+      }
+
+      ::content li > a:hover,
+      ::content li > a:focus {
+        color: #fff;
+        text-decoration: none;
+        background-color: #34495E;
+      }
+
+      .x-dropdown-menu > li > a {
+        display: block;
+        padding: 3px 20px;
+        clear: both;
+        font-weight: normal;
+        line-height: 1.428571429;
+        color: #fff;
+        white-space: nowrap;
+      }
+
+      .x-dropdown-menu > li > a:hover,
+      .x-dropdown-menu > li > a:focus {
+        color: #fff;
+        text-decoration: none;
+        background-color: #34495E;
+      }
+
+      .open > .x-dropdown-menu {
+        display: block;
+      }
+
+      .x-btn-group {
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      .x-btn-group > a {
+        font-family: 'Lato';
+        font-weight: bold;
+        letter-spacing: 0.05em;
+        position: relative;
+        display: block;
+        padding: 10px 8px;
+        color: #ffffff;
+        margin-right: 2px;
+        line-height: 1.428571429;
+        border: 0px solid transparent;
+        text-decoration: none;
+      }
+
+      .x-btn-group > a:hover {
+        color: #1ABC9C;
+      }
+
+      .x-btn-group a:active,
+      .x-btn-group a:focus,
+      .x-btn-group.open a {
+        outline: 0;
+      }
+
+      .x-caret-down {
+        display: inline-block;
+        font-family: FontAwesome;
+        font-style: normal;
+        font-weight: normal;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .x-caret-down:before {
+        content: "\f0d7";
+      }
+    </style>
+    <div class="x-btn-group">
+      <a data-toggle="dropdown" href="#">{{valueText}}&nbsp;<i class="x-caret-down"></i></a>
+      <ul class="x-dropdown-menu" on-click="{{selectAction}}">
+        <content></content>
+      </ul>
+    </div>
+  </template>
+  <script type="application/dart" src='dropdown-element.dart'></script>
+</polymer-element>

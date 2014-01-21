@@ -12,14 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+library ir_pane;
+
 import 'dart:html';
 import 'dart:math' as math;
 
-import 'package:irhydra/src/html_utils.dart' show toHtml;
+import 'package:irhydra/src/modes/code.dart' show CodeRenderer;
+import 'package:irhydra/src/html_utils.dart' show toHtml, span;
+import 'package:irhydra/src/xref.dart' as xref;
 
 import 'package:js/js.dart' as js;
 
-import 'package:web_ui/web_ui.dart';
+import 'package:polymer/polymer.dart';
+
+class FormattingContext {
+  final irPrefix;
+  final makeBlockRef;
+  final makeValueRef;
+
+  FormattingContext(this.irPrefix, this.makeBlockRef, this.makeValueRef);
+
+  formatOperand(tag, text) => span("${irPrefix}-${tag}", text);
+
+  format(operand) {
+    if (operand is String) {
+      return new Text(operand);
+    } else {
+      return operand.toHtml(this);
+    }
+  }
+}
 
 /**
  * Two column WebComponent used to display IRs and native code line by line.
@@ -33,7 +55,15 @@ import 'package:web_ui/web_ui.dart';
  *
  * Second column is for line's content e.g. instruction body itself.
  */
-class IRPane extends WebComponent {
+@CustomTag('ir-pane')
+class IRPane extends PolymerElement {
+  final applyAuthorStyles = true;
+
+  static const CODE_MODES = const ['split', 'inline', 'none'];
+
+  @published var codeMode;
+  @published var ir;
+
   /** Lines currently added to the component */
   final List<IRPaneLine> _lines = <IRPaneLine>[];
 
@@ -43,9 +73,112 @@ class IRPane extends WebComponent {
   /** Root [TableElement] */
   TableElement _table;
 
-  inserted() {
-    _table = _root.query('table');
+  var makeBlockRef;
+  var makeValueRef;
+
+  IRPane.created() : super.created() {
+    makeBlockRef = xref.makeReferencer(rangeContentAsHtmlFull,
+                                       href,
+                                       type: xref.POPOVER);
+    makeValueRef = xref.makeReferencer(rangeContentAsHtml,
+                                       href,
+                                       type: xref.TOOLTIP);
   }
+
+  enteredView() {
+    super.enteredView();
+    print("IRPane.enteredView");
+    _table = $['rows'];
+    if (ir != null) {
+      render();
+    }
+  }
+
+  irChanged() {
+    if (_table != null) {
+      render();
+    }
+  }
+
+  codeModeChanged() {
+    if (_table != null) {
+      render();
+    }
+  }
+
+  var _renderedIr, _renderedCodeMode;
+
+  render() {
+    if (_renderedIr == ir && _renderedCodeMode == codeMode) return;
+    _renderedIr = ir;
+    _renderedCodeMode = codeMode;
+
+    final stopwatch = new Stopwatch()..start();
+    clear();
+
+    formatOpcode(ctx, opcode) {
+      final element = span('boldy', opcode);
+      // TODO(mraleph) attach documentation link for the opcode.
+      return element;
+    }
+
+    addEx(ctx, id, opcode, operands) {
+      operands = new SpanElement()..nodes.addAll(operands.map(ctx.format));
+      var ln = add(id, new SpanElement()..append(formatOpcode(ctx, opcode))
+                                        ..appendText(" ")
+                                        ..append(operands));
+      ln.gutter.parentNode.classes.add("${ctx.irPrefix}-gutter");
+      ln.text.parentNode.classes.add("${ctx.irPrefix}-line");
+    }
+
+    final hirContext = new FormattingContext("hir", makeBlockRef, makeValueRef);
+    final lirContext = new FormattingContext("lir", makeBlockRef, makeValueRef);
+
+    final codeRenderer = new CodeRenderer(this, ir.code);
+
+    ir.code.prologue.forEach(codeRenderer.display);
+
+    for (var block in ir.blocks.values) {
+      // Block name.
+      add(" ", " ");
+      add(span('boldy', block.name), " ", id: block.name);
+
+      for (var instr in block.parsedHir) {
+        addEx(hirContext, instr.id, instr.op, instr.args);
+      }
+
+      final lir = block.parsedLir.toList();
+      ir.attachCode(block, lir);
+
+      for (var instr in lir) {
+        addEx(lirContext, instr.id, instr.op, instr.args);
+        if (codeMode == 'inline' && instr.code != null) {
+          instr.code.forEach(codeRenderer.display);
+        }
+      }
+
+      if (codeMode == 'split') {
+        for (var instr in lir) {
+          if (instr.code != null) {
+            instr.code.forEach(codeRenderer.display);
+          }
+        }
+      }
+
+      createRange(block.name);
+    }
+
+    add(" ", " ");
+    ir.code.epilogue.forEach(codeRenderer.display);
+    
+    for (var deopt in ir.deopts) {
+      print("deopt at ${deopt.lirId}");
+    }
+
+    print("IRPane.render() took ${stopwatch.elapsedMilliseconds}");
+  }
+
+  formatOperand(tag, text) => span("-${tag}", text);
 
   /** Generate anchor name for the given identifier */
   href(id) => "ir-${id}";
@@ -79,7 +212,7 @@ class IRPane extends WebComponent {
     // First column content: gutter.
     gutter = new Element.html("<pre/>")..append(
         new AnchorElement()
-          ..name = href(id)
+          ..id = href(id)
           ..nodes.add(gutter)
           ..onClick.listen((event) {
             if (id != null) showRefsTo(id);
@@ -165,7 +298,7 @@ class IRPane extends WebComponent {
     closeRefsPanel();
 
     // Find all table rows referencing given identifier and clone their content.
-    final refs = document.queryAll("a[href='#${href(id)}']")
+    final refs = shadowRoot.querySelectorAll("a[href='#${href(id)}']")
                          .map((node) {
                            while (node != null &&
                                   node is! TableRowElement) {
@@ -184,8 +317,8 @@ class IRPane extends WebComponent {
 
     // Convert row anchors to links that jump to the given row.
     for (var node in refs) {
-      final anchor = node.query("a[name]");
-      anchor.href = "#${anchor.name}";
+      final anchor = node.query("a[id]");
+      anchor.href = "#${anchor.attributes['id']}";
     }
 
     // Create IRPane styled table that will contain references.
@@ -195,12 +328,9 @@ class IRPane extends WebComponent {
 
     // Calculate middle baseline for _RefsPanel. It'll be centered at
     // referenced row.
-    var baselineOffset;
-    js.scoped(() {
-      final gutter = line(id).gutter;
-      baselineOffset = js.context.jQuery(gutter).offset().top +
-        gutter.clientHeight ~/ 2;
-    });
+    final gutter = line(id).gutter;
+    var baselineOffset = js.context.jQuery(gutter).offset().top +
+      gutter.clientHeight ~/ 2;
 
     // Show the panel.
     _refsPanel = new _RefsPanel(baselineOffset, _table, refsTable);
@@ -286,36 +416,34 @@ class _RefsPanel {
 
   /** Recompute fixed position and max-width for the panel. */
   position() {
-    js.scoped(() {
-      // Height of the panel.
-      final height = root.getBoundingClientRect().height;
+    // Height of the panel.
+    final height = root.getBoundingClientRect().height;
 
-      final window = js.context.jQuery(js.context.window);
+    final window = js.context.jQuery(js.context.window);
 
-      // Offset within the page of the rightBorder.
-      final leftBorderOffset = js.context.jQuery(rightBorder).offset().left;
+    // Offset within the page of the rightBorder.
+    final leftBorderOffset = js.context.jQuery(rightBorder).offset().left;
 
-      // Convert offsets with in a page to offsets within a window with respect
-      // to window's scroll position.
+    // Convert offsets with in a page to offsets within a window with respect
+    // to window's scroll position.
 
-      // Right offset of the panel is essentially right offset of border plus
-      // padding. Panel stays glued to this position even if window is scrolled
-      // horizontally.
-      final right = window.scrollLeft() + (window.width() - leftBorderOffset) +
-          PADDING;
+    // Right offset of the panel is essentially right offset of border plus
+    // padding. Panel stays glued to this position even if window is scrolled
+    // horizontally.
+    final right = window.scrollLeft() + (window.width() - leftBorderOffset) +
+        PADDING;
 
-      // If possible table glues itself to the baseline but it also tries to
-      // stay visible as window is scrolled vertically thus top offset must
-      // never be smaller than PADDING and bottom offset must never be bigger
-      // than window's height.
-      final baselineTop = baselineOffset - window.scrollTop() - (height ~/ 2);
-      final maxTop = window.height() - PADDING - height;
-      final minTop = PADDING;
-      final top = math.min(math.max(baselineTop, minTop), maxTop);
+    // If possible table glues itself to the baseline but it also tries to
+    // stay visible as window is scrolled vertically thus top offset must
+    // never be smaller than PADDING and bottom offset must never be bigger
+    // than window's height.
+    final baselineTop = baselineOffset - window.scrollTop() - (height ~/ 2);
+    final maxTop = window.height() - PADDING - height;
+    final minTop = PADDING;
+    final top = math.min(math.max(baselineTop, minTop), maxTop);
 
-      root.style.right = "${right}px";
-      root.style.top = "${top}px";
-      root.style.maxWidth = "${leftBorderOffset - 3 * PADDING}px";
-    });
+    root.style.right = "${right}px";
+    root.style.top = "${top}px";
+    root.style.maxWidth = "${leftBorderOffset - 3 * PADDING}px";
   }
 }

@@ -15,7 +15,10 @@
 /** Object model for IR compilation artifacts. */
 library ir;
 
+import 'package:polymer/polymer.dart' show observable;
+
 /** Method name. */
+@observable
 class Name {
   /**
    * Full form of the method name.
@@ -43,6 +46,7 @@ class Name {
  *
  * Usually a single named step in the compilation pipeline.
  */
+@observable
 class Phase {
   /** Phase's name */
   final String name;
@@ -59,6 +63,7 @@ class Phase {
 /**
  * Deoptimization event occured to a method.
  */
+@observable
 class Deopt {
   /** Unique identifier that maps deoptimization to a place in the IR */
   final id;
@@ -69,6 +74,8 @@ class Deopt {
   /** [true] is this deoptimization was lazy (forced on return to this execution frame). */
   final bool isLazy;
 
+  var lirId;
+
   Deopt(this.id, this.raw, { this.isLazy: false });
 }
 
@@ -77,6 +84,7 @@ class Deopt {
  *
  * A unit of granularity for the compilation pipeline.
  */
+@observable
 class Method {
   /** Method's name */
   final Name name;
@@ -87,7 +95,19 @@ class Method {
   /** List of [Deopt] artifacts associated with this method. */
   final deopts = [];
 
+  get hasDeopts => deopts.length > 0;
+
   Method(this.name);
+}
+
+@observable
+class ParsedIr {
+  final Map<String, Block> blocks;
+  final code;
+  final attachCode;
+  final deopts;
+
+  ParsedIr(this.blocks, this.code, this.attachCode, this.deopts);
 }
 
 /** Block in the control flow graph. */
@@ -102,9 +122,15 @@ class Block {
   final hir = [];
   final lir = [];
 
+  var hirParser;
+  var lirParser;
+
   Block(this.id, this.name) {
     assert(id >= 0);
   }
+
+  get parsedHir => hirParser == null ? hir : hirParser(hir);
+  get parsedLir => lirParser == null ? lir : lirParser(lir);
 
   /** Creates an edge from this [Block] to the block [to]. */
   edge(Block to) {
@@ -125,7 +151,10 @@ class Instruction {
   final String op;
 
   /** Arguments */
-  final String args;
+  final List args;
+
+  /** Native code generated from the instruction */
+  var code;
 
   Instruction(this.raw, this.id, this.op, this.args);
 }
@@ -140,6 +169,27 @@ class Branch extends Instruction {
 
   Branch(raw, op, args, this.true_successor, this.false_successor)
       : super(raw, null, op, args);
+}
+
+abstract class Operand {
+  toHtml(pane) => pane.formatOperand(this.tag, this.text);
+}
+
+class Ref extends Operand {
+  final target;
+  Ref(this.target);
+}
+
+class BlockRef extends Ref {
+  BlockRef(target) : super(target);
+
+  toHtml(pane) => pane.makeBlockRef(target);
+}
+
+class ValRef extends Ref {
+  ValRef(target) : super(target);
+
+  toHtml(pane) => pane.makeValueRef(target);
 }
 
 /** Auxiliary class for control flow graph building */
