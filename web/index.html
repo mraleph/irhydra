@@ -2,6 +2,26 @@
 
 <html>
   <head>
+    <script>
+    // Provide a getTag hook to ensure that Shadow DOM polyfill wrappers
+    // are unwrapped before applying getTag to it. This ensures that
+    // correct interceptor is used.
+    (dartNativeDispatchHooksTransformer =
+      window.dartNativeDispatchHooksTransformer || []).push(function (hooks) {
+      var getTag = hooks.getTag;
+      hooks.getTag = function (obj) {
+        // Unwrap Shadow DOM polyfill wrapper.
+        if (obj.constructor.name === "GeneratedWrapper") {
+          return getTag(obj.impl);
+        }
+
+        return getTag(obj);
+      };
+      return hooks;
+    });
+    </script>
+
+
     <link href='http://fonts.googleapis.com/css?family=Lato:400,700,900' rel='stylesheet' type='text/css'>
 
     <link type="text/css" href="css/irpane.css" rel="stylesheet" >
