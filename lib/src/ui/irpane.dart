@@ -26,13 +26,13 @@ import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
 class FormattingContext {
-  final irPrefix;
+  final ns;
   final makeBlockRef;
   final makeValueRef;
 
-  FormattingContext(this.irPrefix, this.makeBlockRef, this.makeValueRef);
+  FormattingContext(this.ns, this.makeBlockRef, this.makeValueRef);
 
-  formatOperand(tag, text) => span("${irPrefix}-${tag}", text);
+  formatOperand(tag, text) => span("${ns}-${tag}", text);
 
   format(operand) {
     if (operand is String) {
@@ -117,7 +117,19 @@ class IRPane extends PolymerElement {
 
     formatOpcode(ctx, opcode) {
       final element = span('boldy', opcode);
-      // TODO(mraleph) attach documentation link for the opcode.
+
+      final desc = ir.mode.descriptions.lookup(ctx.ns, opcode);
+      if (desc != null) {
+        js.context.jQuery(element).popover(js.map({
+          "title": opcode,
+          "content": desc,
+          "trigger": "hover",
+          "placement": "bottom",
+          "html": true,
+          "container": "body"
+        }));
+      }
+
       return element;
     }
 
@@ -126,8 +138,8 @@ class IRPane extends PolymerElement {
       var ln = add(id, new SpanElement()..append(formatOpcode(ctx, opcode))
                                         ..appendText(" ")
                                         ..append(operands));
-      ln.gutter.parentNode.classes.add("${ctx.irPrefix}-gutter");
-      ln.text.parentNode.classes.add("${ctx.irPrefix}-line");
+      ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
+      ln.text.parentNode.classes.add("${ctx.ns}-line");
     }
 
     final hirContext = new FormattingContext("hir", makeBlockRef, makeValueRef);
@@ -201,13 +213,6 @@ class IRPane extends PolymerElement {
     })).data('bs.popover').tip().addClass('deopt');
 
     line(deopt.lirId).text.append(marker);
-    print("deopt at ${deopt.lirId}");
-
-    // Create quick link to the deopt line.
-    // final link = new AnchorElement(href: "#${pane.href(lirId)}")
-    //    ..classes.addAll(['label', labelType])
-    //    ..text = "deopt @${lirId}";
-    // document.query(".ir-quick-links").nodes.add(link);
   }
 
   formatOperand(tag, text) => span("-${tag}", text);

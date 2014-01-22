@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<polymer-element name="ir-descriptions-v8">
+  <template>
+    <style type='text/css' scoped>
+      div[data-hir], div[data-lir] { display: none; };
+    </style>
+    <div data-hir="CheckMaps" data-lir="check-maps">
+      <p>Checks whether value's hidden class matches expected value and deoptimizes if this is not the case.</p>
+      <p>Deoptimization at <code>CheckMaps</code> usually indicates that the code is polymorphic.</p>
+    </div>
+    <div data-hir="SoftDeoptimize" data-lir="deoptimize">
+      <p>When executed this instruction always deoptimizes.</p>
+      <p>V8 generates then on control flow paths that were never executed before and thus contain no actionable type feedback that could be used to optimize the code.</p>
+      <p>For a function with a long running loop it is not uncommon to hit at OSR in the loop and then deoptimize on a <code>SoftDeoptimize</code> emitted after the loop</p>
+    </div>
+    <div data-hir="Change">
+      <p>This instruction converts value from one internal representation to another.</p>
+      <p>It will deoptimize if the value can't be converted</p>
+    </div>
+    <div data-lir="tagged-to-i">
+      <p>Conversion from a tagged representation to a 32-bit signed integer. Can be either truncating or exact (see if hydrogen counterpart is marked with <code>truncating-int32</code>.</p>
+      <p>Deoptimizes when source is not representable in this format. Truncating conversions deoptimize when value is too big for an int32 type or not a number or <code>undefined</code>. Exact conversions deoptimize if <code>ToInt32(val) != val</code></p>
+    </div>
+    <div data-lir="check-smi">
+      <p>Checks that value is a tagged smi (<b>sm</b>all <b>i</b>nteger): it is a tagged integer representation used by V8.</p>
+      <p>On 32bit platforms smi can contain 31-bit signed integers and on 64bit platforms they are wide enough for 32bit signed integers.</p>
+      <p>If numeric value does not fit into a smi it has to be boxed as a <em>heap number</em>.</p>
+    </div>
+  </template>
+  <script type="application/dart" src='descriptions.dart'></script>
+</polymer-element>

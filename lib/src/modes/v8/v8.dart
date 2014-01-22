@@ -15,11 +15,15 @@
 /** Mode for parsing V8's hydrogen.cfg and code dumps. */
 library v8;
 
+import 'dart:html' as html;
+
 import 'package:irhydra/src/modes/ir.dart' as ir;
 import 'package:irhydra/src/modes/code.dart' show CodeCollector;
 import 'package:irhydra/src/modes/mode.dart';
 import 'package:irhydra/src/modes/v8/code_parser.dart' as code_parser;
 import 'package:irhydra/src/modes/v8/hydrogen_parser.dart' as hydrogen_parser;
+
+import 'package:irhydra/src/modes/v8/ui/descriptions.dart';
 
 /**
  * Mode for viewing of V8's compilation artifacts.
@@ -45,6 +49,14 @@ class Mode extends BaseMode {
 
   canRecognize(text) =>
     hydrogen_parser.canRecognize(text) || code_parser.canRecognize(text);
+
+  var _descriptions;
+  get descriptions {
+    if (_descriptions == null) {
+      _descriptions = new html.Element.tag('ir-descriptions-v8');
+    }
+    return _descriptions;
+  }
 
   /**
    * Extract methods from the given artifact (either hydrogen.cfg or
@@ -97,12 +109,12 @@ class Mode extends BaseMode {
         previous = instr;
       }
     }
-    
+
     if (!method.deopts.isEmpty) {
       hydrogen_parser.DeoptMatcher.resolve(method.deopts, blocks);
     }
 
-    return new ir.ParsedIr(blocks, code, attachCode, method.deopts);
+    return new ir.ParsedIr(this, blocks, code, attachCode, method.deopts);
   }
 
   reset() {
