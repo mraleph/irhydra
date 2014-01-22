@@ -135,7 +135,9 @@ class IRPane extends PolymerElement {
 
     final codeRenderer = new CodeRenderer(this, ir.code);
 
-    ir.code.prologue.forEach(codeRenderer.display);
+    if (codeMode != 'none') {
+      ir.code.prologue.forEach(codeRenderer.display);
+    }
 
     for (var block in ir.blocks.values) {
       // Block name.
@@ -167,8 +169,10 @@ class IRPane extends PolymerElement {
       createRange(block.name);
     }
 
-    add(" ", " ");
-    ir.code.epilogue.forEach(codeRenderer.display);
+    if (codeMode != 'none') {
+      add(" ", " ");
+      ir.code.epilogue.forEach(codeRenderer.display);
+    }
 
     ir.deopts.forEach(_createDeoptMarkerAt);
 
