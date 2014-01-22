@@ -169,12 +169,41 @@ class IRPane extends PolymerElement {
 
     add(" ", " ");
     ir.code.epilogue.forEach(codeRenderer.display);
-    
-    for (var deopt in ir.deopts) {
-      print("deopt at ${deopt.lirId}");
-    }
+
+    ir.deopts.forEach(_createDeoptMarkerAt);
 
     print("IRPane.render() took ${stopwatch.elapsedMilliseconds}");
+  }
+
+  /** Create marker for [deopt] at the line corresponding to [deopt.lirId]. */
+  _createDeoptMarkerAt(deopt) {
+    // Consider lazy deoptimizations less important compared to eager (check failures) deopts.
+    final labelType = deopt.isLazy ? 'label-warning' : 'label-danger';
+
+    // Create a marker with a popover containing raw deopt information.
+    final marker = new SpanElement()
+        ..classes.addAll(['label', labelType, 'deopt-marker'])
+        ..text = "deopt";
+
+    final divElement = new PreElement()
+        ..appendText(deopt.raw.join('\n'));
+    final raw = toHtml(divElement);
+    js.context.jQuery(marker).popover(js.map({
+      "title": "",
+      "content": "${raw}",
+      "placement": "bottom",
+      "html": true,
+      "container": 'body'
+    })).data('bs.popover').tip().addClass('deopt');
+
+    line(deopt.lirId).text.append(marker);
+    print("deopt at ${deopt.lirId}");
+
+    // Create quick link to the deopt line.
+    // final link = new AnchorElement(href: "#${pane.href(lirId)}")
+    //    ..classes.addAll(['label', labelType])
+    //    ..text = "deopt @${lirId}";
+    // document.query(".ir-quick-links").nodes.add(link);
   }
 
   formatOperand(tag, text) => span("-${tag}", text);

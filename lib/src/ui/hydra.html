@@ -2,6 +2,7 @@
 
 <polymer-element name="hydra-app">
   <link rel="import" href="dropdown-element.html">
+  <link rel="import" href="deopt-links.html">
   <link rel="import" href="graph-pane.html">
   <link rel="import" href="irpane.html">
   <link rel="import" href="method-list.html">
@@ -109,6 +110,8 @@
                 <li><a href="#" data-value="none">Hide Disassembly</a></li>
               </dropdown-element>
             </template>
+            <deopt-links deopts="{{currentMethod.deopts}}">
+            </deopt-links>
           </div>
         </tab-pane>
       </template>

@@ -246,7 +246,7 @@ parseLir(lir) {
 
 class DeoptMatcher {
   final ir;
-  
+
   static resolve(deopts, ir) => new DeoptMatcher(ir).matchAll(deopts);
 
   DeoptMatcher(this.ir) {
@@ -262,7 +262,7 @@ class DeoptMatcher {
 
     deopt.lirId = bailoutsMapping[deopt.id];
   }
-  
+
   /** A mapping from bailout ids to lir ids. */
   var bailoutsMapping;
 
@@ -287,7 +287,7 @@ class DeoptMatcher {
 
     final mapping = new Map<int, String>();
     recordMapping(lirId, deoptId) =>
-        mapping[int.parse(deoptId)] = lirId;
+        mapping[int.parse(deoptId)] = "${int.parse(lirId) ~/ 2}";
 
     for (var block in ir.values) {
       if (block.lir != null) {

@@ -18,6 +18,7 @@ class HydraElement extends PolymerElement {
   @observable var currentMode;
   @observable var currentFiles;
   @observable var currentPhase;
+  @observable var currentMethod;
   @observable var currentMethods;
 
   @observable var ir;
@@ -35,10 +36,14 @@ class HydraElement extends PolymerElement {
     async.Future.wait([
       HttpRequest.getString("demos/1.v8.hydrogen.cfg").then(loadData),
       HttpRequest.getString("demos/1.v8.code.asm").then(loadData)
-    ]).then((_) => displayPhase(null, [currentMethods.last, currentMethods.last.phases.last], null));
+    ]).then((_) {
+      var m = currentMethods.firstWhere((m) => m.name.short == "loop");
+      displayPhase(null, [m, m.phases.last], null);
+    });
   }
 
   displayPhase(a, phaseAndMethod, b) {
+    currentMethod = phaseAndMethod[0];
     currentPhase = phaseAndMethod[1];
     ir = currentMode.toIr(phaseAndMethod[0], currentPhase);
     blockRef = new XRef((id) => irpane.rangeContentAsHtmlFull(id));

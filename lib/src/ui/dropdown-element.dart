@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library spinner_element;
+library dropdown_element;
 
 import 'dart:html' as html;
 

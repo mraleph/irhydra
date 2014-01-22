@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<polymer-element name="deopt-links">
+  <template>
+    <style>
+      a {
+        text-decoration: none;
+      }
+
+      .x-deopt-link {
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+        background-color: #C0392B;
+      }
+
+      .x-deopt-link > a {
+        font-family: 'Lato';
+        font-weight: bold;
+        letter-spacing: 0.05em;
+        position: relative;
+        display: block;
+        padding: 10px 8px;
+        color: #ffffff;
+        margin-right: 2px;
+        line-height: 1.428571429;
+        border: 0px solid transparent;
+        text-decoration: none;
+      }
+
+      .x-deopt-link > a:hover {
+        background-color: #E74C3C;
+      }
+
+      .x-deopt-link a:active,
+      .x-deopt-link a:focus {
+        outline: 0;
+      }
+    </style>
+    <template repeat="{{deopt in deopts}}">
+      <div class="x-deopt-link"><a href="#ir-{{deopt.lirId}}">deopt @{{deopt.lirId}}</a></div>
+    </template>
+  </template>
+  <script type="application/dart" src='deopt-links.dart'></script>
+</polymer-element>
