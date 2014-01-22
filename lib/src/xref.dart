@@ -31,6 +31,41 @@ const POPOVER = const _Popover();
 /** Display cross-reference content in the Bootstrap tooltip. */
 const TOOLTIP = const _Tooltip();
 
+class XRef {
+  final getContent;
+  final type;
+  
+  final _delayed = new DelayedReaction();
+  var _target;
+  
+  XRef(ResolutionCallback this.getContent, [this.type = POPOVER]);
+  
+  show(target, id) {
+    print("show(${target}, ${id})");
+    hide();
+    print("hidden");
+    _target = target;
+    print("scheduling action");
+    _delayed.schedule(() {
+      print("delyaed action");
+      final content = getContent(id);
+      print("content = ${content}");
+      if (content != null) {
+        type.show(target, content);
+      }
+    });
+  }
+  
+  hide() {
+    print("hiding ${_target}");
+    if (_target != null) {
+      _delayed.cancel();
+      type.destroy(_target);
+      _target = null;
+    }
+  }
+}
+
 /**
  * Create a function that allows to turn any HTML element into a
  * cross-reference with the given id.
@@ -40,25 +75,11 @@ const TOOLTIP = const _Tooltip();
  * it displayed.
  */
 makeAttachableReferencer(ResolutionCallback getContent, {type: POPOVER}) {
-  final delayed = new DelayedReaction();
-
-  mouseOver(target, id) {
-    delayed.schedule(() {
-      final content = getContent(id);
-      if (content != null) {
-        type.show(target, content);
-      }
-    });
-  }
-
-  mouseOut(target, id) {
-    delayed.cancel();
-    type.destroy(target);
-  }
+  final xref = new XRef(getContent, type);
 
   return (node, id) {
-    node.onMouseOver.listen((event) => mouseOver(event.target, id));
-    node.onMouseOut.listen((event) => mouseOut(event.target, id));
+    node.onMouseOver.listen((event) => xref.show(event.target, id));
+    node.onMouseOut.listen((event) => xref.hide());
   };
 }
 
@@ -86,7 +107,6 @@ makeReferencer(ResolutionCallback getContent,
     return link;
   };
 }
-
 
 /** Thin wrapper around Bootstrap popover. */
 class _Popover {

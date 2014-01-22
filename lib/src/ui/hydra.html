@@ -92,10 +92,11 @@
       <template if="{{ir != null}}">
         <tab-pane>
           <div data-title="IR" data-href="ir">
-            <ir-pane id="ir-pane" ir="{{ir}}" codeMode="{{codeMode}}"></ir-pane>
+            <ir-pane id="irpane" ir="{{ir}}" codeMode="{{codeMode}}"></ir-pane>
           </div>
           <div data-title="Graph" data-href="graph">
-            <graph-pane ir="{{ir}}" on-hover="{{showBlockAction}}" on-click="{{switchToBlockAction}}"></graph-pane>
+            <graph-pane ir="{{ir}}" on-block-mouse-over="{{showBlockAction}}" on-blockmouseout="{{hideBlockAction}}">
+            </graph-pane>
           </div>
           <div data-title="Source" data-href="source">
             <h3>This is Source pane</h3>

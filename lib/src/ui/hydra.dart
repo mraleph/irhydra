@@ -6,6 +6,7 @@ import 'package:polymer/polymer.dart';
 import 'package:js/js.dart' as js;
 
 import 'package:irhydra/src/ui/irpane.dart' show IRPane;
+import 'package:irhydra/src/xref.dart' show XRef;
 
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
@@ -23,6 +24,8 @@ class HydraElement extends PolymerElement {
 
   @observable get codeModes => IRPane.CODE_MODES;
   @observable var codeMode = IRPane.CODE_MODES.first;
+  
+  var blockRef;
 
   get applyAuthorStyles => true;
 
@@ -37,7 +40,8 @@ class HydraElement extends PolymerElement {
 
   displayPhase(a, phaseAndMethod, b) {
     currentPhase = phaseAndMethod[1];
-    ir = currentMode.toIr(phaseAndMethod[0], currentPhase);
+    ir = currentMode.toIr(phaseAndMethod[0], currentPhase);    
+    blockRef = new XRef((id) => shadowRoot.querySelector("#irpane").rangeContentAsHtmlFull(id));
   }
 
   enteredView() {
@@ -63,6 +67,15 @@ class HydraElement extends PolymerElement {
   }
 
   openProfile(e, detail, target) {
+    // TODO(mraleph) support profiles again
+  }
+    
+  showBlockAction(event, detail, target) {
+    blockRef.show(detail.label, detail.blockId);
+  }
+  
+  hideBlockAction(event, detail, target) {
+    blockRef.hide();
   }
 
   changeCodeModeAction(event, detail, target) {
@@ -82,10 +95,6 @@ class HydraElement extends PolymerElement {
     final result = reader.onLoad.first.then((_) => reader.result);
     reader.readAsText(file);
     return result;
-
-//    return
-//        reader.onLoad.listen((e) => new async.Timer(const Duration(milliseconds: 500), () => callback(reader.result)));
-
   }
 
   /** Load data from the given textual artifact if any mode can handle it. */

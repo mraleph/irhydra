@@ -17,6 +17,12 @@ library graph_pane;
 import 'package:irhydra/src/ui/graph.dart' as graphview;
 import 'package:polymer/polymer.dart';
 
+class HoverDetail {
+  final label;
+  final blockId;
+  HoverDetail(this.label, this.blockId);
+}
+
 /**
  * Two column WebComponent used to display IRs and native code line by line.
  *
@@ -53,7 +59,14 @@ class GraphPane extends PolymerElement {
     _renderedIr = ir;
 
     final stopwatch = new Stopwatch()..start();
-    graphview.display($["graph"], ir.blocks, (x, y) => x);
+    graphview.display($["graph"], ir.blocks, (label, blockId) {
+      label.onMouseOver.listen((event) {
+        fire("block-mouse-over", detail: new HoverDetail(event.target, blockId)); 
+      });
+      label.onMouseOut.listen((event) {
+        fire("blockMouseOut"); 
+      });
+    });
     print("GraphPane.render() took ${stopwatch.elapsedMilliseconds}");
   }
 }

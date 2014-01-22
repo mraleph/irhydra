@@ -20,9 +20,6 @@ import 'package:irhydra/src/modes/code.dart' show CodeCollector;
 import 'package:irhydra/src/modes/mode.dart';
 import 'package:irhydra/src/modes/v8/code_parser.dart' as code_parser;
 import 'package:irhydra/src/modes/v8/hydrogen_parser.dart' as hydrogen_parser;
-import 'package:irhydra/src/modes/v8/view.dart' as view;
-import 'package:irhydra/src/ui/graph.dart' as graphview;
-import 'package:irhydra/src/xref.dart' as xref;
 
 /**
  * Mode for viewing of V8's compilation artifacts.
