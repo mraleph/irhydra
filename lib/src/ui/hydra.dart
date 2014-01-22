@@ -24,7 +24,7 @@ class HydraElement extends PolymerElement {
 
   @observable get codeModes => IRPane.CODE_MODES;
   @observable var codeMode = IRPane.CODE_MODES.first;
-  
+
   var blockRef;
 
   get applyAuthorStyles => true;
@@ -40,9 +40,11 @@ class HydraElement extends PolymerElement {
 
   displayPhase(a, phaseAndMethod, b) {
     currentPhase = phaseAndMethod[1];
-    ir = currentMode.toIr(phaseAndMethod[0], currentPhase);    
-    blockRef = new XRef((id) => shadowRoot.querySelector("#irpane").rangeContentAsHtmlFull(id));
+    ir = currentMode.toIr(phaseAndMethod[0], currentPhase);
+    blockRef = new XRef((id) => irpane.rangeContentAsHtmlFull(id));
   }
+
+  IRPane get irpane => shadowRoot.querySelector("#irpane");
 
   enteredView() {
     super.enteredView();
@@ -69,11 +71,11 @@ class HydraElement extends PolymerElement {
   openProfile(e, detail, target) {
     // TODO(mraleph) support profiles again
   }
-    
+
   showBlockAction(event, detail, target) {
     blockRef.show(detail.label, detail.blockId);
   }
-  
+
   hideBlockAction(event, detail, target) {
     blockRef.hide();
   }

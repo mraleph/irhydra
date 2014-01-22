@@ -60,12 +60,8 @@ class GraphPane extends PolymerElement {
 
     final stopwatch = new Stopwatch()..start();
     graphview.display($["graph"], ir.blocks, (label, blockId) {
-      label.onMouseOver.listen((event) {
-        fire("block-mouse-over", detail: new HoverDetail(event.target, blockId)); 
-      });
-      label.onMouseOut.listen((event) {
-        fire("blockMouseOut"); 
-      });
+      label.onMouseOver.listen((event) => fire("block-mouse-over", detail: new HoverDetail(event.target, blockId)));
+      label.onMouseOut.listen((_) => fire("block-mouse-out"));
     });
     print("GraphPane.render() took ${stopwatch.elapsedMilliseconds}");
   }

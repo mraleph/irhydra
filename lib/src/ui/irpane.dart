@@ -87,7 +87,6 @@ class IRPane extends PolymerElement {
 
   enteredView() {
     super.enteredView();
-    print("IRPane.enteredView");
     _table = $['rows'];
     if (ir != null) {
       render();

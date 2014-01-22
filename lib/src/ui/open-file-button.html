@@ -11,7 +11,7 @@
         padding: 0px;
       }
 
-      span {
+      span.hidden {
         position: absolute;
         width: 0px;
         height: 0px;
@@ -31,7 +31,7 @@
         background: #34495E;
       }
     </style>
-    <span>
+    <span class="hidden">
       <input id="file-input" type="file" multiple="multiple" on-change="{{changed}}">
     </span>
     <button on-click="{{clicked}}"><content></content></button>

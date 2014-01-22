@@ -41,15 +41,10 @@ class XRef {
   XRef(ResolutionCallback this.getContent, [this.type = POPOVER]);
   
   show(target, id) {
-    print("show(${target}, ${id})");
     hide();
-    print("hidden");
     _target = target;
-    print("scheduling action");
     _delayed.schedule(() {
-      print("delyaed action");
       final content = getContent(id);
-      print("content = ${content}");
       if (content != null) {
         type.show(target, content);
       }
@@ -57,7 +52,6 @@ class XRef {
   }
   
   hide() {
-    print("hiding ${_target}");
     if (_target != null) {
       _delayed.cancel();
       type.destroy(_target);
