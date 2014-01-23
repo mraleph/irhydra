@@ -53,20 +53,20 @@ makeSplitter(Map<String, Callback> map, {Callback other}) {
     other = (val) => val;
   }
 
-  apply(action, args) {
+  apply(action, context, args) {
     if (args is List) {
       return Function.apply(action, args);
     } else {
       assert(args is String);
-      return action(args);
+      return context != null ? action(context, args) : action(args);
     }
   }
 
-  return (text) {
+  return (text, {context}) {
     final result = [];
 
     _apply(patterns, text, (idx, val) {
-      result.add((idx != null) ? apply(actions[idx], val) : other(val));
+      result.add((idx != null) ? apply(actions[idx], context, val) : other(val));
     });
 
     return result;

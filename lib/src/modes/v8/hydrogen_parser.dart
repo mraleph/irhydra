@@ -76,21 +76,66 @@ _deferSubstring(str, start, end) =>
   () => str.substring(start, end);
 
 /** Parse given phase IR stored in the deferred substring thunk. */
-Map parse(Function ir) =>
-  (new CfgParser(ir())..parse()).builder.blocks;
+Map parse(IR.Method method, Function ir) {
+  final stopwatch = new Stopwatch()..start();
+  final parser = new CfgParser(ir())..parse();
+  method.deopts.forEach((deopt) => deopt.lirId = parser.bailouts[deopt.id]);
+  print("hydrogen_parser.parse took ${stopwatch.elapsedMilliseconds}");
+  return parser.builder.blocks;
+}
 
 class CfgParser extends parsing.ParserBase {
   final builder = new IR.CfgBuilder();
   var block;
 
-  CfgParser(str) : super(str.split('\n'));
+  var lirOperands;
+
+  CfgParser(str) : super(str.split('\n')) {
+    lirOperands = formatting.makeSplitter({
+      r"\[id=.*\](?= )": (lirId, val) {
+        parsing.match(val, deoptIdRe, (deoptId) => recordDeopt(lirId, deoptId));
+        return new DeoptEnv(val);
+      },
+      r"{[^}]+}": (_, val) => new StackMap(val),
+      r"B\d+\b": (_, val) => new IR.BlockRef(val),
+    });
+  }
+
+  final bailouts = new Map<int, String>();
+
+  /** Matches deopt_id data stored in lithium environment in hydrogen.cfg. */
+  final deoptIdRe = new RegExp(r"deopt_id=(\d+)");
+
+  recordDeopt(lirId, deoptId) =>
+    bailouts[int.parse(deoptId)] = lirId;
+
+  parseLir(line) {
+    final m = lirLineRe.firstMatch(line);
+    if (m == null) return null;
+
+    // Lithium ids are multiplied by 2 in the hydrogen.cfg (artifact of
+    // the register allocation architecture).
+    final id = int.parse(m.group(1)) ~/ 2;
+    final opcode = m.group(2);
+
+    var operands = m.group(3);
+    if (opcode == "label" || opcode == "gap") {
+      operands = operands.replaceAll(lirLineIgnoredMovesRe, "")
+                         .replaceAll("()", "")
+                         .replaceAllMapped(lirLineRedundantMovesRe,
+                                           (m) => m.group(1))
+                         .replaceAll(new RegExp(r"\s+"), " ");
+      if (!operands.contains("=")) return null;  // No moves left?
+    }
+
+    final lirId = "$id";
+    return new IR.Instruction(line, "$id", opcode, lirOperands(operands, context: lirId));
+  }
 
   get patterns => {
     r"begin_block": {
       r'name "([^"]*)"': (name) {
         block = builder.block(name);
-        block.hirParser = parseHir;
-        block.lirParser = parseLir;
       },
 
       r"successors(.*)$": (successors) {
@@ -103,21 +148,24 @@ class CfgParser extends parsing.ParserBase {
       r"begin_locals": {  // Block phis.
         r"end_locals": () => leave(),
 
-        r"^\s+\d+\s+(\w\d+)\s+(.*)$": (name, args) {
-          block.hir.add(" 0 0 $name Phi $args <|@");
+        r"^\s+\d+\s+(\w\d+)\s+(.*)$": (id, args) {
+          final raw = " 0 0 $id Phi $args <|@";
+          block.hir.add(new IR.Instruction(raw, id, "Phi", hirOperands(args)));
         }
       },
 
       "begin_HIR": {  // Hydrogen IR.
         "end_HIR": () {
-          block.hir.addAll(subrange());
+          block.hir.addAll(subrange().map(parseHir)
+                                     .where((instr) => instr != null));
           leave();
         }
       },
 
       "begin_LIR": {  // Lithium IR.
         "end_LIR": () {
-          block.lir.addAll(subrange());
+          block.lir.addAll(subrange().map(parseLir)
+                                     .where((instr) => instr != null));
           leave();
         }
       },
@@ -177,17 +225,15 @@ final hirOperands = formatting.makeSplitter({
 });
 
 /** Parses hydrogen instructions into SSA name, opcode and operands. */
-parseHir(hir) {
-  return hir.map((line) {
-    final m = hirLineRe.firstMatch(line);
-    if (m == null) return null;
+parseHir(line) {
+  final m = hirLineRe.firstMatch(line);
+  if (m == null) return null;
 
-    final id = m.group(1);
-    final opcode = m.group(2);
-    final operands = m.group(3);
+  final id = m.group(1);
+  final opcode = m.group(2);
+  final operands = m.group(3);
 
-    return new IR.Instruction(line, id, opcode, hirOperands(operands));
-  }).where((instr) => instr != null);
+  return new IR.Instruction(line, id, opcode, hirOperands(operands));
 }
 
 /** Single LIR instruction from hydrogen.cfg. */
@@ -197,7 +243,7 @@ final lirLineRe = new RegExp(r"^\s+(\d+)\s+([-\w]+)\s*(.*)<");
 final lirLineIgnoredMovesRe = new RegExp(r"\(0\) = \[[^\]]+\];");
 
 /** Matches redundant gap moves inserted by lithium-allocator. */
-final lirLineRedundantMovesRe = new RegExp(r"([^ ])\[[^\]]+\];");
+final lirLineRedundantMovesRe = new RegExp(r"(\(|; )\[[^\]]+\];");
 
 class DeoptEnv extends IR.Operand {
   final text;
@@ -211,115 +257,4 @@ class StackMap extends IR.Operand {
   StackMap(this.text);
 
   get tag => "map";
-}
-
-// Formatter for LIR operands.
-final lirOperands = formatting.makeSplitter({
-  r"\[id=.+\]?\]": (val) => new DeoptEnv(val),
-  r"{[^}]+}": (val) => new StackMap(val),
-  r"B\d+\b": (val) => new IR.BlockRef(val),
-});
-
-parseLir(lir) {
-  return lir.map((line) {
-    final m = lirLineRe.firstMatch(line);
-    if (m == null) return null;
-
-    // Lithium ids are multiplied by 2 in the hydrogen.cfg (artifact of
-    // the register allocation architecture).
-    final id = int.parse(m.group(1)) ~/ 2;
-    final opcode = m.group(2);
-
-    var operands = m.group(3);
-    if (opcode == "label" || opcode == "gap") {
-      operands = operands.replaceAll(lirLineIgnoredMovesRe, "")
-                         .replaceAll("()", "")
-                         .replaceAllMapped(lirLineRedundantMovesRe,
-                                           (m) => m.group(1))
-                         .replaceAll(new RegExp(r"\s+"), " ");
-      if (!operands.contains("=")) return null;  // No moves left?
-    }
-
-    return new IR.Instruction(line, "$id", opcode, lirOperands(operands));
-  }).where((instr) => instr != null);
-}
-
-class DeoptMatcher {
-  final ir;
-
-  static resolve(deopts, ir) => new DeoptMatcher(ir).matchAll(deopts);
-
-  DeoptMatcher(this.ir) {
-    bailoutsMapping = computeBailoutsMapping();
-  }
-
-  matchAll(deopts) => deopts.forEach(match);
-
-  match(IR.Deopt deopt) {
-    if (bailoutsMapping == null) {
-      return;
-    }
-
-    deopt.lirId = bailoutsMapping[deopt.id];
-  }
-
-  /** A mapping from bailout ids to lir ids. */
-  var bailoutsMapping;
-
-  /** Matches bailout id comment attached to the jump or mov instructions. */
-  final bailoutRe = new RegExp(r"^deoptimization bailout (\d+)");
-
-  /** Matches deopt_id data stored in lithium environment in hydrogen.cfg. */
-  final deoptIdRe = new RegExp(r"^\s+(\d+)\s+.*deopt_id=(\d+)");
-
-  /** Matches lir id embedded into code comment. */
-  final commentLirReferenceRe = new RegExp(r"@(\d+)");
-
-  /**
-   * Try computing bailout id to lir id mapping based on the deopt_ids
-   * emitted as part of Lithium environments (available since 3.17.1).
-   */
-  computeBailoutsMapping() {
-    // On newer V8 deopt id is printed as part of the lithium environment.
-    if (!_irContainsDeoptMapping()) {
-      return null;
-    }
-
-    final mapping = new Map<int, String>();
-    recordMapping(lirId, deoptId) =>
-        mapping[int.parse(deoptId)] = "${int.parse(lirId) ~/ 2}";
-
-    for (var block in ir.values) {
-      if (block.lir != null) {
-        for (var line in block.lir) {
-          parsing.match(line, deoptIdRe, recordMapping);
-        }
-      }
-    }
-
-    return mapping;
-  }
-
-  /** Marker matching the start of lithium environment. */
-  static const LIR_ENVIROMENT_MARKER = "[id=";
-
-  /** Returns [true] if bailout information is present in hydrogen.cfg. */
-  _irContainsDeoptMapping() {
-    if (ir == null) {
-      return false;
-    }
-
-    // Try every lir line for a match with environment marker.
-    for (var block in ir.values) {
-      if (block.lir != null) {
-        for (var line in block.lir) {
-          if (line.contains(LIR_ENVIROMENT_MARKER) && deoptIdRe.hasMatch(line)) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
-  }
 }

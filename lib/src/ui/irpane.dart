@@ -156,11 +156,11 @@ class IRPane extends PolymerElement {
       add(" ", " ");
       add(span('boldy', block.name), " ", id: block.name);
 
-      for (var instr in block.parsedHir) {
+      for (var instr in block.hir) {
         addEx(hirContext, instr.id, instr.op, instr.args);
       }
 
-      final lir = block.parsedLir.toList();
+      final lir = block.lir;
       ir.attachCode(block, lir);
 
       for (var instr in lir) {

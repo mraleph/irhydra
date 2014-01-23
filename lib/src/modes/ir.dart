@@ -120,18 +120,12 @@ class Block {
   final successors = <Block>[];
   final predecessors = <Block>[];
 
-  final hir = [];
-  final lir = [];
-
-  var hirParser;
-  var lirParser;
+  final hir = <Instruction>[];
+  final lir = <Instruction>[];
 
   Block(this.id, this.name) {
     assert(id >= 0);
   }
-
-  get parsedHir => hirParser == null ? hir : hirParser(hir);
-  get parsedLir => lirParser == null ? lir : lirParser(lir);
 
   /** Creates an edge from this [Block] to the block [to]. */
   edge(Block to) {

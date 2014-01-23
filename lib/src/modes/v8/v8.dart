@@ -79,7 +79,7 @@ class Mode extends BaseMode {
   }
 
   toIr(method, phase) {
-    final blocks = hydrogen_parser.parse(phase.ir);
+    final blocks = hydrogen_parser.parse(method, phase.ir);
     final code = code_parser.parse(phase.code);
 
     final lirIdMarker = new RegExp(r"<@(\d+),#\d+>");
@@ -108,10 +108,6 @@ class Mode extends BaseMode {
         }
         previous = instr;
       }
-    }
-
-    if (!method.deopts.isEmpty) {
-      hydrogen_parser.DeoptMatcher.resolve(method.deopts, blocks);
     }
 
     return new ir.ParsedIr(this, blocks, code, attachCode, method.deopts);
