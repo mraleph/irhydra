@@ -79,7 +79,14 @@ _deferSubstring(str, start, end) =>
 Map parse(IR.Method method, Function ir) {
   final stopwatch = new Stopwatch()..start();
   final parser = new CfgParser(ir())..parse();
-  method.deopts.forEach((deopt) => deopt.lirId = parser.bailouts[deopt.id]);
+
+  for (var deopt in method.deopts) {
+    deopt.lirId = parser.bailouts[deopt.id];
+    deopt.hirId = parser.lir2hir[deopt.lirId];
+    print("${deopt.lirId} / ${deopt.hirId}");
+  }
+  print(parser.lir2hir);
+
   print("hydrogen_parser.parse took ${stopwatch.elapsedMilliseconds}");
   return parser.builder.blocks;
 }
@@ -92,22 +99,32 @@ class CfgParser extends parsing.ParserBase {
 
   CfgParser(str) : super(str.split('\n')) {
     lirOperands = formatting.makeSplitter({
-      r"\[id=.*\](?= )": (lirId, val) {
+      r"\[id=.*?\](?= )": (lirId, val) {
         parsing.match(val, deoptIdRe, (deoptId) => recordDeopt(lirId, deoptId));
         return new DeoptEnv(val);
       },
       r"{[^}]+}": (_, val) => new StackMap(val),
       r"B\d+\b": (_, val) => new IR.BlockRef(val),
+      r"\[hir:(\w\d+)\]": (lirId, hirId) {
+        recordLir2Hir(lirId, hirId);
+        return null;
+      }
     });
   }
 
   final bailouts = new Map<int, String>();
+
+  final lir2hir = new Map<String, String>();
 
   /** Matches deopt_id data stored in lithium environment in hydrogen.cfg. */
   final deoptIdRe = new RegExp(r"deopt_id=(\d+)");
 
   recordDeopt(lirId, deoptId) =>
     bailouts[int.parse(deoptId)] = lirId;
+
+  recordLir2Hir(lirId, hirId) =>
+    lir2hir[lirId] = hirId;
+
 
   parseLir(line) {
     final m = lirLineRe.firstMatch(line);

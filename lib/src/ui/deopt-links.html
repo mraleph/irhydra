@@ -36,8 +36,8 @@
         outline: 0;
       }
     </style>
-    <template repeat="{{deopt in deopts}}">
-      <div class="x-deopt-link"><a href="#ir-{{deopt.lirId}}">deopt @{{deopt.lirId}}</a></div>
+    <template repeat="{{deoptId in deoptIds}}">
+      <div class="x-deopt-link"><a href="#ir-{{deoptId}}">deopt @{{deoptId}}</a></div>
     </template>
   </template>
   <script type="application/dart" src='deopt-links.dart'></script>

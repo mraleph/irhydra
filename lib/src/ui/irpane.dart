@@ -183,13 +183,24 @@ class IRPane extends PolymerElement {
       ir.code.epilogue.forEach(codeRenderer.display);
     }
 
-    ir.deopts.forEach(_createDeoptMarkerAt);
+    ir.deopts.forEach(_createDeoptMarkersAt);
 
     print("IRPane.render() took ${stopwatch.elapsedMilliseconds}");
   }
 
   /** Create marker for [deopt] at the line corresponding to [deopt.lirId]. */
-  _createDeoptMarkerAt(deopt) {
+  _createDeoptMarkersAt(deopt) {
+    if (deopt.lirId != null) {
+      line(deopt.lirId).text.append(_createDeoptMarkerFor(deopt));
+    }
+
+    if (deopt.hirId != null) {
+      line(deopt.hirId).text.append(_createDeoptMarkerFor(deopt));
+    }
+  }
+
+  /** Create marker for [deopt] at the line corresponding to [deopt.lirId]. */
+  _createDeoptMarkerFor(deopt) {
     // Consider lazy deoptimizations less important compared to eager (check failures) deopts.
     final labelType = deopt.isLazy ? 'label-warning' : 'label-danger';
 
@@ -209,7 +220,7 @@ class IRPane extends PolymerElement {
       "container": 'body'
     })).data('bs.popover').tip().addClass('deopt');
 
-    line(deopt.lirId).text.append(marker);
+    return marker;
   }
 
   formatOperand(tag, text) => span("-${tag}", text);

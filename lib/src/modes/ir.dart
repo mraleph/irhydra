@@ -74,7 +74,7 @@ class Deopt {
   /** [true] is this deoptimization was lazy (forced on return to this execution frame). */
   final bool isLazy;
 
-  var lirId;
+  var hirId, lirId;
 
   Deopt(this.id, this.raw, { this.isLazy: false });
 }
