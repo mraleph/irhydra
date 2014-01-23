@@ -78,17 +78,13 @@ class Mode extends BaseMode {
     return methods;
   }
 
-  toIr(method, phase) {
-    final blocks = hydrogen_parser.parse(method, phase.ir);
-    final code = code_parser.parse(phase.code);
-
-    final lirIdMarker = new RegExp(r"<@(\d+),#\d+>");
-
-    attachCode(block, lir) {
+  final _lirIdMarker = new RegExp(r"<@(\d+),#\d+>");
+  _attachCode(blocks, code) {
+    for (var block in blocks.values) {
       final codeCollector = new CodeCollector(code.codeOf(block.name));
 
       var previous;
-      for (var instr in lir) {
+      for (var instr in block.lir) {
         codeCollector.collectUntil("@${instr.id}");
 
         if (!codeCollector.isEmpty) {
@@ -103,14 +99,19 @@ class Mode extends BaseMode {
         // level (e.g. goto) produce no code and their markers are not present in the
         // resulting code comments.
         if (codeCollector.isAfterMarker("@${instr.id}")) {
-          codeCollector.collectWhile((comment) => !lirIdMarker.hasMatch(comment));
+          codeCollector.collectWhile((comment) => !_lirIdMarker.hasMatch(comment));
           instr.code = codeCollector.collected;
         }
         previous = instr;
       }
     }
+  }
 
-    return new ir.ParsedIr(this, blocks, code, attachCode, method.deopts);
+  toIr(method, phase) {
+    final blocks = hydrogen_parser.parse(method, phase.ir);
+    final code = code_parser.parse(phase.code);
+    _attachCode(blocks, code);
+    return new ir.ParsedIr(this, blocks, code, method.deopts);
   }
 
   reset() {

@@ -160,10 +160,7 @@ class IRPane extends PolymerElement {
         addEx(hirContext, instr.id, instr.op, instr.args);
       }
 
-      final lir = block.lir;
-      ir.attachCode(block, lir);
-
-      for (var instr in lir) {
+      for (var instr in block.lir) {
         addEx(lirContext, instr.id, instr.op, instr.args);
         if (codeMode == 'inline' && instr.code != null) {
           instr.code.forEach(codeRenderer.display);
@@ -171,7 +168,7 @@ class IRPane extends PolymerElement {
       }
 
       if (codeMode == 'split') {
-        for (var instr in lir) {
+        for (var instr in block.lir) {
           if (instr.code != null) {
             instr.code.forEach(codeRenderer.display);
           }

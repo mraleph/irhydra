@@ -105,10 +105,9 @@ class ParsedIr {
   final mode;
   final Map<String, Block> blocks;
   final code;
-  final attachCode;
   final deopts;
 
-  ParsedIr(this.mode, this.blocks, this.code, this.attachCode, this.deopts);
+  ParsedIr(this.mode, this.blocks, this.code, this.deopts);
 }
 
 /** Block in the control flow graph. */
