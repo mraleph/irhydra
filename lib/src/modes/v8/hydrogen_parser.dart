@@ -238,7 +238,8 @@ final hirOperands = formatting.makeSplitter({
   r"\w\d+\b": (val) => new IR.ValRef(val),
   r"range:(-?\d+)_(-?\d+)(_m0)?": (low, high, m0) => new Range(low, high, m0 != null),
   r"changes\[[^\]]+\]": (val) => new Changes(val),
-  r"type:\w+": (val) => new Type(val.split(':').last),
+  r"type:[-\w]+": (val) => new Type(val.split(':').last),
+  r"uses:\w+": (_) => null,
 });
 
 /** Parses hydrogen instructions into SSA name, opcode and operands. */
