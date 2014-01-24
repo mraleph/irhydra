@@ -87,6 +87,7 @@ Map parse(IR.Method method, Function ir) {
   for (var deopt in method.deopts) {
     deopt.lirId = parser.bailouts[deopt.id];
     deopt.hirId = parser.lir2hir[deopt.lirId];
+    deopt.srcPos = parser.hir2pos[deopt.hirId];
   }
 
   print("hydrogen_parser.parse took ${stopwatch.elapsedMilliseconds}");
@@ -101,14 +102,23 @@ class CfgParser extends parsing.ParserBase {
 
   CfgParser(str) : super(str.split('\n')) {
     hirOperands = formatting.makeSplitter({
-      r"0x[a-f0-9]+": (val) => new Constant(val),
-      r"B\d+\b": (val) => new IR.BlockRef(val),
-      r"\w\d+\b": (val) => new IR.ValRef(val),
-      r"range:(-?\d+)_(-?\d+)(_m0)?": (low, high, m0) => new Range(low, high, m0 != null),
-      r"changes\[[^\]]+\]": (val) => new Changes(val),
-      r"type:[-\w]+": (val) => new Type(val.split(':').last),
-      r"uses:\w+": (_) => null,
-      r"pos:(\d+)(_(\d+))?": (pos, _, functionId) => null,
+      r"0x[a-f0-9]+": (hirId, val) => new Constant(val),
+      r"B\d+\b": (hirId, val) => new IR.BlockRef(val),
+      r"\w\d+\b": (hirId, val) => new IR.ValRef(val),
+      r"range:(-?\d+)_(-?\d+)(_m0)?": (hirId, low, high, m0) => new Range(low, high, m0 != null),
+      r"changes\[[^\]]+\]": (hirId, val) => new Changes(val),
+      r"type:[-\w]+": (hirId, val) => new Type(val.split(':').last),
+      r"uses:\w+": (hirId, _) => null,
+      r"pos:(\d+)(_(\d+))?": (hirId, functionId, _, pos) {
+        if (pos == null) {
+          pos = int.parse(functionId);
+          functionId = 0;
+        } else {
+          pos = int.parse(pos);
+          functionId = int.parse(functionId);
+        }
+        hir2pos[hirId] = new SourcePosition(functionId, pos);
+      }
     });
 
     lirOperands = formatting.makeSplitter({
@@ -129,6 +139,8 @@ class CfgParser extends parsing.ParserBase {
 
   final lir2hir = new Map<String, String>();
 
+  final hir2pos = new Map<String, SourcePosition>();
+
   /** Matches deopt_id data stored in lithium environment in hydrogen.cfg. */
   final deoptIdRe = new RegExp(r"deopt_id=(\d+)");
 
@@ -147,7 +159,7 @@ class CfgParser extends parsing.ParserBase {
     final opcode = m.group(2);
     final operands = m.group(3);
 
-    return new IR.Instruction(line, id, opcode, hirOperands(operands));
+    return new IR.Instruction(line, id, opcode, hirOperands(operands, context: id));
   }
 
   parseLir(line) {
@@ -191,7 +203,7 @@ class CfgParser extends parsing.ParserBase {
 
         r"^\s+\d+\s+(\w\d+)\s+(.*)$": (id, args) {
           final raw = " 0 0 $id Phi $args <|@";
-          block.hir.add(new IR.Instruction(raw, id, "Phi", hirOperands(args)));
+          block.hir.add(new IR.Instruction(raw, id, "Phi", hirOperands(args, context: id)));
         }
       },
 
@@ -277,4 +289,13 @@ class StackMap extends IR.Operand {
   StackMap(this.text);
 
   get tag => "map";
+}
+
+class SourcePosition {
+  final functionId;
+  final position;
+
+  SourcePosition(this.functionId, this.position);
+
+  toString() => "${position}@${functionId}";
 }

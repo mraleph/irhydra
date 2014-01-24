@@ -43,9 +43,12 @@ class PreParser extends parsing.ParserBase {
 
   PreParser(text) : super(text.split('\n'));
 
-  enterMethod(name) {
+  enterMethod(name, optimizationId) {
+    if (currentMethod != null && currentMethod.optimizationId == optimizationId) {
+      return;
+    }
     currentMethod = new IR.Method(new IR.Name(name, null, name),
-                                  optimizationId: optId.take());
+                                  optimizationId: optimizationId);
     methods.add(currentMethod);
   }
 
@@ -59,14 +62,14 @@ class PreParser extends parsing.ParserBase {
       },
 
       r"^name = ([\w.]*)$": (name) {  // Function name.
-        enterMethod(name);
+        enterMethod(name, optId.take());
       },
 
       r"^Instructions": {  // Disassembly of the body.
         r"^\s+;;; Safepoint table": () {
           // Code is produced during the very last compilation phase.
           if (currentMethod == null) {
-            enterMethod("");
+            enterMethod("", optId.take());
           }
           currentMethod.phases.add(new IR.Phase("Z_Code generation", code: subrange()));
           leaveMethod();
@@ -74,6 +77,18 @@ class PreParser extends parsing.ParserBase {
           leave(nstates: 2);
         }
       }
+    },
+
+    // Start of source dump.
+    r"^\-\-\- FUNCTION SOURCE \(([^)]*)\) id{(\d+),(\d+)} \-\-\-$": (name, optId, funcId) {
+      enterMethod(name, optId);
+      enter({
+        r"^\-\-\- END \-\-\-$": () {
+          assert(currentMethod.sources.length == int.parse(funcId));
+          currentMethod.sources.add(subrange());
+          leave();
+        }
+      });
     },
 
     // Start of the deoptimization event (we drop no-name deopts)

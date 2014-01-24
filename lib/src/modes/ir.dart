@@ -71,8 +71,8 @@ class Deopt {
   /** Unique identifier that maps deoptimization to a place in the IR. */
   final id;
 
-  /** HIR/LIR ids for the instruction that deoptimized. Resolved after IR is parsed. */
-  var hirId, lirId;
+  /** HIR/LIR/Source positions for the instruction that deoptimized. Resolved after IR is parsed. */
+  var hirId, lirId, srcPos;
 
   /** Additional textual information about the deoptimization. */
   final raw;
@@ -101,6 +101,9 @@ class Method {
 
   /** List of [Deopt] artifacts associated with this method. */
   final deopts = [];
+
+  /** List of function sources associated with this method. */
+  final sources = [];
 
   get hasDeopts => deopts.length > 0;
 

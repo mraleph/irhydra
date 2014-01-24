@@ -131,10 +131,15 @@ class Mode extends BaseMode {
 
     // Both are present, thus have to merge.
     mergeMethod(methodIr, methodCode) {
-      // Move code and deopt information to the method with IR as it
+      // Move code, sources and deopt information to the method with IR as it
       // can contain information about multiple phases and method with code
       // always contains only one.
-      methodIr.phases.last.code = methodCode.phases.last.code;
+      assert(methodIr.sources.isEmpty);
+      assert(methodIr.deopts.isEmpty);
+      if (!methodCode.phases.isEmpty) {
+        methodIr.phases.last.code = methodCode.phases.last.code;
+      }
+      methodIr.sources.addAll(methodCode.sources);
       methodIr.deopts.addAll(methodCode.deopts);
     }
 
