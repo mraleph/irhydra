@@ -139,8 +139,8 @@ class Mode extends BaseMode {
     }
 
     // First try to merge based on optimization IDs.
-    final opt2ir = new Map<String, ir.Method>.fromIterable(
-      code.where((method) => method.optimizationId != null),
+    final opt2ir = new Map.fromIterable(
+      ir.where((method) => method.optimizationId != null),
       key: (method) => method.optimizationId
     );
 
@@ -150,6 +150,7 @@ class Mode extends BaseMode {
       for (var currentCode in code) {
         mergeMethod(opt2ir[currentCode.optimizationId], currentCode);
       }
+      methods = ir;
       return;
     }
 

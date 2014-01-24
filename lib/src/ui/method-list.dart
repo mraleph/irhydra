@@ -35,7 +35,6 @@ class MethodList extends PolymerElement {
 
     sortByDeopts = _sortedByDeopts = false;
     _recomputeList(force: true);
-    print("methodsChanged (done)");
   }
 
   filterUpdated() => delayed.schedule(_recomputeList);

@@ -87,9 +87,7 @@ Map parse(IR.Method method, Function ir) {
   for (var deopt in method.deopts) {
     deopt.lirId = parser.bailouts[deopt.id];
     deopt.hirId = parser.lir2hir[deopt.lirId];
-    print("${deopt.lirId} / ${deopt.hirId}");
   }
-  print(parser.lir2hir);
 
   print("hydrogen_parser.parse took ${stopwatch.elapsedMilliseconds}");
   return parser.builder.blocks;
@@ -99,9 +97,20 @@ class CfgParser extends parsing.ParserBase {
   final builder = new IR.CfgBuilder();
   var block;
 
-  var lirOperands;
+  var lirOperands, hirOperands;
 
   CfgParser(str) : super(str.split('\n')) {
+    hirOperands = formatting.makeSplitter({
+      r"0x[a-f0-9]+": (val) => new Constant(val),
+      r"B\d+\b": (val) => new IR.BlockRef(val),
+      r"\w\d+\b": (val) => new IR.ValRef(val),
+      r"range:(-?\d+)_(-?\d+)(_m0)?": (low, high, m0) => new Range(low, high, m0 != null),
+      r"changes\[[^\]]+\]": (val) => new Changes(val),
+      r"type:[-\w]+": (val) => new Type(val.split(':').last),
+      r"uses:\w+": (_) => null,
+      r"pos:(\d+)(_(\d+))?": (pos, _, functionId) => null,
+    });
+
     lirOperands = formatting.makeSplitter({
       r"\[id=.*?\](?= )": (lirId, val) {
         parsing.match(val, deoptIdRe, (deoptId) => recordDeopt(lirId, deoptId));
@@ -129,6 +138,17 @@ class CfgParser extends parsing.ParserBase {
   recordLir2Hir(lirId, hirId) =>
     lir2hir[lirId] = hirId;
 
+  /** Parses hydrogen instructions into SSA name, opcode and operands. */
+  parseHir(line) {
+    final m = hirLineRe.firstMatch(line);
+    if (m == null) return null;
+
+    final id = m.group(1);
+    final opcode = m.group(2);
+    final operands = m.group(3);
+
+    return new IR.Instruction(line, id, opcode, hirOperands(operands));
+  }
 
   parseLir(line) {
     final m = lirLineRe.firstMatch(line);
@@ -234,28 +254,6 @@ class Type extends IR.Operand {
   Type(this.text);
 
   get tag => "type";
-}
-
-final hirOperands = formatting.makeSplitter({
-  r"0x[a-f0-9]+": (val) => new Constant(val),
-  r"B\d+\b": (val) => new IR.BlockRef(val),
-  r"\w\d+\b": (val) => new IR.ValRef(val),
-  r"range:(-?\d+)_(-?\d+)(_m0)?": (low, high, m0) => new Range(low, high, m0 != null),
-  r"changes\[[^\]]+\]": (val) => new Changes(val),
-  r"type:[-\w]+": (val) => new Type(val.split(':').last),
-  r"uses:\w+": (_) => null,
-});
-
-/** Parses hydrogen instructions into SSA name, opcode and operands. */
-parseHir(line) {
-  final m = hirLineRe.firstMatch(line);
-  if (m == null) return null;
-
-  final id = m.group(1);
-  final opcode = m.group(2);
-  final operands = m.group(3);
-
-  return new IR.Instruction(line, id, opcode, hirOperands(operands));
 }
 
 /** Single LIR instruction from hydrogen.cfg. */
