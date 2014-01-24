@@ -65,8 +65,14 @@ class Phase {
  */
 @observable
 class Deopt {
-  /** Unique identifier that maps deoptimization to a place in the IR */
+  /** ID of the code object that deoptimized. */
+  final optimizationId;
+
+  /** Unique identifier that maps deoptimization to a place in the IR. */
   final id;
+
+  /** HIR/LIR ids for the instruction that deoptimized. Resolved after IR is parsed. */
+  var hirId, lirId;
 
   /** Additional textual information about the deoptimization. */
   final raw;
@@ -74,9 +80,7 @@ class Deopt {
   /** [true] is this deoptimization was lazy (forced on return to this execution frame). */
   final bool isLazy;
 
-  var hirId, lirId;
-
-  Deopt(this.id, this.raw, { this.isLazy: false });
+  Deopt(this.id, this.raw, { this.isLazy: false, this.optimizationId });
 }
 
 /**
@@ -86,6 +90,9 @@ class Deopt {
  */
 @observable
 class Method {
+  /** Unique optimization identifier for this method. */
+  final optimizationId;
+
   /** Method's name */
   final Name name;
 
@@ -97,7 +104,7 @@ class Method {
 
   get hasDeopts => deopts.length > 0;
 
-  Method(this.name);
+  Method(this.name, {this.optimizationId});
 }
 
 @observable

@@ -129,9 +129,33 @@ class Mode extends BaseMode {
       return;
     }
 
-    // Both are present, thus have to merge. Iterate both lists simultaneously
-    // assuming that for every optimized code dump there must be a hydrogen
-    // graph.
+    // Both are present, thus have to merge.
+    mergeMethod(methodIr, methodCode) {
+      // Move code and deopt information to the method with IR as it
+      // can contain information about multiple phases and method with code
+      // always contains only one.
+      methodIr.phases.last.code = methodCode.phases.last.code;
+      methodIr.deopts.addAll(methodCode.deopts);
+    }
+
+    // First try to merge based on optimization IDs.
+    final opt2ir = new Map<String, ir.Method>.fromIterable(
+      code.where((method) => method.optimizationId != null),
+      key: (method) => method.optimizationId
+    );
+
+    if (opt2ir.length > 0) {
+      // TODO(mraleph) be more resilent and report meaningful error if
+      // we can't match.
+      for (var currentCode in code) {
+        mergeMethod(opt2ir[currentCode.optimizationId], currentCode);
+      }
+      return;
+    }
+
+    // Try to merge based on names.
+    // Iterate both lists simultaneously assuming that for every
+    // optimized code dump there must be a hydrogen graph.
     var i = 0;
     for (var j = 0; j < code.length; j++) {
       var currentIr = i;
@@ -139,11 +163,7 @@ class Mode extends BaseMode {
 
       // We are going to ignore code objects without IR artifacts.
       if (currentIr < ir.length) {
-        // Move code and deopt information to the method with IR as it
-        // can contain information about multiple phases and method with code
-        // always contains only one.
-        ir[currentIr].phases.last.code = code[j].phases.last.code;
-        ir[currentIr].deopts.addAll(code[j].deopts);
+        mergeMethod(ir[currentIr], code[j]);
 
         // There can be no other code objects attributed to this IR.
         // Advance past it.

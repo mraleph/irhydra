@@ -30,6 +30,9 @@ List<IR.Method> preparse(String str) {
   // Matches tags that start/end compilation and cfg records.
   final tagRe = new RegExp(r"(begin|end)_(compilation|cfg)\n");
 
+  // Matches line containing method name and optimization id.
+  final compilationRe = new RegExp(r'name "([^"]*)"\n\s+method "[^"]*:(\d+)"');
+
   // Matches line containing the name field.
   final nameRe = new RegExp(r'name "([^"]*)"');
 
@@ -49,11 +52,12 @@ List<IR.Method> preparse(String str) {
       // This is the compilation record for the method.
       // Extract the name from the record.
       final substr = str.substring(start, match.start);
-      final name = nameRe.firstMatch(substr).group(1);
-
-      // Create the method and make it current.
-      method = new IR.Method(new IR.Name.fromFull(name));
-      methods.add(method);
+      parsing.match(substr, compilationRe, (name, optId) {
+        // Create the method and make it current.
+        method = new IR.Method(new IR.Name.fromFull(name),
+                               optimizationId: optId);
+        methods.add(method);
+      });
     } else if (tag == "end_cfg\n") {
       // This is the cfg record containing blocks. No need to create substring
       // right away: its content will be needed only when this phase is

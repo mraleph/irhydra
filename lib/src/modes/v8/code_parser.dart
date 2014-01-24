@@ -37,12 +37,15 @@ Code parse(Iterable<String> lines) => lines != null ?
 class PreParser extends parsing.ParserBase {
   final methods = <IR.Method>[];
 
+  final optId = new Optional();
+
   IR.Method currentMethod;
 
   PreParser(text) : super(text.split('\n'));
 
   enterMethod(name) {
-    currentMethod = new IR.Method(new IR.Name(name, null, name));
+    currentMethod = new IR.Method(new IR.Name(name, null, name),
+                                  optimizationId: optId.take());
     methods.add(currentMethod);
   }
 
@@ -51,6 +54,10 @@ class PreParser extends parsing.ParserBase {
   get patterns => {
     // Start of the dump.
     r"^\-\-\- Optimized code \-\-\-$": {
+      r"^optimization_id = (\d+)$": (optId) {  // Function name.
+        this.optId.put(optId);
+      },
+
       r"^name = ([\w.]*)$": (name) {  // Function name.
         enterMethod(name);
       },
@@ -70,23 +77,20 @@ class PreParser extends parsing.ParserBase {
     },
 
     // Start of the deoptimization event (we drop no-name deopts)
-    r"^\[deoptimizing \(DEOPT (\w+)\): begin 0x[a-f0-9]+ ([\w$.]+) @(\d+)": (type, method_name, bailout_id) {
-      // TODO(vegorov): add warning about lost deopts.
+    r"^\[deoptimizing \(DEOPT (\w+)\): begin 0x[a-f0-9]+ ([\w$.]+) \(opt (#\d+)\) @(\d+)": (type, methodName, optId, bailoutId) {
       enter({
         r"^\[deoptimizing \(\w+\): end": () {
           final deopt =
-              new IR.Deopt(int.parse(bailout_id), subrange(inclusive: true), isLazy: type == "lazy");
+              new IR.Deopt(int.parse(bailoutId), subrange(inclusive: true), isLazy: type == "lazy", optimizationId: optId);
 
-          // There is no reliable way to match deopt to the code where it
-          // occured so we just attach it to the last code object with the
-          // same name.
           for (var currentMethod in methods.reversed) {
-            if (currentMethod.name.full == method_name) {
+            if (currentMethod.optimizationId == optId) {
               currentMethod.deopts.add(deopt);
               break;
             }
           }
 
+          // TODO(vegorov): add warning about lost deopts.
           leave();
         }
       });
@@ -178,5 +182,20 @@ class Parser extends parsing.ParserBase {
   get code {
     if (block != null) block.end = _code.length;  // Finalize last block.
     return new Code(start, _code, blocks);
+  }
+}
+
+class Optional {
+  var _value;
+
+  put(value) {
+    assert(_value == null);
+    _value = value;
+  }
+
+  take() {
+    var v = _value;
+    _value = null;
+    return v;
   }
 }
