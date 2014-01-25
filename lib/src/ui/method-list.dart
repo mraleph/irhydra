@@ -63,11 +63,14 @@ class MethodList extends PolymerElement {
     if (sortByDeopts) {
       _computeReopts();
       return (a, b) {
-        var result = b.reopts - a.reopts;
+        var result = b.method.deopts.length - a.method.deopts.length;
         if (result == 0) {
-          result = a.firstTimestamp - b.firstTimestamp;
+          result = b.reopts - a.reopts;
           if (result == 0) {
-            result = a.timestamp - b.timestamp;
+            result = a.firstTimestamp - b.firstTimestamp;
+            if (result == 0) {
+              result = a.timestamp - b.timestamp;
+            }
           }
         }
         return result;
