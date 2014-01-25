@@ -51,6 +51,7 @@ class TabPane extends PolymerElement {
   set activeTab (tab) {
     _activeTab = notifyPropertyChange(const Symbol("activeTab"), _activeTab, tab);
     _panes.forEach((pane) => pane.style.display = _displayStyle(pane));
+    document.dispatchEvent(new CustomEvent("DisplayChanged"));
   }
 
   switchTabAction(event, detail, target) {

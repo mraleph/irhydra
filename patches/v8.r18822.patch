@@ -676,7 +676,7 @@ Index: src/hydrogen.cc
 +           id,
 +           inline_id);
 +    position.PrintTo(tracing_scope.file());
-+    PrintF("\n");
++    PrintF(tracing_scope.file(), "\n");
 +  }
 +
 +  return inline_id;
@@ -1166,3 +1166,29 @@ Index: src/hydrogen-instructions.h
      set_operand_position(zone, 0, left_pos);
      set_operand_position(zone, 1, right_pos);
    }
+Index: benchmarks/run.js
+===================================================================
+--- benchmarks/run.js	(revision 18822)
++++ benchmarks/run.js	(working copy)
+@@ -27,14 +27,14 @@
+ 
+ 
+ load('base.js');
+-load('richards.js');
++//load('richards.js');
+ load('deltablue.js');
+-load('crypto.js');
+-load('raytrace.js');
+-load('earley-boyer.js');
+-load('regexp.js');
+-load('splay.js');
+-load('navier-stokes.js');
++//load('crypto.js');
++//load('raytrace.js');
++//load('earley-boyer.js');
++//load('regexp.js');
++//load('splay.js');
++//load('navier-stokes.js');
+ 
+ var success = true;
+ 

@@ -83,9 +83,16 @@ class Deopt {
   Deopt(this.id, this.raw, { this.isLazy: false, this.optimizationId });
 }
 
+class FunctionSource {
+  final String name;
+  final Iterable source;
+  
+  FunctionSource(this.name, this.source);
+}
+
 class SourcePosition {
-  final inlineId;
-  final position;
+  final int inlineId;
+  final int position;
 
   SourcePosition(this.inlineId, this.position);
 
@@ -93,10 +100,14 @@ class SourcePosition {
 }
 
 class InlinedFunction {
-  final sourceId;
-  final position;
+  final int inlineId;
+  final int sourceId;
+  final SourcePosition position;
 
-  InlinedFunction(this.sourceId, this.position);
+  inlinedInto(InlinedFunction other) =>
+    position != null && position.inlineId == other.inlineId;
+
+  InlinedFunction(this.inlineId, this.sourceId, this.position);
 }
 
 /**
@@ -113,15 +124,15 @@ class Method {
   final Name name;
 
   /** List of [Phase] artifacts associated with this method. */
-  final phases = <Phase>[];
+  final List<Phase> phases = <Phase>[];
 
   /** List of [Deopt] artifacts associated with this method. */
-  final deopts = <Deopt>[];
+  final List<Deopt> deopts = <Deopt>[];
 
   /** List of function sources associated with this method. */
-  final sources = [];
+  final List<FunctionSource> sources = <FunctionSource>[];
 
-  final inlined = <InlinedFunction>[new InlinedFunction(0, null)];
+  final List<InlinedFunction> inlined = <InlinedFunction>[new InlinedFunction(0, 0, null)];
 
   get hasDeopts => deopts.length > 0;
 

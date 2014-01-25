@@ -85,7 +85,7 @@ class PreParser extends parsing.ParserBase {
       enter({
         r"^\-\-\- END \-\-\-$": () {
           assert(currentMethod.sources.length == int.parse(funcId));
-          currentMethod.sources.add(subrange());
+          currentMethod.sources.add(new IR.FunctionSource(name, subrange()));
           leave();
         }
       });
@@ -93,8 +93,10 @@ class PreParser extends parsing.ParserBase {
 
     // Start of source dump.
     r"^INLINE \(([^)]*)\) id{(\d+),(\d+)} AS (\d+) AT <(\?|\d+:\d+)>$": (name, optId, funcId, inlineId, pos) {
+      inlineId = int.parse(inlineId);
+      funcId = int.parse(funcId);
       assert(currentMethod.optimizationId == optId);
-      assert(currentMethod.inlined.length == int.parse(inlineId));
+      assert(currentMethod.inlined.length == inlineId);
 
       if (pos == "?") {
         pos = null;
@@ -102,10 +104,8 @@ class PreParser extends parsing.ParserBase {
         final s = pos.split(":").map(int.parse).toList();
         pos = new IR.SourcePosition(s[0], s[1]);
       }
-      
-      print("inlined function ${funcId} at ${pos}");
 
-      currentMethod.inlined.add(new IR.InlinedFunction(funcId, pos));
+      currentMethod.inlined.add(new IR.InlinedFunction(inlineId, funcId, pos));
     },
 
     // Start of the deoptimization event (we drop no-name deopts)

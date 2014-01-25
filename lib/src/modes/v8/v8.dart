@@ -141,6 +141,7 @@ class Mode extends BaseMode {
       }
       methodIr.sources.addAll(methodCode.sources);
       methodIr.deopts.addAll(methodCode.deopts);
+      methodIr.inlined.addAll(methodCode.inlined.skip(1));
     }
 
     // First try to merge based on optimization IDs.

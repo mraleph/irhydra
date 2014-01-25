@@ -8,6 +8,7 @@
   <link rel="import" href="irpane.html">
   <link rel="import" href="method-list.html">
   <link rel="import" href="open-file-button.html">
+  <link rel="import" href="source-pane.html">
   <link rel="import" href="spinner-element.html">
   <link rel="import" href="tab-pane.html">
   <template>
@@ -101,7 +102,7 @@
             </graph-pane>
           </div>
           <div data-title="Source" data-href="source">
-            <h3>This is Source pane</h3>
+            <source-pane method="{{currentMethod}}"></source-pane>
           </div>
           <div class="after-tabs">
             <template if="{{!ir.code.isEmpty}}">
