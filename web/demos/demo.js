@@ -1,15 +1,20 @@
 function Vec2(x, y) {
-  this.x = x;
-  this.y = y;
+  this._x = x;
+  this._y = y;
 }
 
-Vec2.prototype.len2 = function () {
-  return this.x * this.x + this.y * this.y;
-};
+Vec2.prototype = {
+  get x () { return this._x; },
+  get y () { return this._y; },
 
-Vec2.prototype.len = function () {
-  return Math.sqrt(this.len2());
-};
+  len2: function () {
+    return this.x * this.x + this.y * this.y;
+  },
+
+  len: function () {
+    return Math.sqrt(this.len2());
+  }
+}
 
 function loop(v) {
   var sum = 0;

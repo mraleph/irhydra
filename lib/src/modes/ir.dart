@@ -83,6 +83,22 @@ class Deopt {
   Deopt(this.id, this.raw, { this.isLazy: false, this.optimizationId });
 }
 
+class SourcePosition {
+  final inlineId;
+  final position;
+
+  SourcePosition(this.inlineId, this.position);
+
+  toString() => "<${inlineId}:${position}>";
+}
+
+class InlinedFunction {
+  final sourceId;
+  final position;
+
+  InlinedFunction(this.sourceId, this.position);
+}
+
 /**
  * Method or function.
  *
@@ -100,10 +116,12 @@ class Method {
   final phases = <Phase>[];
 
   /** List of [Deopt] artifacts associated with this method. */
-  final deopts = [];
+  final deopts = <Deopt>[];
 
   /** List of function sources associated with this method. */
   final sources = [];
+
+  final inlined = <InlinedFunction>[new InlinedFunction(0, null)];
 
   get hasDeopts => deopts.length > 0;
 

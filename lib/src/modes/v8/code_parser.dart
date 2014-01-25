@@ -91,6 +91,23 @@ class PreParser extends parsing.ParserBase {
       });
     },
 
+    // Start of source dump.
+    r"^INLINE \(([^)]*)\) id{(\d+),(\d+)} AS (\d+) AT <(\?|\d+:\d+)>$": (name, optId, funcId, inlineId, pos) {
+      assert(currentMethod.optimizationId == optId);
+      assert(currentMethod.inlined.length == int.parse(inlineId));
+
+      if (pos == "?") {
+        pos = null;
+      } else {
+        final s = pos.split(":").map(int.parse).toList();
+        pos = new IR.SourcePosition(s[0], s[1]);
+      }
+      
+      print("inlined function ${funcId} at ${pos}");
+
+      currentMethod.inlined.add(new IR.InlinedFunction(funcId, pos));
+    },
+
     // Start of the deoptimization event (we drop no-name deopts)
     r"^\[deoptimizing \(DEOPT (\w+)\): begin 0x[a-f0-9]+ ([\w$.]+) \(opt #(\d+)\) @(\d+)": (type, methodName, optId, bailoutId) {
       enter({

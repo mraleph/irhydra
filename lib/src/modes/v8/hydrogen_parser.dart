@@ -117,7 +117,7 @@ class CfgParser extends parsing.ParserBase {
           pos = int.parse(pos);
           functionId = int.parse(functionId);
         }
-        hir2pos[hirId] = new SourcePosition(functionId, pos);
+        hir2pos[hirId] = new IR.SourcePosition(functionId, pos);
       }
     });
 
@@ -289,13 +289,4 @@ class StackMap extends IR.Operand {
   StackMap(this.text);
 
   get tag => "map";
-}
-
-class SourcePosition {
-  final functionId;
-  final position;
-
-  SourcePosition(this.functionId, this.position);
-
-  toString() => "${position}@${functionId}";
 }
