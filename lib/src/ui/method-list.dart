@@ -131,7 +131,7 @@ class MethodList extends PolymerElement {
               .replaceAll(new RegExp(r" +"), ".*"),
               caseSensitive: false);
 
-    return (wrapper) => pattern.hasMatch(wrapper.name.short);
+    return (wrapper) => pattern.hasMatch(wrapper.name);
   }
  }
 

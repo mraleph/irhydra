@@ -9,65 +9,77 @@
         flex-direction: column;
         min-height: 0px;
       }
-      
+
       .method-list-methods {
         -webkit-flex: 1 1 auto;
         overflow-y: auto;
         min-height: 0px;
       }
-      
+
       .method-list-methods h3 {
         color: white;
       }
-      
+
       .method-list-footer {
         min-height: 30px;
         padding: 5px;
       }
-      
+
       .method-list-methods::-webkit-scrollbar {
         height: 8px;
         width: 8px;
       }
-      
+
       .method-list-methods::-webkit-scrollbar-track,
       .method-list-methods::-webkit-scrollbar-corner {
         background: inherit;
       }
-      
+
       .method-list-methods::-webkit-scrollbar-thumb {
         background: #BDC3C7;
         border-radius: 5px;
       }
-      
+
       .nav > li > h3 {
         white-space: nowrap;
       }
-      
+
       .phases {
         list-style: none;
         padding-left: 0;
       }
-      
+
       .nav > li > h3 {
         padding-left: 5px;
         font-weight: 400;
       }
-      
+
+      .nav > li > h3 > a {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .nav > li > h3 > a:hover,
+      .nav > li > h3 > a:focus {
+        text-decoration: none;
+        background-color: #34495E;
+      }
+
       .phases > li > a {
         color: white;
         display: block;
         padding: 2px 15px;
       }
-      
+
       .phases > li > a:hover,
       .phases > li > a:focus {
         text-decoration: none;
         background-color: #34495E;
       }
-      
+
       h3.deopt { color: red; }
-      
+
       .toggle {
         text-align: center;
         width: 40px;
@@ -79,11 +91,11 @@
         appearance: none;
         cursor: pointer;
       }
-      
+
       .toggle:hover {
         background: #34495E;
       }
-      
+
       .toggle:after {
         content: '\f071';
         font-size: 16pt;
@@ -95,7 +107,7 @@
         -moz-osx-font-smoothing: grayscale;
         color: white;
       }
-      
+
       .toggle:checked:after {
         color: red;
       }
@@ -104,19 +116,26 @@
     <div class="method-list">
       <div class="method-list-methods">
         <ul class="nav nav-list">
-          <template repeat="{{method in filteredMethods | enumerate }}">          
+          <template repeat="{{method in filteredMethods | enumerate }}">
             <li>
-              <h3 class="{{ { 'deopt': method.value.hasDeopts } }}">{{method.value.name.short}}</h3>
-              <ul class="phases">
-                <template repeat="{{phase in method.value.phases | enumerate}}">
-                  <li><a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},{{phase.index}}">{{phase.value.name}}</a></li>
-                </template>
-              </ul>
+              <template if="{{method.value.phases.length > 1}}">
+                <h3 class="{{ { 'deopt': method.value.hasDeopts } }}">{{method.value.name.short}}</h3>
+                <ul class="phases">
+                  <template repeat="{{phase in method.value.phases | enumerate}}">
+                    <li><a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},{{phase.index}}">{{phase.value.name}}</a></li>
+                  </template>
+                </ul>
+              </template>
+              <template if="{{method.value.phases.length == 1}}">
+                <h3 class="{{ { 'deopt': method.value.hasDeopts } }}">
+                  <a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},0">{{method.value.name.short}}</a>
+                </h3>
+              </template>
             </li>
           </template>
         </ul>
       </div>
-    
+
       <div class="method-list-footer">
         <input type="text" placeholder="Filter methods" on-key-up="{{filterUpdated}}" on-changed="{{filterChanged}}" value="{{filter}}">
         <input type="checkbox" class="toggle" checked="{{sortByDeopts}}">
