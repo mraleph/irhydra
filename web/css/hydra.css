@@ -104,3 +104,11 @@ span.lir-env, span.lir-map { display: none; }
 .CodeMirror {
   font-size: 16pt;
 }
+
+.popover.deopt > .popover-content > pre {
+  font-size: 0.7em;
+}
+
+.popover.deopt .deopt-marker {
+  display: none;
+}

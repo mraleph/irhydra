@@ -102,7 +102,8 @@
             </graph-pane>
           </div>
           <div data-title="Source" data-href="source">
-            <source-pane method="{{currentMethod}}"></source-pane>
+            <source-pane method="{{currentMethod}}" on-deopt-click="{{showDeoptAction}}">
+            </source-pane>
           </div>
           <div class="after-tabs">
             <template if="{{!ir.code.isEmpty}}">

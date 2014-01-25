@@ -2,14 +2,13 @@ library hydra;
 
 import 'dart:html';
 import 'dart:async' as async;
-import 'package:polymer/polymer.dart';
-import 'package:js/js.dart' as js;
-
-import 'package:irhydra/src/ui/irpane.dart' show IRPane;
-import 'package:irhydra/src/xref.dart' show XRef;
-
+import 'package:irhydra/src/html_utils.dart' show toHtml;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
+import 'package:irhydra/src/ui/irpane.dart' show IRPane;
+import 'package:irhydra/src/xref.dart' show XRef;
+import 'package:js/js.dart' as js;
+import 'package:polymer/polymer.dart';
 
 final MODES = [new dartvm.Mode(), new v8.Mode()];
 
@@ -83,6 +82,39 @@ class HydraElement extends PolymerElement {
 
   hideBlockAction(event, detail, target) {
     blockRef.hide();
+  }
+
+  showDeoptAction(event, detail, target) {
+    var $widget = js.context.jQuery(detail.widget);
+    if ($widget.data('bs.popover') != null) {
+      $widget.popover('destroy');
+      return;
+    }
+
+    final contents = [irpane.rangeContentAsHtmlFull(detail.deopt.hirId)];
+
+    final descriptions = currentMode.descriptions;
+    if (descriptions != null) {
+      final desc = descriptions.lookup("hir", detail.deopt.hir.op);
+      if (desc != null) {
+        contents.add(desc);
+      }
+    }
+
+    final raw = new PreElement()
+        ..appendText(detail.deopt.raw.join('\n'));
+    contents.add(toHtml(raw));
+
+    final content = contents.join("<br/>");
+    $widget.popover(js.map({
+      "title": "",
+      "content": "${content}",
+      "placement": "bottom",
+      "html": true,
+      "container": 'body',
+      "trigger": "manual"
+    })).data('bs.popover').tip().addClass('deopt');
+    $widget.popover('show');
   }
 
   changeCodeModeAction(event, detail, target) {

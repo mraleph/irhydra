@@ -88,6 +88,8 @@ Map parse(IR.Method method, Function ir) {
     deopt.lirId = parser.bailouts[deopt.id];
     deopt.hirId = parser.lir2hir[deopt.lirId];
     deopt.srcPos = parser.hir2pos[deopt.hirId];
+
+    deopt.hir = parser.id2hir[deopt.hirId];
   }
 
   print("hydrogen_parser.parse took ${stopwatch.elapsedMilliseconds}");
@@ -141,6 +143,8 @@ class CfgParser extends parsing.ParserBase {
 
   final hir2pos = new Map<String, SourcePosition>();
 
+  final id2hir = new Map<String, IR.Instruction>();
+
   /** Matches deopt_id data stored in lithium environment in hydrogen.cfg. */
   final deoptIdRe = new RegExp(r"deopt_id=(\d+)");
 
@@ -159,7 +163,7 @@ class CfgParser extends parsing.ParserBase {
     final opcode = m.group(2);
     final operands = m.group(3);
 
-    return new IR.Instruction(line, id, opcode, hirOperands(operands, context: id));
+    return id2hir[id] = new IR.Instruction(line, id, opcode, hirOperands(operands, context: id));
   }
 
   parseLir(line) {

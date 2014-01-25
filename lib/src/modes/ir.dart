@@ -73,6 +73,7 @@ class Deopt {
 
   /** HIR/LIR/Source positions for the instruction that deoptimized. Resolved after IR is parsed. */
   var hirId, lirId, srcPos;
+  var hir;
 
   /** Additional textual information about the deoptimization. */
   final raw;
@@ -86,7 +87,7 @@ class Deopt {
 class FunctionSource {
   final String name;
   final Iterable source;
-  
+
   FunctionSource(this.name, this.source);
 }
 

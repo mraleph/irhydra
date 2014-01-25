@@ -16,7 +16,6 @@ library source_pane;
 
 import 'dart:html' as html;
 
-import 'package:irhydra/src/html_utils.dart' show toHtml;
 import 'package:irhydra/src/ui/code-mirror.dart' as code_mirror;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
@@ -65,18 +64,7 @@ class SourcePaneElement extends PolymerElement {
       .where((deopt) => deopt.srcPos != null && deopt.srcPos.inlineId == path.last.inlineId)
       .map((deopt) {
         final span = new html.Element.html('<span><i class="fa fa-exclamation-triangle deopt-marker"></i></span>');
-
-        final divElement = new html.PreElement()
-            ..appendText(deopt.raw.join('\n'));
-        final raw = toHtml(divElement);
-        js.context.jQuery(span).popover(js.map({
-          "title": "",
-          "content": "${raw}",
-          "placement": "bottom",
-          "html": true,
-          "container": 'body'
-        })).data('bs.popover').tip().addClass('deopt');
-
+        span.onClick.listen((_) => fire("deopt-click", detail: new DeoptClickDetail(span, deopt)));
         return new code_mirror.Widget(deopt.srcPos.position, span);
       });
 
@@ -87,4 +75,11 @@ class SourcePaneElement extends PolymerElement {
   switchAction(event, detail, target) {
     path = toObservable(path.take(int.parse(target.attributes["data-target"]) + 1));
   }
+}
+
+class DeoptClickDetail {
+  final widget;
+  final deopt;
+
+  DeoptClickDetail(this.widget, this.deopt);
 }
