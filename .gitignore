@@ -13,3 +13,5 @@ packages
 web/out
 web/precompiled.js
 deploy/
+irhydra.sublime-project
+irhydra.sublime-workspace
