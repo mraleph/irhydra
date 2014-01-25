@@ -91,7 +91,6 @@ class CodeMirrorElement extends PolymerElement {
   }
 }
 
-
 class _Widget {
   final line;
   final ch;
@@ -112,49 +111,3 @@ class _Widget {
     }
   }
 }
-
-/*
-class CodeMirror {
-  var _instance;
-
-  var _lines;
-
-  final _widgets = <_Widget>[];
-
-  CodeMirror() { print(_root); }
-
-  inserted() {
-    _instance = js.retain(js.context.CodeMirror(_root, js.map({"readOnly": true})));
-    _root.host.on['activated'].listen((_) => _refreshView());
-  }
-
-  _refreshView() {
-    _instance.refresh();
-    _widgets.forEach((w) => w.remove());
-    _widgets.forEach((w) => w.insertInto(_instance));
-  }
-
-  set lines (ls) {
-    _widgets.forEach((w) => w.remove());
-    _widgets.clear();
-    _lines = ls.toList();
-    _instance.setValue(_lines.join('\n'));
-  }
-
-  addWidget(pos, element) {
-    var line = 0;
-    var ch = pos;
-    while ((line < _lines.length) && (ch > _lines[line].length)) {
-      ch -= _lines[line].length + 1;
-      line++;
-    }
-
-    final widget = new _Widget(line, ch, element);
-    _widgets.add(widget);
-    widget.insertInto(_instance);
-  }
-
-  removed() {
-    js.release(instance);
-  }
-*/

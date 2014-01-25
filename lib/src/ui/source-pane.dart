@@ -16,7 +16,9 @@ library source_pane;
 
 import 'dart:html' as html;
 
+import 'package:irhydra/src/html_utils.dart' show toHtml;
 import 'package:irhydra/src/ui/code-mirror.dart' as code_mirror;
+import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
 @CustomTag('source-pane')
@@ -46,7 +48,15 @@ class SourcePaneElement extends PolymerElement {
       .where((f) => f.inlinedInto(path.last))
       .map((f) {
         final span = new html.Element.html('<span><i class="fa fa-chevron-circle-down inline-marker"></i></span>');
-        span.onClick.listen((e) => path.add(f));
+        js.context.jQuery(span).tooltip(js.map({
+          "title": "View inlined function",
+          "placement": "bottom",
+          "container": 'body'
+        }));
+        span.onClick.listen((e) {
+          js.context.jQuery(span).tooltip('destroy');
+          path.add(f);
+        });
         return new code_mirror.Widget(f.position.position, span);
       });
     pathNames = path.map((f) => toSource(f).name).toList();
@@ -55,6 +65,18 @@ class SourcePaneElement extends PolymerElement {
       .where((deopt) => deopt.srcPos != null && deopt.srcPos.inlineId == path.last.inlineId)
       .map((deopt) {
         final span = new html.Element.html('<span><i class="fa fa-exclamation-triangle deopt-marker"></i></span>');
+
+        final divElement = new html.PreElement()
+            ..appendText(deopt.raw.join('\n'));
+        final raw = toHtml(divElement);
+        js.context.jQuery(span).popover(js.map({
+          "title": "",
+          "content": "${raw}",
+          "placement": "bottom",
+          "html": true,
+          "container": 'body'
+        })).data('bs.popover').tip().addClass('deopt');
+
         return new code_mirror.Widget(deopt.srcPos.position, span);
       });
 
