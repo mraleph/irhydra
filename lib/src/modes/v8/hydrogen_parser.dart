@@ -104,7 +104,7 @@ class CfgParser extends parsing.ParserBase {
     hirOperands = formatting.makeSplitter({
       r"0x[a-f0-9]+": (hirId, val) => new Constant(val),
       r"B\d+\b": (hirId, val) => new IR.BlockRef(val),
-      r"\w\d+\b": (hirId, val) => new IR.ValRef(val),
+      r"[a-zA-Z]\d+\b": (hirId, val) => new IR.ValRef(val),
       r"range:(-?\d+)_(-?\d+)(_m0)?": (hirId, low, high, m0) => new Range(low, high, m0 != null),
       r"changes\[[^\]]+\]": (hirId, val) => new Changes(val),
       r"type:[-\w]+": (hirId, val) => new Type(val.split(':').last),
