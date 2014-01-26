@@ -73,8 +73,33 @@ span.lir-env, span.lir-map { display: none; }
   max-width: 100% !important;
 }
 
-.deopt-marker {
+.deopt-marker, .deopt-marker:hover {
+  color: white;
   cursor: pointer;
+}
+
+.deopt-marker-eager {
+  background-color: #C0392B;
+}
+
+.deopt-marker-eager:hover {
+  background-color: #E74C3C;
+}
+
+.deopt-marker-lazy {
+  background-color: #F39C12;
+}
+
+.deopt-marker-lazy:hover {
+  background-color: #F1C40F;
+}
+
+.deopt-marker-soft {
+  background-color: #8E44AD;
+}
+
+.deopt-marker-soft:hover {
+  background-color: #9B59B6;
 }
 
 #graph-pane {
@@ -91,14 +116,33 @@ span.lir-env, span.lir-map { display: none; }
   color: #2a6496;
 }
 
-.deopt-marker {
+.deopt-bookmark {
   cursor: pointer;
   z-index: 1000;
+}
+
+.deopt-bookmark-eager {
   color: #C0392B;
 }
 
-.deopt-marker:hover {
+.deopt-bookmark-eager:hover {
   color: #E74C3C;
+}
+
+.deopt-bookmark-lazy {
+  color: #F39C12;
+}
+
+.deopt-bookmark-lazy:hover {
+  color: #F1C40F;
+}
+
+.deopt-bookmark-soft {
+  color: #8E44AD;
+}
+
+.deopt-bookmark-soft:hover {
+  color: #9B59B6;
 }
 
 .CodeMirror {

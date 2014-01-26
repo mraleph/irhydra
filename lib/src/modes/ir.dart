@@ -15,6 +15,7 @@
 /** Object model for IR compilation artifacts. */
 library ir;
 
+import 'dart:math' show min;
 import 'package:polymer/polymer.dart' show observable;
 
 /** Method name. */
@@ -78,10 +79,21 @@ class Deopt {
   /** Additional textual information about the deoptimization. */
   final raw;
 
-  /** [true] is this deoptimization was lazy (forced on return to this execution frame). */
-  final bool isLazy;
+  /** Type of the deoptimization ("eager", "lazy", "soft"). */
+  final String type;
 
-  Deopt(this.id, this.raw, { this.isLazy: false, this.optimizationId });
+  Deopt(this.id, this.raw, { this.type: "eager", this.optimizationId });
+
+  static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2 };
+  static final _types = _typesOrdering.keys.toList();
+
+  static worstType(deopts) {
+    if (deopts.isEmpty) {
+      return "none";
+    }
+
+    return _types[deopts.map((deopt) => _typesOrdering[deopt.type]).reduce(min)];
+  }
 }
 
 class FunctionSource {
@@ -136,6 +148,7 @@ class Method {
 
   @observable get hasDeopts => deopts.length > 0;
   @observable get hasSinglePhase => phases.length == 1;
+  @observable get worstDeopt => Deopt.worstType(deopts);
 
   Method(this.name, {this.optimizationId});
 }

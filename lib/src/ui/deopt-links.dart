@@ -24,13 +24,21 @@ class DeoptLinksElement extends PolymerElement {
   final applyAuthorStyles = false;
 
   @published var deopts;
-  @observable var deoptIds;
+  @observable var deoptInfo;
 
   deoptsChanged() {
-    deoptIds = deopts.map((deopt) {
-      return deopt.hirId != null ? deopt.hirId : deopt.lirId;
+    deoptInfo = deopts.map((deopt) {
+      return new _DeoptInfo(deopt.hirId != null ? deopt.hirId : deopt.lirId,
+                            deopt.type);
     }).toList();
   }
 
   DeoptLinksElement.created() : super.created();
+}
+
+class _DeoptInfo {
+  @observable final id;
+  @observable final type;
+
+  _DeoptInfo(this.id, this.type);
 }

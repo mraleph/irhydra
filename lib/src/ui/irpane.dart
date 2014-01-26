@@ -201,12 +201,9 @@ class IRPane extends PolymerElement {
 
   /** Create marker for [deopt] at the line corresponding to [deopt.lirId]. */
   _createDeoptMarkerFor(deopt) {
-    // Consider lazy deoptimizations less important compared to eager (check failures) deopts.
-    final labelType = deopt.isLazy ? 'label-warning' : 'label-danger';
-
     // Create a marker with a popover containing raw deopt information.
     final marker = new SpanElement()
-        ..classes.addAll(['label', labelType, 'deopt-marker'])
+        ..classes.addAll(['label', 'deopt-marker', 'deopt-marker-${deopt.type}'])
         ..text = "deopt";
 
     final divElement = new PreElement()

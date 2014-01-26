@@ -113,7 +113,7 @@ class PreParser extends parsing.ParserBase {
       enter({
         r"^\[deoptimizing \(\w+\): end": () {
           final deopt =
-              new IR.Deopt(int.parse(bailoutId), subrange(inclusive: true), isLazy: type == "lazy", optimizationId: optId);
+              new IR.Deopt(int.parse(bailoutId), subrange(inclusive: true), type: type, optimizationId: optId);
 
           for (var currentMethod in methods.reversed) {
             if (currentMethod.optimizationId == optId) {

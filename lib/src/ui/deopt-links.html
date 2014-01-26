@@ -10,7 +10,6 @@
         position: relative;
         display: inline-block;
         vertical-align: middle;
-        background-color: #C0392B;
       }
 
       .x-deopt-link > a {
@@ -27,17 +26,37 @@
         text-decoration: none;
       }
 
-      .x-deopt-link > a:hover {
-        background-color: #E74C3C;
-      }
-
       .x-deopt-link a:active,
       .x-deopt-link a:focus {
         outline: 0;
       }
+
+      .x-deopt-link-eager > a {
+        background-color: #C0392B;
+      }
+
+      .x-deopt-link-eager > a:hover {
+        background-color: #E74C3C;
+      }
+
+      .x-deopt-link-lazy > a {
+        background-color: #F39C12;
+      }
+
+      .x-deopt-link-lazy > a:hover {
+        background-color: #F1C40F;
+      }
+
+      .x-deopt-link-soft > a {
+        background-color: #8E44AD;
+      }
+
+      .x-deopt-link-soft > a:hover {
+        background-color: #9B59B6;
+      }
     </style>
-    <template repeat="{{deoptId in deoptIds}}">
-      <div class="x-deopt-link"><a href="#ir-{{deoptId}}">deopt @{{deoptId}}</a></div>
+    <template repeat="{{deopt in deoptInfo}}">
+      <div class="x-deopt-link x-deopt-link-{{deopt.type}}"><a href="#ir-{{deopt.id}}">deopt @{{deopt.id}}</a></div>
     </template>
   </template>
   <script type="application/dart" src='deopt-links.dart'></script>

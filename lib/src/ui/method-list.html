@@ -78,7 +78,17 @@
         background-color: #34495E;
       }
 
-      h3.deopt { color: red; }
+      h3.deopt-eager {
+        color: #C0392B;
+      }
+
+      h3.deopt-lazy {
+        color: #F39C12;
+      }
+
+      h3.deopt-soft {
+        color: #8E44AD;
+      }
 
       .toggle {
         text-align: center;
@@ -119,7 +129,7 @@
           <template repeat="{{method in filteredMethods | enumerate }}">
             <li>
               <template if="{{!method.value.hasSinglePhase}}">
-                <h3 class="{{ { 'deopt': method.value.hasDeopts } }}">{{method.value.name.short}}</h3>
+                <h3 class="deopt-{{method.value.worstDeopt}}">{{method.value.name.short}}</h3>
                 <ul class="phases">
                   <template repeat="{{phase in method.value.phases | enumerate}}">
                     <li><a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},{{phase.index}}">{{phase.value.name}}</a></li>
@@ -127,7 +137,7 @@
                 </ul>
               </template>
               <template if="{{method.value.hasSinglePhase}}">
-                <h3 class="{{ { 'deopt': method.value.hasDeopts } }}">
+                <h3 class="deopt-{{method.value.worstDeopt}}">
                   <a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},0">{{method.value.name.short}}</a>
                 </h3>
               </template>

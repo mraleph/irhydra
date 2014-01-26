@@ -63,7 +63,7 @@ class SourcePaneElement extends PolymerElement {
     var deoptWidgets = method.deopts
       .where((deopt) => deopt.srcPos != null && deopt.srcPos.inlineId == path.last.inlineId)
       .map((deopt) {
-        final span = new html.Element.html('<span><i class="fa fa-exclamation-triangle deopt-marker"></i></span>');
+        final span = new html.Element.html('<span><i class="fa fa-exclamation-triangle deopt-bookmark deopt-bookmark-${deopt.type}"></i></span>');
         span.onClick.listen((_) => fire("deopt-click", detail: new DeoptClickDetail(span, deopt)));
         return new code_mirror.Widget(deopt.srcPos.position, span);
       });
