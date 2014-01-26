@@ -135,13 +135,14 @@ class Mode extends BaseMode {
       // can contain information about multiple phases and method with code
       // always contains only one.
       assert(methodIr.sources.isEmpty);
+      assert(methodIr.inlined.isEmpty);
       assert(methodIr.deopts.isEmpty);
       if (!methodCode.phases.isEmpty) {
         methodIr.phases.last.code = methodCode.phases.last.code;
       }
       methodIr.sources.addAll(methodCode.sources);
       methodIr.deopts.addAll(methodCode.deopts);
-      methodIr.inlined.addAll(methodCode.inlined.skip(1));
+      methodIr.inlined.addAll(methodCode.inlined);
     }
 
     // First try to merge based on optimization IDs.

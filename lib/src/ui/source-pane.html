@@ -1,36 +1,7 @@
 <!DOCTYPE html>
-<polymer-element name="source-pane">
+<polymer-element name="source-pane" attributes="method path">
   <link rel="import" href="code-mirror.html">
   <template>
-    <style>
-      .inline-path {
-        color: white;
-        background-color: #2C3E50;
-        font-family: 'Lato';
-        font-weight: bold;
-        font-size: 1.3em;
-      }
-      
-      .inline-path a,
-      .inline-path a:hover,
-      .inline-path a:focus {
-        text-decoration: none;
-        outline: 0;
-      }
-      
-      .inline-path a {
-        color: white;
-      }
-      
-      .inline-path a:hover {
-        color: #1ABC9C;
-      }
-    </style>
-    <div class="inline-path">
-      <template repeat="{{name in pathNames | enumerate}}">
-        <a href="#" on-click="{{switchAction}}" data-target="{{name.index}}">{{name.value}}</a> <i class="fa fa-angle-double-right"></i>
-      </template>
-    </div>
     <code-mirror lines="{{source}}" widgets="{{widgets}}"></code-mirror>
   </template>
   <script type="application/dart" src='source-pane.dart'></script>

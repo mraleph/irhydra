@@ -24,25 +24,15 @@ import 'package:polymer/polymer.dart';
 class SourcePaneElement extends PolymerElement {
   final applyAuthorStyles = true;
 
-
   @published var method;
-  @observable var path;
+  @published var path = null;
   @observable var source;
   @observable var widgets;
-  @observable var pathNames;
 
   SourcePaneElement.created() : super.created();
 
-  methodChanged() {
-    if (method.sources.isEmpty)
-      return;
-    path = toObservable([method.inlined.first]);
-  }
-
   pathChanged() {
-    toSource(f) => method.sources[method.inlined[f.inlineId].sourceId];
-
-    source = toSource(path.last).source;
+    source = path.last.source.source;
     var inlineWidgets = method.inlined
       .where((f) => f.inlinedInto(path.last))
       .map((f) {
@@ -58,7 +48,6 @@ class SourcePaneElement extends PolymerElement {
         });
         return new code_mirror.Widget(f.position.position, span);
       });
-    pathNames = path.map((f) => toSource(f).name).toList();
 
     var deoptWidgets = method.deopts
       .where((deopt) => deopt.srcPos != null && deopt.srcPos.inlineId == path.last.inlineId)
@@ -70,10 +59,6 @@ class SourcePaneElement extends PolymerElement {
 
     widgets = []..addAll(inlineWidgets)
                 ..addAll(deoptWidgets);
-  }
-
-  switchAction(event, detail, target) {
-    path = toObservable(path.take(int.parse(target.attributes["data-target"]) + 1));
   }
 }
 

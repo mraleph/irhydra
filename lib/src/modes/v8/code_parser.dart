@@ -86,6 +86,14 @@ class PreParser extends parsing.ParserBase {
         r"^\-\-\- END \-\-\-$": () {
           assert(currentMethod.sources.length == int.parse(funcId));
           currentMethod.sources.add(new IR.FunctionSource(name, subrange()));
+
+          if (currentMethod.sources.length == 1) {
+            assert(currentMethod.inlined.isEmpty);
+            // This is the first source. Create an InlinedFunction for it.
+            currentMethod.inlined.add(
+                new IR.InlinedFunction(0, currentMethod.sources.first, null));
+          }
+
           leave();
         }
       });
@@ -105,7 +113,7 @@ class PreParser extends parsing.ParserBase {
         pos = new IR.SourcePosition(s[0], s[1]);
       }
 
-      currentMethod.inlined.add(new IR.InlinedFunction(inlineId, funcId, pos));
+      currentMethod.inlined.add(new IR.InlinedFunction(inlineId, currentMethod.sources[funcId], pos));
     },
 
     // Start of the deoptimization event (we drop no-name deopts)

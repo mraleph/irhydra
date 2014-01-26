@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<polymer-element name="source-path">
+  <template>
+    <style>
+      .source-path {
+        color: white;
+        background-color: #2C3E50;
+        font-family: 'Lato';
+        font-weight: bold;
+        font-size: 1.3em;
+      }
+
+      .source-path a,
+      .source-path a:hover,
+      .source-path a:focus {
+        text-decoration: none;
+        outline: 0;
+      }
+
+      .source-path a {
+        color: white;
+      }
+
+      .source-path a:hover {
+        color: #1ABC9C;
+      }
+    </style>
+    <span class="source-path">
+      <template if="{{!path.isEmpty}}">
+        [
+        <template repeat="{{f in path | enumerate}}">
+          <a href="#" on-click="{{switchAction}}" data-target="{{f.index}}">{{f.value.source.name}}</a> <i class="fa fa-angle-double-right"></i>
+        </template>
+      </template>
+    </span>
+  </template>
+  <script type="application/dart" src='source-path.dart'></script>
+</polymer-element>

@@ -114,13 +114,13 @@ class SourcePosition {
 
 class InlinedFunction {
   final int inlineId;
-  final int sourceId;
+  final FunctionSource source;
   final SourcePosition position;
 
   inlinedInto(InlinedFunction other) =>
     position != null && position.inlineId == other.inlineId;
 
-  InlinedFunction(this.inlineId, this.sourceId, this.position);
+  InlinedFunction(this.inlineId, this.source, this.position);
 }
 
 /**
@@ -144,7 +144,7 @@ class Method {
   /** List of function sources associated with this method. */
   @observable final List<FunctionSource> sources = <FunctionSource>[];
 
-  @observable final List<InlinedFunction> inlined = <InlinedFunction>[new InlinedFunction(0, 0, null)];
+  @observable final List<InlinedFunction> inlined = <InlinedFunction>[];
 
   @observable get hasDeopts => deopts.length > 0;
   @observable get hasSinglePhase => phases.length == 1;

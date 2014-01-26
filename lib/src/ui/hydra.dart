@@ -25,6 +25,8 @@ class HydraElement extends PolymerElement {
   @observable get codeModes => IRPane.CODE_MODES;
   @observable var codeMode = IRPane.CODE_MODES.first;
 
+  @observable var sourcePath = toObservable([]);
+
   var blockRef;
 
   get applyAuthorStyles => true;
@@ -46,6 +48,11 @@ class HydraElement extends PolymerElement {
     currentPhase = phaseAndMethod[1];
     ir = currentMode.toIr(phaseAndMethod[0], currentPhase);
     blockRef = new XRef((id) => irpane.rangeContentAsHtmlFull(id));
+
+    sourcePath.clear();
+    if (!currentMethod.sources.isEmpty) {
+      sourcePath.add(currentMethod.inlined.first);
+    }
   }
 
   IRPane get irpane => shadowRoot.querySelector("#irpane");

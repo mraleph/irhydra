@@ -9,6 +9,7 @@
   <link rel="import" href="method-list.html">
   <link rel="import" href="open-file-button.html">
   <link rel="import" href="source-pane.html">
+  <link rel="import" href="source-path.html">
   <link rel="import" href="spinner-element.html">
   <link rel="import" href="tab-pane.html">
   <template>
@@ -102,10 +103,10 @@
             </graph-pane>
           </div>
           <div data-title="Source" data-href="source">
-            <source-pane method="{{currentMethod}}" on-deopt-click="{{showDeoptAction}}">
+            <source-pane method="{{currentMethod}}" path="{{sourcePath}}" on-deopt-click="{{showDeoptAction}}">
             </source-pane>
           </div>
-          <div class="after-tabs">
+          <span class="after-tabs" data-when="ir">
             <template if="{{!ir.code.isEmpty}}">
               <dropdown-element value="{{codeMode}}" on-changed="{{changeCodeModeAction}}">
                 <li><a href="#" data-value="split">Split Disassembly</a></li>
@@ -113,9 +114,15 @@
                 <li><a href="#" data-value="none">Hide Disassembly</a></li>
               </dropdown-element>
             </template>
+          </span>
+          <span class="after-tabs" data-when="ir|source">
             <deopt-links deopts="{{currentMethod.deopts}}">
             </deopt-links>
-          </div>
+          </span>
+          <span class="after-tabs" data-when="source">
+            <source-path path="{{sourcePath}}">
+            </source-path>
+          </span>
         </tab-pane>
       </template>
     </div>
