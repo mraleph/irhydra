@@ -26,6 +26,12 @@ function loop(v) {
   var sum = 0;
   for (var i = 0; i < 1e5; i++) {
     sum += v.len();
+    if (sum < 0) {
+      // Some random code that will never get executed.
+      for (var j = 0; j < 100; j++) {
+        sum -= v.len();
+      }
+    }
   }
   util.logger.log("loopish complete");
   return sum;

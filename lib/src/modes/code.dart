@@ -16,13 +16,15 @@
 library code;
 
 import 'dart:html' hide Comment;
-import 'package:polymer/polymer.dart' show observable;
 
 import 'package:irhydra/src/formatting.dart' as formatting;
 import 'package:irhydra/src/html_utils.dart';
 
+// Prevent tree shaking of this library.
+@MirrorsUsed(targets: const['*'])
+import 'dart:mirrors';
+
 /** Code object artifact. */
-@observable
 class Code {
   /** Base address of this code when it was emitted. */
   final int start;

@@ -35,8 +35,8 @@ class HydraElement extends PolymerElement {
 
   HydraElement.created() : super.created() {
     async.Future.wait([
-      HttpRequest.getString("demos/v8/deopt-eager/hydrogen.cfg").then(loadData),
-      HttpRequest.getString("demos/v8/deopt-eager/code.asm").then(loadData)
+      HttpRequest.getString("demos/v8/deopt-soft/hydrogen.cfg").then(loadData),
+      HttpRequest.getString("demos/v8/deopt-soft/code.asm").then(loadData)
     ]).then((_) {
       var m = currentMethods.firstWhere((m) => m.deopts.length != 0);
       displayPhase(null, [m, m.phases.last], null);
@@ -109,7 +109,7 @@ class HydraElement extends PolymerElement {
       return;
     }
 
-    final contents = [irpane.rangeContentAsHtmlFull(detail.deopt.hirId)];
+    final contents = [irpane.rangeContentAsHtmlFull(detail.deopt.hir.id)];
 
     final descriptions = currentMode.descriptions;
     if (descriptions != null) {

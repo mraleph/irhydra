@@ -194,8 +194,8 @@ class IRPane extends PolymerElement {
       line(deopt.lirId).text.append(_createDeoptMarkerFor(deopt));
     }
 
-    if (deopt.hirId != null) {
-      line(deopt.hirId).text.append(_createDeoptMarkerFor(deopt));
+    if (deopt.hir.id != null) {
+      line(deopt.hir.id).text.append(_createDeoptMarkerFor(deopt));
     }
   }
 

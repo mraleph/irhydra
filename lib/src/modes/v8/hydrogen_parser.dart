@@ -86,14 +86,55 @@ Map parse(IR.Method method, Function ir) {
 
   for (var deopt in method.deopts) {
     deopt.lirId = parser.bailouts[deopt.id];
-    deopt.hirId = parser.lir2hir[deopt.lirId];
-    deopt.srcPos = parser.hir2pos[deopt.hirId];
 
-    deopt.hir = parser.id2hir[deopt.hirId];
+    final hirId = parser.lir2hir[deopt.lirId];
+    deopt.hir = parser.id2hir[hirId];
+
+    deopt.srcPos = parser.hir2pos[hirId];
+  }
+
+  final blocks = parser.builder.blocks;
+
+  isDead(block) =>
+    block.predecessors.every((pred) => pred.marks.contains("dead") ||
+                                       pred.marks.contains("deoptimizes"));
+
+  final worklist = parser.deoptimizing;
+  while (!worklist.isEmpty) {
+    final block = worklist.removeLast();
+    if (!block.marks.contains("dead")) {
+      if (isDead(block)) {
+        block.mark("dead");
+      } else if (block.marks.contains("deoptimizes")) {
+        loop: for (var instr in block.hir) {
+          switch (instr.op) {
+            case "BlockEntry":
+            case "Constant":
+            case "Simulate":
+            case "Phi":
+              break;
+
+            case "Deoptimize":
+              block.mark("dead");
+              break loop;
+
+            default:
+              break loop;
+          }
+        }
+      }
+    }
+
+    for (var succ in block.successors) {
+      if (!succ.marks.contains("dead") && isDead(succ)) {
+        succ.mark("dead");
+        worklist.add(succ);
+      }
+    }
   }
 
   print("hydrogen_parser.parse took ${stopwatch.elapsedMilliseconds}");
-  return parser.builder.blocks;
+  return blocks;
 }
 
 class CfgParser extends parsing.ParserBase {
@@ -108,7 +149,11 @@ class CfgParser extends parsing.ParserBase {
       r"B\d+\b": (hirId, val) => new IR.BlockRef(val),
       r"[a-zA-Z]\d+\b": (hirId, val) => new IR.ValRef(val),
       r"range:(-?\d+)_(-?\d+)(_m0)?": (hirId, low, high, m0) => new Range(low, high, m0 != null),
-      r"changes\[[^\]]+\]": (hirId, val) => new Changes(val),
+      r"changes\[[^\]]+\]": (hirId, val) {
+        final changes = new Changes(val);
+        if (changes.all) block.mark("changes-all");
+        return changes;
+      },
       r"type:[-\w]+": (hirId, val) => new Type(val.split(':').last),
       r"uses:\w+": (hirId, _) => null,
       r"pos:(\d+)(_(\d+))?": (hirId, functionId, _, pos) {
@@ -145,6 +190,10 @@ class CfgParser extends parsing.ParserBase {
 
   final id2hir = new Map<String, IR.Instruction>();
 
+  final id2block = new Map<String, IR.Block>();
+
+  final deoptimizing = [];
+
   /** Matches deopt_id data stored in lithium environment in hydrogen.cfg. */
   final deoptIdRe = new RegExp(r"deopt_id=(\d+)");
 
@@ -162,6 +211,12 @@ class CfgParser extends parsing.ParserBase {
     final id = m.group(1);
     final opcode = m.group(2);
     final operands = m.group(3);
+
+    id2block[id] = block;
+    if (opcode == "Deoptimize") {
+      block.mark("deoptimizes");
+      deoptimizing.add(block);
+    }
 
     return id2hir[id] = new IR.Instruction(line, id, opcode, hirOperands(operands, context: id));
   }
@@ -259,9 +314,9 @@ class Changes extends IR.Operand {
   final changes;
   Changes(this.changes);
 
-  get changesAll => changes == "changes[*]";
+  get all => changes == "changes[*]";
 
-  get tag => changesAll ? "changes-all" : "changes";
+  get tag => all ? "changes-all" : "changes";
   get text => changes;
 }
 

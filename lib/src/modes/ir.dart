@@ -16,10 +16,12 @@
 library ir;
 
 import 'dart:math' show min;
-import 'package:polymer/polymer.dart' show observable;
+
+// Prevent tree shaking of this library.
+@MirrorsUsed(targets: const['*'])
+import 'dart:mirrors';
 
 /** Method name. */
-@observable
 class Name {
   /**
    * Full form of the method name.
@@ -47,7 +49,6 @@ class Name {
  *
  * Usually a single named step in the compilation pipeline.
  */
-@observable
 class Phase {
   /** Phase's name */
   final String name;
@@ -64,7 +65,6 @@ class Phase {
 /**
  * Deoptimization event occured to a method.
  */
-@observable
 class Deopt {
   /** An abstract timestamp that allows to figure which deopt happened before which. */
   final timestamp;
@@ -76,7 +76,7 @@ class Deopt {
   final id;
 
   /** HIR/LIR/Source positions for the instruction that deoptimized. Resolved after IR is parsed. */
-  var hirId, lirId, srcPos;
+  var lirId, srcPos;
   var hir;
 
   /** Additional textual information about the deoptimization. */
@@ -137,27 +137,26 @@ class Method {
   final optimizationId;
 
   /** Method's name */
-  @observable final Name name;
+  final Name name;
 
   /** List of [Phase] artifacts associated with this method. */
-  @observable final List<Phase> phases = <Phase>[];
+  final List<Phase> phases = <Phase>[];
 
   /** List of [Deopt] artifacts associated with this method. */
-  @observable final List<Deopt> deopts = <Deopt>[];
+  final List<Deopt> deopts = <Deopt>[];
 
   /** List of function sources associated with this method. */
-  @observable final List<FunctionSource> sources = <FunctionSource>[];
+  final List<FunctionSource> sources = <FunctionSource>[];
 
-  @observable final List<InlinedFunction> inlined = <InlinedFunction>[];
+  final List<InlinedFunction> inlined = <InlinedFunction>[];
 
-  @observable get hasDeopts => deopts.length > 0;
-  @observable get hasSinglePhase => phases.length == 1;
-  @observable get worstDeopt => Deopt.worstType(deopts);
+  get hasDeopts => deopts.length > 0;
+  get hasSinglePhase => phases.length == 1;
+  get worstDeopt => Deopt.worstType(deopts);
 
   Method(this.name, {this.optimizationId});
 }
 
-@observable
 class ParsedIr {
   final mode;
   final Map<String, Block> blocks;
@@ -179,6 +178,10 @@ class Block {
   final hir = <Instruction>[];
   final lir = <Instruction>[];
 
+  static final EMPTY_MARKS = new Set();
+
+  Set<String> marks = EMPTY_MARKS;
+
   Block(this.id, this.name) {
     assert(id >= 0);
   }
@@ -187,6 +190,13 @@ class Block {
   edge(Block to) {
     to.predecessors.add(this);
     successors.add(to);
+  }
+
+  mark(tag) {
+    if (marks == EMPTY_MARKS) {
+      marks = new Set();
+    }
+    marks.add(tag);
   }
 }
 
