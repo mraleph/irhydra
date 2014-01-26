@@ -113,14 +113,15 @@ class SourcePosition {
 }
 
 class InlinedFunction {
+  final Method method;
   final int inlineId;
   final FunctionSource source;
   final SourcePosition position;
 
-  inlinedInto(InlinedFunction other) =>
-    position != null && position.inlineId == other.inlineId;
+  contains(SourcePosition other) =>
+    other != null && other.inlineId == inlineId;
 
-  InlinedFunction(this.inlineId, this.source, this.position);
+  InlinedFunction(this.method, this.inlineId, this.source, this.position);
 }
 
 /**

@@ -16,9 +16,13 @@ Vec2.prototype = {
   }
 }
 
+function len(v) {
+  return v.len();
+}
+
 function loop(v) {
   var sum = 0;
-  for (var i = 0; i < 1e5; i++) sum += v.len();
+  for (var i = 0; i < 1e5; i++) sum += len(v);
   return sum;
 }
 

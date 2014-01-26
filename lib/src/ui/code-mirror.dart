@@ -23,6 +23,8 @@ class Widget {
   final element;
 
   Widget(this.position, this.element);
+
+  toString() => "${element} @ ${position}";
 }
 
 /**
@@ -107,4 +109,6 @@ class _Widget {
       _bookmark = null;
     }
   }
+
+  toString() => "${element} @ (${line}, ${ch})";
 }

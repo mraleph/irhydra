@@ -91,7 +91,7 @@ class PreParser extends parsing.ParserBase {
             assert(currentMethod.inlined.isEmpty);
             // This is the first source. Create an InlinedFunction for it.
             currentMethod.inlined.add(
-                new IR.InlinedFunction(0, currentMethod.sources.first, null));
+                new IR.InlinedFunction(currentMethod, 0, currentMethod.sources.first, null));
           }
 
           leave();
@@ -113,7 +113,8 @@ class PreParser extends parsing.ParserBase {
         pos = new IR.SourcePosition(s[0], s[1]);
       }
 
-      currentMethod.inlined.add(new IR.InlinedFunction(inlineId, currentMethod.sources[funcId], pos));
+      currentMethod.inlined.add(
+          new IR.InlinedFunction(currentMethod, inlineId, currentMethod.sources[funcId], pos));
     },
 
     // Start of the deoptimization event (we drop no-name deopts)

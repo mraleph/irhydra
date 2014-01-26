@@ -24,17 +24,19 @@ import 'package:polymer/polymer.dart';
 class SourcePaneElement extends PolymerElement {
   final applyAuthorStyles = true;
 
-  @published var method;
-  @published var path = null;
+  @published var path;
   @observable var source;
   @observable var widgets;
 
   SourcePaneElement.created() : super.created();
 
   pathChanged() {
-    source = path.last.source.source;
-    var inlineWidgets = method.inlined
-      .where((f) => f.inlinedInto(path.last))
+    final currentFunction = path.last;
+
+    source = currentFunction.source.source;
+
+    final inlineWidgets = currentFunction.method.inlined
+      .where((f) => currentFunction.contains(f.position))
       .map((f) {
         final span = new html.Element.html('<span><i class="fa fa-chevron-circle-down inline-marker"></i></span>');
         js.context.jQuery(span).tooltip(js.map({
@@ -49,8 +51,8 @@ class SourcePaneElement extends PolymerElement {
         return new code_mirror.Widget(f.position.position, span);
       });
 
-    var deoptWidgets = method.deopts
-      .where((deopt) => deopt.srcPos != null && deopt.srcPos.inlineId == path.last.inlineId)
+    final deoptWidgets = currentFunction.method.deopts
+      .where((deopt) => currentFunction.contains(deopt.srcPos))
       .map((deopt) {
         final span = new html.Element.html('<span><i class="fa fa-exclamation-triangle deopt-bookmark deopt-bookmark-${deopt.type}"></i></span>');
         span.onClick.listen((_) => fire("deopt-click", detail: new DeoptClickDetail(span, deopt)));
