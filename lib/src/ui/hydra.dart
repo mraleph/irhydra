@@ -124,10 +124,6 @@ class HydraElement extends PolymerElement {
     $widget.popover('show');
   }
 
-  changeCodeModeAction(event, detail, target) {
-    codeMode = detail;
-  }
-
   reset() {
     if (currentMode != null) {
       currentMode.reset();
