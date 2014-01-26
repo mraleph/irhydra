@@ -82,10 +82,12 @@ class Deopt {
   /** Additional textual information about the deoptimization. */
   final raw;
 
+  final reason;
+
   /** Type of the deoptimization ("eager", "lazy", "soft"). */
   final String type;
 
-  Deopt(this.timestamp, this.id, this.raw, { this.type: "eager", this.optimizationId });
+  Deopt(this.timestamp, this.id, this.raw, { this.type: "eager", this.optimizationId, this.reason});
 
   static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2 };
   static final _types = _typesOrdering.keys.toList();

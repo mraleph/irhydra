@@ -113,7 +113,15 @@ class HydraElement extends PolymerElement {
       return;
     }
 
-    final contents = [irpane.rangeContentAsHtmlFull(detail.deopt.hir.id)];
+
+    final contents = [];
+
+    if (detail.deopt.reason != null) {
+      contents.add("<strong>${detail.deopt.reason}</strong>");
+      contents.add("");
+    }
+
+    contents.add(irpane.rangeContentAsHtmlFull(detail.deopt.hir.id));
 
     final descriptions = currentMode.descriptions;
     if (descriptions != null) {

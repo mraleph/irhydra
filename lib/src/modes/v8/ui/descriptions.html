@@ -8,10 +8,10 @@
       <p>Checks whether value's hidden class matches expected value and deoptimizes if this is not the case.</p>
       <p>Deoptimization at <code>CheckMaps</code> usually indicates that the code is polymorphic.</p>
     </div>
-    <div data-hir="SoftDeoptimize" data-lir="deoptimize">
+    <div data-hir="Deoptimize" data-lir="deoptimize">
       <p>When executed this instruction always deoptimizes.</p>
       <p>V8 generates then on control flow paths that were never executed before and thus contain no actionable type feedback that could be used to optimize the code.</p>
-      <p>For a function with a long running loop it is not uncommon to hit at OSR in the loop and then deoptimize on a <code>SoftDeoptimize</code> emitted after the loop</p>
+      <p>For a function with a long running loop it is not uncommon to hit at OSR in the loop and then deoptimize on a <code>Deoptimize</code> emitted after the loop</p>
     </div>
     <div data-hir="Change">
       <p>This instruction converts value from one internal representation to another.</p>

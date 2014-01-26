@@ -120,10 +120,18 @@ class PreParser extends parsing.ParserBase {
 
     // Start of the deoptimization event (we drop no-name deopts)
     r"^\[deoptimizing \(DEOPT (\w+)\): begin 0x[a-f0-9]+ ([\w$.]+) \(opt #(\d+)\) @(\d+)": (type, methodName, optId, bailoutId) {
+      var reason;
       enter({
+        r"^\s+;;; deoptimize: (.*)$": (val) { reason = val; },
+
         r"^\[deoptimizing \(\w+\): end": () {
           final deopt =
-              new IR.Deopt(timestamp++, int.parse(bailoutId), subrange(inclusive: true), type: type, optimizationId: optId);
+              new IR.Deopt(timestamp++,
+                           int.parse(bailoutId),
+                           subrange(inclusive: true),
+                           reason: reason,
+                           type: type,
+                           optimizationId: optId);
 
           for (var currentMethod in methods.reversed) {
             if (currentMethod.optimizationId == optId) {
