@@ -55,11 +55,9 @@ class HydraElement extends PolymerElement {
     }
   }
 
-  IRPane get irpane => shadowRoot.querySelector("#irpane");
-
-  enteredView() {
-    super.enteredView();
-  }
+  get irpane => shadowRoot.querySelector("#ir-pane");
+  get tabPane => shadowRoot.querySelector("tab-pane");
+  get sourcePane => shadowRoot.querySelector("#source-pane");
 
   openCompilation(e, files, target) {
     if (files.length > 1) {
@@ -89,6 +87,23 @@ class HydraElement extends PolymerElement {
 
   hideBlockAction(event, detail, target) {
     blockRef.hide();
+  }
+
+  navigateToDeoptAction(event, deopt, target) {
+    if (currentMethod.inlined.isEmpty)
+      return;
+
+    buildStack(position) {
+      if (position == null) {
+        return [];
+      } else {
+        final f = currentMethod.inlined[position.inlineId];
+        return buildStack(f.position)..add(f);
+      }
+    }
+
+    sourcePath = toObservable(buildStack(deopt.srcPos));
+    sourcePane.scrollTo(deopt, tabPane.activeTab != "source");
   }
 
   showDeoptAction(event, detail, target) {

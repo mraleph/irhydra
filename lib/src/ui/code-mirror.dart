@@ -44,23 +44,45 @@ class CodeMirrorElement extends PolymerElement {
   @published List<Widget> widgets;
   List<_Widget> _widgets = const <_Widget>[];
 
+  var _pendingScroll;
+  var _pendingScrollDelayed;
+
   linesChanged() {
     _lines = lines.toList();
+    _instance.setValue(_lines.join('\n'));
 
-    if (_instance != null) {
-      _instance.setValue(_lines.join('\n'));
+    if (_pendingScroll != null && !_pendingScrollDelayed) {
+      _executePendingScroll(forceRefresh: true);
     }
   }
 
-  _toWidget(Widget w) {
-    var line = 0;
-    var ch = w.position;
+  scrollTo(position, delayed, {force: false}) {
+    _pendingScroll = position;
+    _pendingScrollDelayed = delayed;
+    if (force) {
+      _executePendingScroll(forceRefresh: true);
+    }
+  }
+
+  _executePendingScroll({forceRefresh: false}) {
+    if (forceRefresh) {
+      _instance.refresh();
+    }
+    _instance.scrollIntoView(_toCMPosition(_pendingScroll));
+    _pendingScroll = null;
+  }
+
+  _toCMPosition(offset) {
+    var line = 0, ch = offset;
     while ((line < _lines.length) && (ch > _lines[line].length)) {
       ch -= _lines[line].length + 1;
       line++;
     }
-    return new _Widget(line, ch, w.element);
+    return js.map({"line": line, "ch": ch});
   }
+
+  _toWidget(Widget w) =>
+    new _Widget(_toCMPosition(w.position), w.element);
 
   widgetsChanged() {
     _widgets.forEach((w) => w.remove());
@@ -71,10 +93,7 @@ class CodeMirrorElement extends PolymerElement {
   enteredView() {
     super.enteredView();
     _instance = js.context.CodeMirror($["editor"], js.map({"readOnly": true}));
-
-    if (_lines != null)
-      _instance.setValue(_lines.join('\n'));
-
+    _instance.setSize(null, 600);
     html.document.addEventListener("DisplayChanged", (_) => _refresh(), false);
   }
 
@@ -82,6 +101,9 @@ class CodeMirrorElement extends PolymerElement {
     _instance.refresh();
     _widgets.forEach((w) => w.remove());
     _widgets.forEach((w) => w.insertInto(_instance));
+    if (_pendingScroll != null) {
+      _executePendingScroll();
+    }
   }
 
   leftView() {
@@ -91,24 +113,21 @@ class CodeMirrorElement extends PolymerElement {
 }
 
 class _Widget {
-  final line;
-  final ch;
+  final position;
   final element;
 
   var _bookmark;
 
-  _Widget(this.line, this.ch, this.element);
+  _Widget(this.position, this.element);
 
   insertInto(cm) {
-    final pos = js.map({"line": line, "ch": ch});
-    _bookmark = cm.setBookmark(pos, js.map({"widget": element}));
+    _bookmark = cm.setBookmark(position, js.map({"widget": element}));
   }
+
   remove() {
     if (_bookmark != null) {
       _bookmark.clear();
       _bookmark = null;
     }
   }
-
-  toString() => "${element} @ (${line}, ${ch})";
 }

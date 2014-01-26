@@ -28,13 +28,34 @@ class SourcePaneElement extends PolymerElement {
   @observable var source;
   @observable var widgets;
 
+  var _pendingScroll;
+
+  get currentFunction => path.last;
+
   SourcePaneElement.created() : super.created();
 
+  scrollTo(deopt, delayed) {
+    _pendingScroll = new _PendingScroll(deopt.srcPos, delayed);
+    if (!delayed && currentFunction.contains(deopt.srcPos)) {
+      executePendingScroll(force: true);
+    }
+  }
+
+  executePendingScroll({force: false}) {
+    if (_pendingScroll != null) {
+      final scroll = _pendingScroll;
+      _pendingScroll = null;
+
+      if (currentFunction.contains(scroll.position)) {
+        $["editor"].scrollTo(
+          scroll.position.position, scroll.delayed, force: force);
+      }
+    }
+  }
+
   pathChanged() {
-    final currentFunction = path.last;
-
     source = currentFunction.source.source;
-
+    executePendingScroll();
     final inlineWidgets = currentFunction.method.inlined
       .where((f) => currentFunction.contains(f.position))
       .map((f) {
@@ -61,6 +82,8 @@ class SourcePaneElement extends PolymerElement {
 
     widgets = []..addAll(inlineWidgets)
                 ..addAll(deoptWidgets);
+
+
   }
 }
 
@@ -69,4 +92,11 @@ class DeoptClickDetail {
   final deopt;
 
   DeoptClickDetail(this.widget, this.deopt);
+}
+
+class _PendingScroll {
+  final position;
+  final delayed;
+
+  _PendingScroll(this.position, this.delayed);
 }

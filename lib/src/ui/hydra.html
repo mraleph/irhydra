@@ -96,14 +96,14 @@
       <template if="{{ir != null}}">
         <tab-pane>
           <div data-title="IR" data-href="ir">
-            <ir-pane id="irpane" ir="{{ir}}" codeMode="{{codeMode}}"></ir-pane>
+            <ir-pane id="ir-pane" ir="{{ir}}" codeMode="{{codeMode}}"></ir-pane>
           </div>
           <div data-title="Graph" data-href="graph">
             <graph-pane ir="{{ir}}" on-block-mouse-over="{{showBlockAction}}" on-block-mouse-out="{{hideBlockAction}}">
             </graph-pane>
           </div>
           <div data-title="Source" data-href="source">
-            <source-pane path="{{sourcePath}}" on-deopt-click="{{showDeoptAction}}">
+            <source-pane id="source-pane" path="{{sourcePath}}" on-deopt-click="{{showDeoptAction}}">
             </source-pane>
           </div>
           <span class="after-tabs" data-when="ir">
@@ -116,7 +116,7 @@
             </template>
           </span>
           <span class="after-tabs" data-when="ir|source">
-            <deopt-links deopts="{{currentMethod.deopts}}">
+            <deopt-links deopts="{{currentMethod.deopts}}" on-deopt-click="{{navigateToDeoptAction}}">
             </deopt-links>
           </span>
           <span class="after-tabs" data-when="source">

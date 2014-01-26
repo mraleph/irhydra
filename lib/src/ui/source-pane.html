@@ -2,7 +2,8 @@
 <polymer-element name="source-pane" attributes="method path">
   <link rel="import" href="code-mirror.html">
   <template>
-    <code-mirror lines="{{source}}" widgets="{{widgets}}"></code-mirror>
+    <code-mirror id="editor" lines="{{source}}" widgets="{{widgets}}">
+    </code-mirror>
   </template>
   <script type="application/dart" src='source-pane.dart'></script>
 </polymer-element>

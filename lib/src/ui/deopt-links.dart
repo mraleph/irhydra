@@ -26,6 +26,8 @@ class DeoptLinksElement extends PolymerElement {
   @published var deopts;
   @observable var deoptInfo;
 
+  DeoptLinksElement.created() : super.created();
+
   deoptsChanged() {
     deoptInfo = deopts.map((deopt) {
       return new _DeoptInfo(deopt.hirId != null ? deopt.hirId : deopt.lirId,
@@ -33,7 +35,10 @@ class DeoptLinksElement extends PolymerElement {
     }).toList();
   }
 
-  DeoptLinksElement.created() : super.created();
+  jumpToDeoptAction(event, detail, target) {
+    final index = int.parse(target.attributes["data-target"]);
+    fire("deopt-click", detail: deopts[index]);
+  }
 }
 
 class _DeoptInfo {

@@ -55,8 +55,10 @@
         background-color: #9B59B6;
       }
     </style>
-    <template repeat="{{deopt in deoptInfo}}">
-      <div class="x-deopt-link x-deopt-link-{{deopt.type}}"><a href="#ir-{{deopt.id}}">deopt @{{deopt.id}}</a></div>
+    <template repeat="{{deopt in deoptInfo | enumerate}}">
+      <div class="x-deopt-link x-deopt-link-{{deopt.value.type}}">
+        <a href="#ir-{{deopt.value.id}}" on-click="{{jumpToDeoptAction}}" data-target="{{deopt.index}}">deopt @{{deopt.value.id}}</a>
+      </div>
     </template>
   </template>
   <script type="application/dart" src='deopt-links.dart'></script>

@@ -17,6 +17,11 @@ Vec2.prototype = {
 }
 
 function len(v) {
+  // We are going to deoptimize here when we call
+  // loop the second time because hidden class of
+  // v2 does not match hidden class of v.
+  // We changed by adding a new property "name" to
+  // the object allocated with Vec2.
   return v.len();
 }
 
