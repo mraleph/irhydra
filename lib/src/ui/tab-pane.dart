@@ -55,11 +55,9 @@ class TabPane extends PolymerElement {
     for (var node in $['after-tabs'].getDistributedNodes()) {
       if (node.attributes.containsKey("data-when")) {
         final visible = node.attributes["data-when"].split("|").contains(_activeTab);
-        print("${node} :> ${node.attributes['data-when'].split('|')} ~ ${visible}");
         node.style.display = visible ? "inline" : "none";
       }
     }
-
 
     document.dispatchEvent(new CustomEvent("DisplayChanged"));
   }

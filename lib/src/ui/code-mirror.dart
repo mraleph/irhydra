@@ -57,13 +57,10 @@ class CodeMirrorElement extends PolymerElement {
       ch -= _lines[line].length + 1;
       line++;
     }
-
-    print("_Widget($line, $ch, ${w.element})");
     return new _Widget(line, ch, w.element);
   }
 
   widgetsChanged() {
-    print("widgetsChanged ${widgets}");
     _widgets.forEach((w) => w.remove());
     _widgets = widgets.map(_toWidget).toList();
     _widgets.forEach((w) => w.insertInto(_instance));
