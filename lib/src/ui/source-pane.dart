@@ -63,10 +63,10 @@ class SourcePaneElement extends PolymerElement {
         js.context.jQuery(span).tooltip(js.map({
           "title": "View inlined function",
           "placement": "bottom",
-          "container": 'body'
+          "container": 'body',
+          "trigger": "hover click",
         }));
         span.onClick.listen((e) {
-          js.context.jQuery(span).tooltip('destroy');
           path.add(f);
         });
         return new code_mirror.Widget(f.position.position, span);
