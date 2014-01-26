@@ -14,8 +14,9 @@
 
 library ir_pane;
 
-import 'dart:html';
+import 'dart:async' as async;
 import 'dart:math' as math;
+import 'dart:html';
 
 import 'package:irhydra/src/modes/code.dart' show CodeRenderer;
 import 'package:irhydra/src/html_utils.dart' show toHtml, span;
@@ -39,6 +40,22 @@ class FormattingContext {
       return new Text(operand);
     } else {
       return operand.toHtml(this);
+    }
+  }
+}
+
+class Task {
+  final _callback;
+  var _task;
+
+  Task(this._callback);
+
+  schedule() {
+    if (_task == null) {
+      _task = new async.Future.microtask(() {
+        _task = null;
+        _callback();
+      });
     }
   }
 }
@@ -75,6 +92,7 @@ class IRPane extends PolymerElement {
 
   var makeBlockRef;
   var makeValueRef;
+  var _renderTask;
 
   IRPane.created() : super.created() {
     makeBlockRef = xref.makeReferencer(rangeContentAsHtmlFull,
@@ -83,35 +101,18 @@ class IRPane extends PolymerElement {
     makeValueRef = xref.makeReferencer(rangeContentAsHtml,
                                        href,
                                        type: xref.TOOLTIP);
+    _renderTask = new Task(render);
   }
 
   enteredView() {
     super.enteredView();
     _table = $['rows'];
-    if (ir != null) {
-      render();
-    }
   }
 
-  irChanged() {
-    if (_table != null) {
-      render();
-    }
-  }
-
-  codeModeChanged() {
-    if (_table != null) {
-      render();
-    }
-  }
-
-  var _renderedIr, _renderedCodeMode;
+  irChanged() => _renderTask.schedule();
+  codeModeChanged() => _renderTask.schedule();
 
   render() {
-    if (_renderedIr == ir && _renderedCodeMode == codeMode) return;
-    _renderedIr = ir;
-    _renderedCodeMode = codeMode;
-
     final stopwatch = new Stopwatch()..start();
     clear();
 

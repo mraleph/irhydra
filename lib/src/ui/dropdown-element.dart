@@ -32,7 +32,7 @@ class DropdownElement extends PolymerElement {
   var _texts;
 
   valueChanged() {
-    if (_texts != null) valueText = _texts[value];
+    valueText = _texts[value];
   }
 
   DropdownElement.created() : super.created();
@@ -49,10 +49,6 @@ class DropdownElement extends PolymerElement {
       key: (node) => node.attributes["data-value"],
       value: (node) => node.text
     );
-
-    if (value != null) {
-      valueText = _texts[value];
-    }
   }
 
   selectAction(event, detail, target) {

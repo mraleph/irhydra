@@ -34,6 +34,10 @@ class HydraElement extends PolymerElement {
   get currentFileNames => currentFiles.map((file) => file.name).join(', ');
 
   HydraElement.created() : super.created() {
+  }
+
+  enteredView() {
+    super.enteredView();
     async.Future.wait([
       HttpRequest.getString("demos/v8/deopt-soft/hydrogen.cfg").then(loadData),
       HttpRequest.getString("demos/v8/deopt-soft/code.asm").then(loadData)
