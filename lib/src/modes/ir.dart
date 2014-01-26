@@ -66,6 +66,9 @@ class Phase {
  */
 @observable
 class Deopt {
+  /** An abstract timestamp that allows to figure which deopt happened before which. */
+  final timestamp;
+
   /** ID of the code object that deoptimized. */
   final optimizationId;
 
@@ -82,7 +85,7 @@ class Deopt {
   /** Type of the deoptimization ("eager", "lazy", "soft"). */
   final String type;
 
-  Deopt(this.id, this.raw, { this.type: "eager", this.optimizationId });
+  Deopt(this.timestamp, this.id, this.raw, { this.type: "eager", this.optimizationId });
 
   static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2 };
   static final _types = _typesOrdering.keys.toList();

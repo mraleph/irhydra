@@ -1,5 +1,6 @@
 library method_list;
 
+import 'dart:math' show min;
 import 'package:irhydra/src/delayed_reaction.dart';
 import 'package:polymer/polymer.dart';
 
@@ -67,9 +68,12 @@ class MethodList extends PolymerElement {
         if (result == 0) {
           result = b.reopts - a.reopts;
           if (result == 0) {
-            result = a.firstTimestamp - b.firstTimestamp;
+            result = a.earliestDeopt - b.earliestDeopt;
             if (result == 0) {
-              result = a.timestamp - b.timestamp;
+              result = a.firstTimestamp - b.firstTimestamp;
+              if (result == 0) {
+                result = a.timestamp - b.timestamp;
+              }
             }
           }
         }
@@ -157,6 +161,10 @@ class _MethodWrapper {
 
   /** Filterable name: concatenation of source and short parts of [IR.Name]. */
   final name;
+
+  get earliestDeopt =>
+    method.deopts.isEmpty ?
+      0 : method.deopts.map((deopt) => deopt.timestamp).reduce(min);
 
   _MethodWrapper(this.timestamp, method)
       : method = method,

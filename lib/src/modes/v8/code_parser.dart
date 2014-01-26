@@ -40,6 +40,7 @@ class PreParser extends parsing.ParserBase {
   final optId = new Optional();
 
   IR.Method currentMethod;
+  var timestamp = 0;
 
   PreParser(text) : super(text.split('\n'));
 
@@ -122,7 +123,7 @@ class PreParser extends parsing.ParserBase {
       enter({
         r"^\[deoptimizing \(\w+\): end": () {
           final deopt =
-              new IR.Deopt(int.parse(bailoutId), subrange(inclusive: true), type: type, optimizationId: optId);
+              new IR.Deopt(timestamp++, int.parse(bailoutId), subrange(inclusive: true), type: type, optimizationId: optId);
 
           for (var currentMethod in methods.reversed) {
             if (currentMethod.optimizationId == optId) {

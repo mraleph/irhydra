@@ -77,10 +77,6 @@ class HydraElement extends PolymerElement {
     ).then((_) => spinner.stop(), onError: (_) => spinner.stop());
   }
 
-  openProfile(e, detail, target) {
-    // TODO(mraleph) support profiles again
-  }
-
   showBlockAction(event, detail, target) {
     blockRef.show(detail.label, detail.blockId);
   }
