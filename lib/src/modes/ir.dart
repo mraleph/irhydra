@@ -116,26 +116,26 @@ class InlinedFunction {
  *
  * A unit of granularity for the compilation pipeline.
  */
-@observable
 class Method {
   /** Unique optimization identifier for this method. */
   final optimizationId;
 
   /** Method's name */
-  final Name name;
+  @observable final Name name;
 
   /** List of [Phase] artifacts associated with this method. */
-  final List<Phase> phases = <Phase>[];
+  @observable final List<Phase> phases = <Phase>[];
 
   /** List of [Deopt] artifacts associated with this method. */
-  final List<Deopt> deopts = <Deopt>[];
+  @observable final List<Deopt> deopts = <Deopt>[];
 
   /** List of function sources associated with this method. */
-  final List<FunctionSource> sources = <FunctionSource>[];
+  @observable final List<FunctionSource> sources = <FunctionSource>[];
 
-  final List<InlinedFunction> inlined = <InlinedFunction>[new InlinedFunction(0, 0, null)];
+  @observable final List<InlinedFunction> inlined = <InlinedFunction>[new InlinedFunction(0, 0, null)];
 
-  get hasDeopts => deopts.length > 0;
+  @observable get hasDeopts => deopts.length > 0;
+  @observable get hasSinglePhase => phases.length == 1;
 
   Method(this.name, {this.optimizationId});
 }

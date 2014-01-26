@@ -33,10 +33,10 @@ class HydraElement extends PolymerElement {
 
   HydraElement.created() : super.created() {
     async.Future.wait([
-      HttpRequest.getString("demos/1.v8.hydrogen.cfg").then(loadData),
-      HttpRequest.getString("demos/1.v8.code.asm").then(loadData)
+      HttpRequest.getString("demos/v8/deopt-lazy/hydrogen.cfg").then(loadData),
+      HttpRequest.getString("demos/v8/deopt-lazy/code.asm").then(loadData)
     ]).then((_) {
-      var m = currentMethods.firstWhere((m) => m.name.short == "loop");
+      var m = currentMethods.firstWhere((m) => m.deopts.length != 0);
       displayPhase(null, [m, m.phases.last], null);
     });
   }

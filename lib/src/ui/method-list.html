@@ -118,7 +118,7 @@
         <ul class="nav nav-list">
           <template repeat="{{method in filteredMethods | enumerate }}">
             <li>
-              <template if="{{method.value.phases.length > 1}}">
+              <template if="{{!method.value.hasSinglePhase}}">
                 <h3 class="{{ { 'deopt': method.value.hasDeopts } }}">{{method.value.name.short}}</h3>
                 <ul class="phases">
                   <template repeat="{{phase in method.value.phases | enumerate}}">
@@ -126,7 +126,7 @@
                   </template>
                 </ul>
               </template>
-              <template if="{{method.value.phases.length == 1}}">
+              <template if="{{method.value.hasSinglePhase}}">
                 <h3 class="{{ { 'deopt': method.value.hasDeopts } }}">
                   <a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},0">{{method.value.name.short}}</a>
                 </h3>
