@@ -5,7 +5,7 @@ import 'dart:async' as async;
 import 'package:irhydra/src/html_utils.dart' show toHtml;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
-import 'package:irhydra/src/ui/irpane.dart' show IRPane;
+import 'package:irhydra/src/ui/ir-pane.dart' show IRPane;
 import 'package:irhydra/src/xref.dart' show XRef;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
