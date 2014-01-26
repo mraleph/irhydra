@@ -2,6 +2,7 @@ library method_list;
 
 import 'dart:math' show min;
 import 'package:irhydra/src/delayed_reaction.dart';
+import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
 @CustomTag('method-list')
@@ -20,6 +21,16 @@ class MethodList extends PolymerElement {
   get applyAuthorStyles => true;
 
   MethodList.created() : super.created();
+
+  enteredView() {
+    super.enteredView();
+
+    shadowRoot.querySelectorAll('[data-title]').forEach((node){
+      js.context.jQuery(node).tooltip(js.map({
+        "container": "body",
+      }));
+    });
+  }
 
   selectPhase(a, b, c) {
     final phaseId = c.attributes['data-phase'].split(',').map(int.parse).toList();

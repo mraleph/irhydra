@@ -61,7 +61,7 @@
 
     <div id="sidebar">
       <div id="header">
-        <open-file-button on-opened="{{openCompilation}}"><i class="fa fa-folder-open"></i></open-file-button>
+        <open-file-button on-opened="{{openCompilation}}" title="Load Compilation Artifacts"><i class="fa fa-folder-open"></i></open-file-button>
         <template if="{{currentFiles != null}}">
           <button href="#" on-click="{{reloadCurrentFiles}}"><i class="fa fa-repeat"></i></button>
         </template>
