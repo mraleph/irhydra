@@ -172,3 +172,59 @@ h4.deopt-header-lazy > .first-word {
 h4.deopt-header-soft > .first-word {
   color: #8E44AD;
 }
+
+.welcome-message {
+  font-family: 'Lato';
+}
+
+.welcome-message h1, .welcome-message h2, .welcome-message h3 {
+  font-family: 'Oswald';
+}
+
+.welcome-message {
+  margin: 0 auto;
+  width: 600px;
+  font-size: 16px;
+  padding: 5em 0;
+}
+
+.alpha-warning {
+  color: #E74C3C;
+}
+
+#welcome-splash {
+  position: absolute;
+  padding-left: 250px;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+}
+
+#splash-spinner {
+  display: inline-block;
+  position: absolute;
+  width: 2em;
+  height: 2em;
+  left: -2em;
+  right: 0px;
+  top: -0.5em;
+}
+
+.welcome-message h1 {
+  position: relative;
+}
+
+.welcome-message pre > span {
+  cursor: help;
+}
+
+.welcome-message pre > span:hover {
+  border-bottom: 1px dashed #ccc;
+}
+
+.welcome-message pre, .welcome-message code {
+  font-size: inherit;
+  color: inherit;
+  background: inherit;
+}

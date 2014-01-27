@@ -14,6 +14,7 @@
 
 library graph_pane;
 
+import 'dart:html';
 import 'package:irhydra/src/ui/graph.dart' as graphview;
 import 'package:polymer/polymer.dart';
 
@@ -50,6 +51,10 @@ class GraphPane extends PolymerElement {
     graphview.display($["graph"], ir.blocks, (label, blockId) {
       label.onMouseOver.listen((event) => fire("block-mouse-over", detail: new HoverDetail(event.target, blockId)));
       label.onMouseOut.listen((_) => fire("block-mouse-out"));
+      label.onClick.listen((event) {
+        // TODO(mraleph): Shadow DOM polyfill seems to be interfering with links in SVG. Have to switch manually.
+        document.window.location.hash = "ir-${blockId}";
+      });
     });
     print("GraphPane.render() took ${stopwatch.elapsedMilliseconds}");
   }

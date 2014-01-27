@@ -77,23 +77,6 @@
     </div>
 
     <div id="pane">
-      <template if="{{ir == null}}">
-        <div>
-          <h1><span class="brand">IR Hydra</span></h1>
-          <p class="lead">This is a tool that can display intermediate representations used by V8 and Dart VM optimizing compilers.</p>
-          <p>It is mostly intended for compiler developers but can also be used by JavaScript/Dart developers investigating performance of their applications. Don't be surprised if it seems unfriendly or enters a strange state. Just refresh the page. Feel free to send questions and suggestions to <a href="mailto:me@mrale.ph">me@mrale.ph</a>.</p>
-          <p>You can also try loading a sample <a href="#demo-1">demo file (v8 @ x64)</a> to explore IRHydra's features.</p>
-          <p>How to obtain compilation artifacts:</p>
-          <h2>V8</h2>
-          <p>Run your application with <code>--trace-hydrogen --print-opt-code --code-comments --trace-deopt</code> and collect <code>hydrogen.cfg</code> file and data dumped into the stadard output.</p>
-          <p><code>--print-opt-code</code> requires a special build of V8 with <code>v8_enable_disassembler</code> GYP variable set to <code>1</code>.</p>
-          <p>When running in Chromium use <code>--js-flags="..."</code> to pass V8 flags and <code>--no-sandbox</code> to allow V8 to write <code>hydrogen.cfg</code>.</p>
-          <p>V8 3.17.1 or newer is required to reliably map deoptimizations to lithium instructions when disassembly is not present. Alternatively you can just apply <a href="https://codereview.chromium.org/12217103">this</a> patch.</p>
-          <h2>Dart VM</h2>
-          <p>Run with <code>--print-flow-graph-optimized --disassemble-optimized --code-comments</code> and collect data dumped to the standard output.</p>
-          <p>When running in Dartium use <code>DART_FLAGS</code> environment variable to pass flags.</p>
-        </div>
-      </template>
       <template if="{{ir != null}}">
         <tab-pane disabled="{{ { 'source': currentMethod.sources.isEmpty  } }}">
           <div data-title="IR" data-href="ir">

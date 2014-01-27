@@ -21,7 +21,7 @@
     });
     </script>
 
-
+    <link href='http://fonts.googleapis.com/css?family=Oswald:400,700' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Lato:400,700,900' rel='stylesheet' type='text/css'>
 
     <link type="text/css" href="css/irpane.css" rel="stylesheet" >
@@ -46,6 +46,83 @@
   </head>
 
   <body>
+    <div id="welcome-splash">
+      <div class="welcome-message">
+        <h1>IRHydra 2.0<span id="splash-spinner"></span></h1>
+        <p class="lead">This is an <span class="alpha-warning">alpha preview</span> of the tool that can display intermediate representations used by V8 and Dart VM optimizing compilers.</p>
+        <p>Originally it was intended for compiler developers but since release of the first version has been used by JavaScript/Dart developers investigating performance of their applications.</p>
+        <p>If it's you first time trying IRHydra consider watching the following screencast showcasing its main features:</p>
+        <p><iframe width="560" height="315" src="https://www.youtube.com/embed/y8hVeKMD_oM" frameborder="0" allowfullscreen></iframe></p>
+        <h2>Demos</h2>
+        <p>Try clicking on the links below to explore features that IRHydra provides. Each link loads compilation artifacts collected from a single V8 or Dart VM run on a given source file.</p>
+        <ul>
+          <li>
+            <h3>V8</h3>
+            <ul>
+              <li><a href="#demo-1">demo #1</a> [<a href="https://code.google.com/p/irhydra/source/browse/web/demos/v8/deopt-eager/demo.js?name=polymerized" target="_blank">source file</a>]</li>
+              <li><a href="#demo-2">demo #2</a> [<a href="https://code.google.com/p/irhydra/source/browse/web/demos/v8/deopt-lazy/demo.js?name=polymerized" target="_blank">source file</a>]</li>
+              <li><a href="#demo-3">demo #3</a> [<a href="https://code.google.com/p/irhydra/source/browse/web/demos/v8/deopt-soft/demo.js?name=polymerized" target="_blank">source file</a>]</li>
+            </ul>
+          </li>
+          <li>
+            <h3>Dart VM</h3>
+            <ul>
+              <li><a href="#demo-4">demo #4</a> [<a href="https://code.google.com/p/irhydra/source/browse/web/demos/dart/demo.dart?name=polymerized" target="_blank">source file</a>]</li>
+            </ul>
+          </li>
+        </ul>
+        <h2>Compilation Artifacts Cheatsheet</h2>
+        <p>If you already have some artifacts collected go ahead and explore them with&nbsp;<i class="fa fa-folder-open"></i>&nbsp;otherwise here is how you can collect some.</p>
+        <h3>V8</h3>
+        <p class="alpha-warning">Currently you need to apply a <a href="https://code.google.com/p/irhydra/source/browse/patches/v8.r18822.patch?name=polymerized">patch</a> to your <em>recent version</em> of V8 to be able to collect all necessary information.</p>
+        <p>You need to pass the following flags to V8 to collect IR and deoptimization artifacts and be able to use source level view:</p>
+        <pre>
+<span data-toggle="tooltip" data-title="Produce hydrogen.cfg containing high-level and low-level intermediate representations used by Crankshaft optimizing compiler.">--trace-hydrogen</span>
+<span data-toggle="tooltip" data-title="Dump only IR from the very last phase">--trace-phase=Z</span>
+<span data-toggle="tooltip" data-title="Print information about every deoptimization">--trace-deopt</span>
+<span data-toggle="tooltip" data-title="Emit comments as part of generated native code. Makes deoptimization traces more informative.">--code-comments</span>
+<span data-toggle="tooltip" data-title="Track precise source position information during optimization">--emit-opt-code-positions</span>
+<span data-toggle="tooltip" data-title="Redirect disassembly, source dumps and deoptimizations from stdout.">--redirect-code-traces</span>
+<span data-toggle="tooltip" data-title="Redirect disassembly, source dumps and deoptimizations from stdout into code.asm">--redirect-code-traces-to=code.asm</span>
+</pre>
+<p>Additionally you can pass the following flags to enable disassembly view. <span class="alpha-warning">This requires building V8 with <code>v8_enable_disassembler=1</code> GYP flag.</p>
+<pre>
+<span data-toggle="tooltip" data-title="Output disassembly for every generated optimized function">--print-opt-code</span>
+</pre>
+        <p>When run with this flags V8 will produce two files <code>hydrogen.cfg</code> and <code>code.asm</code> both of which should be loaded into IRHydra.</p>
+        <p>When running in Chromium use <code>--js-flags="..."</code> to pass V8 flags and <code>--no-sandbox</code> to allow V8 to write <code>hydrogen.cfg</code> and <code>code.asm</code>.</p>
+        <h3>Dart VM</h3>
+        <p>You need to pass the following flags to Dart VM to collect IR and disassemble artifacts:</p>
+        <pre>
+<span data-toggle="tooltip" data-title="Dump intermediate representation used by the optimizing compiler.">--print-flow-graph-optimized</span>
+<span data-toggle="tooltip" data-title="Disassemble every generated optimized method">--disassemble-optimized</span>
+<span data-toggle="tooltip" data-title="Annotate disassembly with comments to make it more readable">--code-comments</span>
+</pre>
+        <p>All data is dumped into standard output.</p>
+        <p>When running in Dartium use <code>DART_FLAGS</code> environment variable to pass flags.</p>
+        <p class="alpha-warning">Deoptimization matching and source level view is not currently available for Dart VM.</p>
+      </div>
+    </div>
+    <script>
+      (function () {
+        $("[data-toggle=tooltip]").tooltip();
+
+        var spinner = new Spinner({  color: '#2980B9' }).spin(document.getElementById("splash-spinner"));
+
+        document.addEventListener("HydraReady", function () {
+          spinner.stop();
+        }, false);
+
+        document.location.hash = "";
+      })();
+
+      function DESTROY_SPLASH() {
+        var splash = document.querySelector("#welcome-splash");
+        if (splash) {
+          splash.parentNode.removeChild(splash);
+        }
+      }
+    </script>
     <hydra-app></hydra-app>
   </body>
 </html>

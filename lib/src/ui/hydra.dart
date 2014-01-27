@@ -12,6 +12,19 @@ import 'package:polymer/polymer.dart';
 
 final MODES = [new dartvm.Mode(), new v8.Mode()];
 
+_createV8DeoptDemo(type) => [
+  "demos/v8/deopt-${type}/hydrogen.cfg",
+  "demos/v8/deopt-${type}/code.asm"
+];
+
+final DEMOS = {
+  "demo-1": _createV8DeoptDemo("eager"),
+  "demo-2": _createV8DeoptDemo("soft"),
+  "demo-3": _createV8DeoptDemo("lazy"),
+  "demo-4": ["demos/dart/code.asm"],
+};
+
+
 @CustomTag('hydra-app')
 class HydraElement extends PolymerElement {
   @observable var currentMode;
@@ -33,22 +46,42 @@ class HydraElement extends PolymerElement {
 
   get currentFileNames => currentFiles.map((file) => file.name).join(', ');
 
-  HydraElement.created() : super.created() {
-  }
+  HydraElement.created() : super.created();
 
   enteredView() {
     super.enteredView();
-    async.Future.wait([
-      HttpRequest.getString("demos/dart/code.asm").then(loadData)
-      //HttpRequest.getString("demos/v8/deopt-lazy/code.asm").then(loadData),
-      //HttpRequest.getString("demos/v8/deopt-lazy/hydrogen.cfg").then(loadData)
-    ]).then((_) {
-      var m = currentMethods.firstWhere((m) => m.name.short == "loop1");
-      displayPhase(null, [m, m.phases.last], null);
+
+    window.onHashChange.listen((e) {
+      final from = Uri.parse(e.oldUrl).fragment;
+      final to = Uri.parse(e.newUrl).fragment;
+
+      if (DEMOS.containsKey(to)) {
+        _wait(DEMOS[to].map((path) => HttpRequest.getString(path).then(loadData)));
+        return;
+      }
+
+      if (to.startsWith("ir") && tabPane.activeTab != "ir") {
+        tabPane.activeTab = "ir";
+
+        new async.Timer(const Duration(milliseconds: 50), () {
+          final anchor = irpane.shadowRoot.querySelector("a[id='$to']");
+          if (anchor != null) {
+            anchor.scrollIntoView();
+          }
+        });
+      }
     });
+
+    document.dispatchEvent(new CustomEvent("HydraReady"));
+  }
+
+  closeSplash() {
+    js.context.DESTROY_SPLASH();
   }
 
   displayPhase(a, phaseAndMethod, b) {
+    closeSplash();
+
     currentMethod = phaseAndMethod[0];
     currentPhase = phaseAndMethod[1];
     ir = currentMode.toIr(phaseAndMethod[0], currentPhase);
@@ -78,12 +111,17 @@ class HydraElement extends PolymerElement {
   }
 
   _loadFiles() {
+    _wait(currentFiles.map((file) => readAsText(file).then(loadData)));
+  }
+
+  _wait(actions) {
     final spinner = $['spinner'];
     spinner.start();
     async.Future.wait(
-      currentFiles.map((file) => readAsText(file).then(loadData))
+      actions
     ).then((_) => spinner.stop(), onError: (_) => spinner.stop());
   }
+
 
   showBlockAction(event, detail, target) {
     blockRef.show(detail.label, detail.blockId);
