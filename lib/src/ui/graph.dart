@@ -315,9 +315,7 @@ final BREWER_PALETTE = [
 ];
 
 _selectFill(block, hotness) {
-  if (block.marks.contains("deoptimizes")) {
-    return "white";
-  } else if (block.marks.contains("changes-all")) {
+  if (block.marks.contains("deoptimizes") || block.marks.contains("dead")) {
     return "white";
   } else {
     final idx = math.min(hotness, BREWER_PALETTE.length) - 1;
