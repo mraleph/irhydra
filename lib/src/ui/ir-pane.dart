@@ -28,11 +28,14 @@ import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
 class FormattingContext {
-  final ns;
+  final _irDesc;
+  get ns => _irDesc.ns;
   final makeBlockRef;
   final makeValueRef;
 
-  FormattingContext(this.ns, this.makeBlockRef, this.makeValueRef);
+  FormattingContext(this._irDesc, this.makeBlockRef, this.makeValueRef);
+
+  ir(block) => _irDesc.from(block);
 
   formatOperand(tag, text) => span("${ns}-${tag}", text);
 
@@ -184,11 +187,17 @@ class IRPane extends PolymerElement {
       ln.text.parentNode.classes.add("${ctx.ns}-line");
     }
 
-
-    final hirContext = new FormattingContext("hir", makeBlockRef, makeValueRef);
-    final lirContext = new FormattingContext("lir", makeBlockRef, makeValueRef);
-
     final codeRenderer = new CodeRenderer(this, ir.code);
+    final contexts = ir.mode.irs.map((irDesc) =>
+        new FormattingContext(irDesc, makeBlockRef, makeValueRef)).toList();
+    final lastCtx = contexts.last;
+
+    emitInlineCode(ctx, instr) {
+      if (ctx == lastCtx && codeMode == 'inline' && instr.code != null) {
+        instr.code.skip(1).forEach(codeRenderer.display);
+      }
+    }
+
 
     if (codeMode != 'none') {
       ir.code.prologue.forEach(codeRenderer.display);
@@ -199,43 +208,27 @@ class IRPane extends PolymerElement {
       add(" ", " ");
       add(span('boldy', block.name), " ", id: block.name);
 
-      if (!block.hir.isEmpty) {
-        var branch = block.hir.last;
+      for (var ctx in contexts) {
+        final blockIr = ctx.ir(block);
+        if (blockIr.isEmpty) continue;
 
-        for (var index = 0; index < block.hir.length - 1; index++) {
-          final instr = block.hir[index];
-          addEx(hirContext, instr.id, instr.op, instr.args);
-          if (codeMode == 'inline' && instr.code != null) {
-            instr.code.skip(1).forEach(codeRenderer.display);
-          }
+        var branch = blockIr.last;
+        for (var index = 0; index < blockIr.length - 1; index++) {
+          final instr = blockIr[index];
+          addEx(ctx, instr.id, instr.op, instr.args);
+          emitInlineCode(ctx, instr);
         }
 
         if (branch is IR.Branch) {
-          addBranch(hirContext, branch);
+          addBranch(ctx, branch);
         } else {
-          addEx(hirContext, branch.id, branch.op, branch.args);
+          addEx(ctx, branch.id, branch.op, branch.args);
         }
-
-        if (codeMode == 'inline' && branch.code != null) {
-          branch.code.skip(1).forEach(codeRenderer.display);
-        }
-      }
-
-      for (var instr in block.lir) {
-        addEx(lirContext, instr.id, instr.op, instr.args);
-        if (codeMode == 'inline' && instr.code != null) {
-          instr.code.skip(1).forEach(codeRenderer.display);
-        }
+        emitInlineCode(ctx, branch);
       }
 
       if (codeMode == 'split') {
-        for (var instr in block.hir) {
-          if (instr.code != null) {
-            instr.code.forEach(codeRenderer.display);
-          }
-        }
-
-        for (var instr in block.lir) {
+        for (var instr in lastCtx.ir(block)) {
           if (instr.code != null) {
             instr.code.forEach(codeRenderer.display);
           }

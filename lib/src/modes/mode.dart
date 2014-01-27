@@ -15,11 +15,17 @@
 /** Base mode related functionality */
 library mode;
 
-import 'dart:html' as html;
-
-import 'package:irhydra/src/modes/code.dart' show CodeSplicer;
 import 'package:irhydra/src/modes/ir.dart' as IR;
-import 'package:irhydra/src/modes/llprof.dart' as llprof;
+
+abstract class IRDescriptor {
+  /** Namespace corresponding to this IR. */
+  final String ns;
+
+  const IRDescriptor(this.ns);
+
+  /** Fetch IR corresponding to this descriptor from the [block]. */
+  Iterable<IR.Instruction> from(IR.Block block);
+}
 
 /**
  * Modes encapsulate the way to parse and display compilation artifacts.
@@ -49,6 +55,8 @@ abstract class BaseMode {
   /** Determines if the mode can recognize and handle given textual artifact. */
   bool canRecognize(String text);
 
+  get irs;
+
   /** Parses textual artifact into the list of [IR.Method] */
   List<IR.Method> parse(String text);
 
@@ -56,4 +64,16 @@ abstract class BaseMode {
   loadProfile(data) {
     //llprof.parse(data);
   }
+}
+
+class HIRDescriptor extends IRDescriptor {
+  const HIRDescriptor() : super("hir");
+
+  from(block) => block.hir;
+}
+
+class LIRDescriptor extends IRDescriptor {
+  const LIRDescriptor() : super("lir");
+
+  from(block) => block.lir;
 }

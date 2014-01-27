@@ -27,6 +27,8 @@ class _Descriptions {
 }
 
 class Mode extends BaseMode {
+  final irs = const [const HIRDescriptor()];
+
   canRecognize(text) =>
     preparser.canRecognize(text);
 
