@@ -46,12 +46,15 @@ class CodeMirrorElement extends PolymerElement {
 
   var _pendingScroll;
   var _pendingScrollDelayed;
+  var _refresher;
 
   enteredView() {
     super.enteredView();
     _instance = js.context.CodeMirror($["editor"], js.map({"readOnly": true}));
     _instance.setSize(null, 600);
-    html.document.addEventListener("DisplayChanged", (_) => _refresh(), false);
+    _refresher = (_) => _refresh();
+
+    html.document.addEventListener("DisplayChanged", _refresher, false);
   }
 
   linesChanged() {
@@ -108,6 +111,7 @@ class CodeMirrorElement extends PolymerElement {
 
   leftView() {
     _instance = null;
+    html.document.removeEventListener("DisplayChanged", _refresher, false);
     super.leftView();
   }
 }

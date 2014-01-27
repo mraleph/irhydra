@@ -28,42 +28,18 @@ abstract class IRDescriptor {
 }
 
 /**
- * Modes encapsulate the way to parse and display compilation artifacts.
- *
- * Individual modes don't have to inherit from [BaseMode] but must implement
- * at least [canRecognize], [parse], [displayMethod] methods.
- *
- * [BaseMode] exists to provide some common infrastructure to support choice
- * of code rendering mode.
+ * Modes encapsulate the way to parse compilation artifacts.
  */
 abstract class BaseMode {
-  /** Currently displayed IR. */
-  var ir;
-
-  /** Currently displayed code. */
-  var _code;
-
-  /** Ticks information for the currently displayed code. */
-  var ticks;
-
-  /** Aggregated ticks information for each block. */
-  var blockTicks;
-
-  /** Profiling data. */
-  var profile;
-
-  /** Determines if the mode can recognize and handle given textual artifact. */
-  bool canRecognize(String text);
-
   get irs;
 
-  /** Parses textual artifact into the list of [IR.Method] */
-  List<IR.Method> parse(String text);
+  get descriptions;
 
-  /** Load output of the llprof.py script. */
-  loadProfile(data) {
-    //llprof.parse(data);
-  }
+  /** Currently loaded methods. */
+  var methods;
+
+  /** Parses textual artifact into the list of [IR.Method] */
+  bool load(String text);
 }
 
 class HIRDescriptor extends IRDescriptor {

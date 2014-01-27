@@ -44,7 +44,17 @@ class GraphPane extends PolymerElement {
 
   GraphPane.created() : super.created();
 
-  irChanged() => render();
+  irChanged() {
+    if (ir == null) {
+      clear();
+    } else {
+      render();
+    }
+  }
+
+  clear() {
+    $["graph"].nodes.clear();
+  }
 
   render() {
     final stopwatch = new Stopwatch()..start();

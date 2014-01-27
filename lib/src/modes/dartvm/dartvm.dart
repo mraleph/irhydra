@@ -29,11 +29,14 @@ class _Descriptions {
 class Mode extends BaseMode {
   final irs = const [const HIRDescriptor()];
 
-  canRecognize(text) =>
-    preparser.canRecognize(text);
+  load(String str) {
+    if (!preparser.canRecognize(str)) {
+      return false;
+    }
 
-  parse(String str) =>
-    preparser.parse(str);
+    methods = preparser.parse(str);
+    return true;
+  }
 
   final descriptions = new _Descriptions();
 
@@ -43,8 +46,6 @@ class Mode extends BaseMode {
     _attachCode(blocks, code);
     return new ir.ParsedIr(this, blocks, code, method.deopts);
   }
-
-  reset() { }
 
   _attachCode(blocks, code) {
     for (var block in blocks.values) {

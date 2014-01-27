@@ -41,15 +41,6 @@ class Mode extends BaseMode {
   /** [true] if hydrogen.cfg file is already loaded. */
   var hydrogenLoaded = false;
 
-  /** Currently loaded methods. */
-  var methods;
-
-  /** Currently displayed method. */
-  var currentMethod;
-
-  canRecognize(text) =>
-    hydrogen_parser.canRecognize(text) || code_parser.canRecognize(text);
-
   var _descriptions;
   get descriptions {
     if (_descriptions == null) {
@@ -62,20 +53,20 @@ class Mode extends BaseMode {
    * Extract methods from the given artifact (either hydrogen.cfg or
    * an stdout dump)
    */
-  parse(text) {
-    if (hydrogen_parser.canRecognize(text)) {
+  load(text) {
+    if (hydrogen_parser.canRecognize(text) && !hydrogenLoaded) {
       // This is hydrogen.cfg containing IR.
-      if (hydrogenLoaded) reset();  // Drop currently loaded IR data.
       _merge(hydrogen_parser.preparse(text), methods);
       hydrogenLoaded = true;
-    } else if (code_parser.canRecognize(text)) {
+      return true;
+    } else if (code_parser.canRecognize(text) && !codeLoaded) {
       // This is an stdout dump containing native code and deopts.
-      if (codeLoaded) reset();  // Drop current native code data.
       _merge(methods, code_parser.preparse(text));
       codeLoaded = true;
+      return true;
+    } else {
+      return false;
     }
-
-    return methods;
   }
 
   final _lirIdMarker = new RegExp(r"<@(\d+),#\d+>");
@@ -119,11 +110,6 @@ class Mode extends BaseMode {
     final code = code_parser.parse(phase.code);
     _attachCode(blocks, code);
     return new ir.ParsedIr(this, blocks, code, method.deopts);
-  }
-
-  reset() {
-    methods = null;
-    codeLoaded = hydrogenLoaded = false;
   }
 
   /** Merge method lists obtained from IR and code sources. */

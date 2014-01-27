@@ -56,7 +56,7 @@ class Task {
 
   schedule() {
     if (_task == null) {
-      _task = new async.Future.microtask(() {
+      _task = new async.Timer(const Duration(milliseconds: 50), () {
         _task = null;
         _callback();
       });
@@ -142,6 +142,10 @@ class IRPane extends PolymerElement {
   render() {
     final stopwatch = new Stopwatch()..start();
     clear();
+
+    if (ir == null) {
+      return;
+    }
 
     formatOpcode(ctx, opcode) {
       final element = span('boldy', opcode);

@@ -10,7 +10,10 @@ import 'package:irhydra/src/xref.dart' show XRef;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
-final MODES = [new dartvm.Mode(), new v8.Mode()];
+final MODES = [
+  () => new v8.Mode(),
+  () => new dartvm.Mode(),
+];
 
 _createV8DeoptDemo(type) => [
   "demos/v8/deopt-${type}/hydrogen.cfg",
@@ -111,6 +114,7 @@ class HydraElement extends PolymerElement {
   }
 
   _loadFiles() {
+    closeSplash();
     _wait(currentFiles.map((file) => readAsText(file).then(loadData)));
   }
 
@@ -122,7 +126,6 @@ class HydraElement extends PolymerElement {
     ).then((_) => spinner.stop(), onError: (_) => spinner.stop());
   }
 
-
   showBlockAction(event, detail, target) {
     blockRef.show(detail.label, detail.blockId);
   }
@@ -133,7 +136,7 @@ class HydraElement extends PolymerElement {
 
   navigateToDeoptAction(event, deopt, target) {
     if (currentMethod.inlined.isEmpty)
-      return;reloadCurrentFiles
+      return;
 
     buildStack(position) {
       if (position == null) {
@@ -196,10 +199,11 @@ class HydraElement extends PolymerElement {
   }
 
   reset() {
-    if (currentMode != null) {
-      currentMode.reset();
-    }
-    currentMode = currentPhase = null;
+    currentMode = currentMethods = null;
+  }
+
+  currentMethodsChanged() {
+    currentPhase = ir = null;
   }
 
   /** Load given file. */
@@ -215,30 +219,21 @@ class HydraElement extends PolymerElement {
     // Normalize line endings.
     text = text.replaceAll(new RegExp(r"\r\n|\r"), "\n");
 
-    // Select mode that can handle it.
-    var newMode = null;
-    for (var mode in MODES) {
-      if (mode.canRecognize(text)) {
-        newMode = mode;
-        break;
+    if (currentMode == null || !currentMode.load(text)) {
+      var newMode;
+      for (var mode in MODES) {
+        final candidate = mode();
+        if (candidate.load(text)) {
+          newMode = candidate;
+        }
       }
-    }
 
-    if (newMode == null) {
-      print("can't recognize file!");
-      return;
-    }
-
-    if (newMode != currentMode) {
-      if (currentMode != null) {
-        currentMode.reset();
+      if (newMode == null) {
+        return;
       }
-      newMode.reset();
+
+      currentMode = newMode;
     }
-
-    currentMode = newMode;
-
-    // Parse.
-    currentMethods = toObservable(currentMode.parse(text));
+    currentMethods = toObservable(currentMode.methods);
   }
 }
