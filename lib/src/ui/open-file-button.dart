@@ -14,30 +14,20 @@ class OpenFileButton extends PolymerElement {
   enteredView() {
     super.enteredView();
 
-    if (attributes['title'] != null) {
+    if (attributes['data-title'] != null) {
       final btn = shadowRoot.querySelector("button");
       js.context.jQuery(btn).tooltip(js.map({
-        "title": attributes['title'],
+        "title": attributes['data-title'],
         "placement": "bottom",
         "container": "body",
         "trigger": "manual",
       }));
 
-      var hide = new DelayedReaction(delay: const Duration(milliseconds: 100));
-      var visible = false;
-      btn.onMouseOver.listen((e) {
-        hide.cancel();
-        if (!visible) {
-          js.context.jQuery(btn).tooltip('show');
-        }
-        visible = true;
+      btn.onMouseEnter.listen((e) {
+        js.context.jQuery(btn).tooltip('show');
       });
-      btn.onMouseOut.listen((e) {
-        // print("out ${e.target}");
-        hide.schedule(() {
-          js.context.jQuery(btn).tooltip('hide');
-          visible = false;
-        });
+      btn.onMouseLeave.listen((e) {
+        js.context.jQuery(btn).tooltip('hide');
       });
     }
   }
