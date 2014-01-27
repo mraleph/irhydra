@@ -85,9 +85,10 @@ Map parse(IR.Method method, Function ir) {
   final parser = new CfgParser(ir())..parse();
 
   for (var deopt in method.deopts) {
-    deopt.lirId = parser.bailouts[deopt.id];
+    final lirId = parser.bailouts[deopt.id];
+    deopt.lir = parser.id2lir[lirId];
 
-    final hirId = parser.lir2hir[deopt.lirId];
+    final hirId = parser.lir2hir[lirId];
     deopt.hir = parser.id2hir[hirId];
 
     deopt.srcPos = parser.hir2pos[hirId];
@@ -189,6 +190,7 @@ class CfgParser extends parsing.ParserBase {
   final hir2pos = new Map<String, SourcePosition>();
 
   final id2hir = new Map<String, IR.Instruction>();
+  final id2lir = new Map<String, IR.Instruction>();
 
   final id2block = new Map<String, IR.Block>();
 
@@ -241,7 +243,7 @@ class CfgParser extends parsing.ParserBase {
     }
 
     final lirId = "$id";
-    return new IR.Instruction(line, "$id", opcode, lirOperands(operands, context: lirId));
+    return id2lir[lirId] = new IR.Instruction(line, "$id", opcode, lirOperands(operands, context: lirId));
   }
 
   get patterns => {

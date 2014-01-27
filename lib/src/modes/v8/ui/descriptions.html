@@ -14,7 +14,16 @@
       <p>For a function with a long running loop it is not uncommon to hit at OSR in the loop and then deoptimize on a <code>Deoptimize</code> emitted after the loop</p>
     </div>
     <div data-lir="lazy-bailout">
-      <p>A pseudo instruction that follows every call</p>
+      <p>This is a pseudo instruction that follows every call. </p>
+      <p>Some assumptions V8's optimizing compiler makes are not explicitly checked in the optimized code itself. Instead they are guarded globally in the runtime system. When a change happens that violates an assumption all optimized code depending on this assumption has to be discarded.</p>
+      <p>If dependant code is currently active on the call stack it is marked for <em>lazy deoptimization</em>, i.e. deoptimization that will happen as soon as control returns into it. That's why lazy deoptimization always follows a call.</p>
+      <p>Reasons for invalidating currently running optimized code via lazy deoptimization code can be numerous:</p>
+      <ul>
+        <li>activation of the debugger;</li>
+        <li>deoptimization of the same function down the call stack;</li>
+        <li>change in the shape of prototype for an object. V8 tries to omit checks that verify each object in the prototype chain and instead guards then in the runtime system;</li>
+        <li>representation tracking transition tree deprecation.</li>
+      </ul>
     </div>
     <div data-hir="Change">
       <p>This instruction converts value from one internal representation to another.</p>

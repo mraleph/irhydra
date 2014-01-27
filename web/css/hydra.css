@@ -70,7 +70,7 @@ span.lir-env, span.lir-map { display: none; }
 }
 
 .popover.xref, .popover.deopt {
-  max-width: 100% !important;
+  max-width: 500px !important;
 }
 
 .deopt-marker, .deopt-marker:hover {

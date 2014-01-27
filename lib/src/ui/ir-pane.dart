@@ -204,10 +204,10 @@ class IRPane extends PolymerElement {
     print("IRPane.render() took ${stopwatch.elapsedMilliseconds}");
   }
 
-  /** Create marker for [deopt] at the line corresponding to [deopt.lirId]. */
+  /** Create marker for [deopt] at the line corresponding to [deopt.lir.id]. */
   _createDeoptMarkersAt(deopt) {
-    if (deopt.lirId != null) {
-      line(deopt.lirId).text.append(_createDeoptMarkerFor(deopt));
+    if (deopt.lir.id != null) {
+      line(deopt.lir.id).text.append(_createDeoptMarkerFor(deopt));
     }
 
     if (deopt.hir.id != null) {

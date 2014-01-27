@@ -39,8 +39,8 @@ class HydraElement extends PolymerElement {
   enteredView() {
     super.enteredView();
     async.Future.wait([
-      HttpRequest.getString("demos/v8/deopt-soft/hydrogen.cfg").then(loadData),
-      HttpRequest.getString("demos/v8/deopt-soft/code.asm").then(loadData)
+      HttpRequest.getString("demos/v8/deopt-lazy/hydrogen.cfg").then(loadData),
+      HttpRequest.getString("demos/v8/deopt-lazy/code.asm").then(loadData)
     ]).then((_) {
       var m = currentMethods.firstWhere((m) => m.deopts.length != 0);
       displayPhase(null, [m, m.phases.last], null);
@@ -113,7 +113,6 @@ class HydraElement extends PolymerElement {
       return;
     }
 
-
     final contents = [];
 
     if (detail.deopt.reason != null) {
@@ -121,14 +120,18 @@ class HydraElement extends PolymerElement {
       contents.add("");
     }
 
-    contents.add(irpane.rangeContentAsHtmlFull(detail.deopt.hir.id));
-
-    final descriptions = currentMode.descriptions;
-    if (descriptions != null) {
-      final desc = descriptions.lookup("hir", detail.deopt.hir.op);
-      if (desc != null) {
-        contents.add(desc);
+    var instr = detail.deopt.hir;
+    var description = currentMode.descriptions.lookup("hir", detail.deopt.hir.op);
+    if (description == null) {
+      description = currentMode.descriptions.lookup("lir", detail.deopt.lir.op);
+      if (description != null) {
+        instr = detail.deopt.lir;
       }
+    }
+
+    contents.add(irpane.rangeContentAsHtmlFull(instr.id));
+    if (description != null) {
+      contents.add(description);
     }
 
     final raw = new PreElement()

@@ -76,8 +76,7 @@ class Deopt {
   final id;
 
   /** HIR/LIR/Source positions for the instruction that deoptimized. Resolved after IR is parsed. */
-  var lirId, srcPos;
-  var hir;
+  var hir, lir, srcPos;
 
   /** Additional textual information about the deoptimization. */
   final raw;
