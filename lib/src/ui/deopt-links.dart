@@ -39,6 +39,22 @@ class DeoptLinksElement extends PolymerElement {
     final index = int.parse(target.attributes["data-target"]);
     fire("deopt-click", detail: deopts[index]);
   }
+
+  enterDeoptAction(event, detail, target) {
+    final index = int.parse(target.attributes["data-target"]);
+    fire("deopt-enter", detail: new _DeoptHoverDetail(deopts[index], target));
+  }
+
+  leaveDeoptAction(event, detail, target) {
+    final index = int.parse(target.attributes["data-target"]);
+    fire("deopt-leave", detail: new _DeoptHoverDetail(deopts[index], target));
+  }
+}
+
+class _DeoptHoverDetail {
+  final deopt;
+  final target;
+  _DeoptHoverDetail(this.deopt, this.target);
 }
 
 class _DeoptInfo {

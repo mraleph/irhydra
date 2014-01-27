@@ -6,7 +6,7 @@ import 'package:irhydra/src/html_utils.dart' show toHtml;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
 import 'package:irhydra/src/ui/ir-pane.dart' show IRPane;
-import 'package:irhydra/src/xref.dart' show XRef;
+import 'package:irhydra/src/xref.dart' show XRef, POPOVER;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
@@ -151,6 +151,39 @@ class HydraElement extends PolymerElement {
     sourcePane.scrollTo(deopt, tabPane.activeTab != "source");
   }
 
+  _formatDeoptInfo(deopt) {
+    final contents = [];
+
+    var instr = deopt.hir;
+    var description = currentMode.descriptions.lookup("hir", deopt.hir.op);
+    if (description == null) {
+      description = currentMode.descriptions.lookup("lir", deopt.lir.op);
+      if (description != null) {
+        instr = deopt.lir;
+      }
+    }
+
+    final connector = (deopt.reason == null) ? "at" : "due to";
+    contents.add("<h4 class='deopt-header deopt-header-${deopt.type}'><span class='first-word'>${deopt.type}</span> deoptimization ${connector}</h4>");
+
+    if (deopt.reason != null) {
+      contents.add("<p><strong>${deopt.reason}</strong></p>");
+      contents.add("<h4>at</h4>");
+    }
+
+    contents.add(irpane.rangeContentAsHtmlFull(instr.id));
+    if (description != null) {
+      contents.add("<br/>");
+      contents.add(description);
+    }
+
+    final raw = new PreElement()
+        ..appendText(deopt.raw.join('\n'));
+    contents.add(toHtml(raw));
+
+    return contents.join("\n");
+  }
+
   showDeoptAction(event, detail, target) {
     var $widget = js.context.jQuery(detail.widget);
     if ($widget.data('bs.popover') != null) {
@@ -158,35 +191,6 @@ class HydraElement extends PolymerElement {
       return;
     }
 
-    final contents = [];
-
-    var instr = detail.deopt.hir;
-    var description = currentMode.descriptions.lookup("hir", detail.deopt.hir.op);
-    if (description == null) {
-      description = currentMode.descriptions.lookup("lir", detail.deopt.lir.op);
-      if (description != null) {
-        instr = detail.deopt.lir;
-      }
-    }
-
-    final connector = (detail.deopt.reason == null) ? "at" : "due to";
-    contents.add("<h4 class='deopt-header deopt-header-${detail.deopt.type}'><span class='first-word'>${detail.deopt.type}</span> deoptimization ${connector}</h4>");
-
-    if (detail.deopt.reason != null) {
-      contents.add("<p><strong>${detail.deopt.reason}</strong></p>");
-      contents.add("<h4>at</h4>");
-    }
-
-    contents.add(irpane.rangeContentAsHtmlFull(instr.id));
-    if (description != null) {
-      contents.add(description);
-    }
-
-    final raw = new PreElement()
-        ..appendText(detail.deopt.raw.join('\n'));
-    contents.add(toHtml(raw));
-
-    final content = contents.join("\n");
     $widget.popover(js.map({
       "title": "",
       "content": "${content}",
@@ -196,6 +200,16 @@ class HydraElement extends PolymerElement {
       "trigger": "manual"
     })).data('bs.popover').tip().addClass('deopt');
     $widget.popover('show');
+  }
+
+  final deoptPopover = new XRef((x) => x, POPOVER);
+
+  enterDeoptAction(event, detail, target) {
+    deoptPopover.show(detail.target, _formatDeoptInfo(detail.deopt));
+  }
+
+  leaveDeoptAction(event, detail, target) {
+    deoptPopover.hide();
   }
 
   reset() {

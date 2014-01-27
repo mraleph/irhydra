@@ -87,7 +87,7 @@
             </graph-pane>
           </div>
           <div data-title="Source" data-href="source">
-              <source-pane id="source-pane" path="{{sourcePath}}" on-deopt-click="{{showDeoptAction}}">
+              <source-pane id="source-pane" path="{{sourcePath}}" on-deopt-enter="{{enterDeoptAction}}" on-deopt-leave="{{leaveDeoptAction}}">
               </source-pane>
           </div>
           <span class="after-tabs" data-when="ir">
@@ -100,7 +100,7 @@
             </template>
           </span>
           <span class="after-tabs" data-when="ir|source">
-            <deopt-links deopts="{{currentMethod.deopts}}" on-deopt-click="{{navigateToDeoptAction}}">
+            <deopt-links deopts="{{currentMethod.deopts}}" on-deopt-click="{{navigateToDeoptAction}}" on-deopt-enter="{{enterDeoptAction}}" on-deopt-leave="{{leaveDeoptAction}}">
             </deopt-links>
           </span>
           <span class="after-tabs" data-when="source">

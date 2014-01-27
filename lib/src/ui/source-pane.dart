@@ -82,7 +82,8 @@ class SourcePaneElement extends PolymerElement {
       .where((deopt) => currentFunction.contains(deopt.srcPos))
       .map((deopt) {
         final span = new html.Element.html('<span><i class="fa fa-exclamation-triangle deopt-bookmark deopt-bookmark-${deopt.type}"></i></span>');
-        span.onClick.listen((_) => fire("deopt-click", detail: new DeoptClickDetail(span, deopt)));
+        span.onMouseEnter.listen((_) => fire("deopt-enter", detail: new DeoptHoverDetail(deopt, span)));
+        span.onMouseLeave.listen((_) => fire("deopt-leave", detail: new DeoptHoverDetail(deopt, span)));
         return new code_mirror.Widget(deopt.srcPos.position, span);
       });
 
@@ -93,11 +94,11 @@ class SourcePaneElement extends PolymerElement {
   }
 }
 
-class DeoptClickDetail {
-  final widget;
+class DeoptHoverDetail {
   final deopt;
+  final target;
 
-  DeoptClickDetail(this.widget, this.deopt);
+  DeoptHoverDetail(this.deopt, this.target);
 }
 
 class _PendingScroll {
