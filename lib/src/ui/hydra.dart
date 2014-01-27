@@ -115,11 +115,6 @@ class HydraElement extends PolymerElement {
 
     final contents = [];
 
-    if (detail.deopt.reason != null) {
-      contents.add("<strong>${detail.deopt.reason}</strong>");
-      contents.add("");
-    }
-
     var instr = detail.deopt.hir;
     var description = currentMode.descriptions.lookup("hir", detail.deopt.hir.op);
     if (description == null) {
@@ -127,6 +122,14 @@ class HydraElement extends PolymerElement {
       if (description != null) {
         instr = detail.deopt.lir;
       }
+    }
+
+    final connector = (detail.deopt.reason == null) ? "at" : "due to";
+    contents.add("<h4 class='deopt-header deopt-header-${detail.deopt.type}'><span class='first-word'>${detail.deopt.type}</span> deoptimization ${connector}</h4>");
+
+    if (detail.deopt.reason != null) {
+      contents.add("<p><strong>${detail.deopt.reason}</strong></p>");
+      contents.add("<h4>at</h4>");
     }
 
     contents.add(irpane.rangeContentAsHtmlFull(instr.id));
@@ -138,7 +141,7 @@ class HydraElement extends PolymerElement {
         ..appendText(detail.deopt.raw.join('\n'));
     contents.add(toHtml(raw));
 
-    final content = contents.join("<br/>");
+    final content = contents.join("\n");
     $widget.popover(js.map({
       "title": "",
       "content": "${content}",

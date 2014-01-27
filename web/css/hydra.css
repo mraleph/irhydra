@@ -156,3 +156,19 @@ span.lir-env, span.lir-map { display: none; }
 .popover.deopt .deopt-marker {
   display: none;
 }
+
+h4.deopt-header:first-letter {
+  text-transform: capitalize;
+}
+
+h4.deopt-header-eager > .first-word {
+  color: #C0392B;
+}
+
+h4.deopt-header-lazy > .first-word {
+  color: #F39C12;
+}
+
+h4.deopt-header-soft > .first-word {
+  color: #8E44AD;
+}
