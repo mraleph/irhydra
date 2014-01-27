@@ -17,7 +17,6 @@ library preparser;
 
 import 'package:irhydra/src/modes/dartvm/name_parser.dart' as name_parser;
 import 'package:irhydra/src/modes/ir.dart' as IR;
-import 'package:irhydra/src/parsing.dart' as parsing;
 
 canRecognize(text) =>
   text.contains("*** BEGIN CFG") || text.contains("*** BEGIN CODE");
@@ -40,7 +39,8 @@ parse(str) {
   createFunction(name, {phaseName}) {
     if (functions.isEmpty ||
         functions.last.name.full != name ||
-        functions.last.phases.last.name == phaseName) {
+        functions.last.phases.last.name == phaseName ||
+        functions.last.phases.last.code != null) {
       final function = new IR.Method(name_parser.parse(name));
       functions.add(function);
     }

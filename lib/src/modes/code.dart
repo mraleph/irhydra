@@ -77,6 +77,8 @@ class Instruction {
   final String comment;
 
   Instruction(this.offset, this.instr, [this.comment]);
+
+  toString() => "${offset}: ${instr} /* ${comment} */";
 }
 
 /** Jump instruction (include conditional jumps). */
@@ -101,6 +103,8 @@ class Comment {
   final String comment;
 
   Comment(this.comment);
+
+  toString() => "  ;;; ${comment}";
 }
 
 /**
@@ -245,7 +249,7 @@ class CodeCollector {
       _collected.add(instructions[i]);
     }
 
-    currentPos = nextPos + 1;
+    currentPos = nextPos;
   }
 
   /**
@@ -254,11 +258,19 @@ class CodeCollector {
    */
   collectWhile(Function test) {
     while (currentPos < instructions.length) {
-      final current = instructions[currentPos++];
+      final current = instructions[currentPos];
       if (current is Comment && !test(current.comment)) {
         break;
       }
+      collectCurrent();
+    }
+  }
+
+  collectCurrent() {
+    if (currentPos < instructions.length) {
+      final current = instructions[currentPos];
       _collected.add(current);
+      currentPos++;
     }
   }
 
@@ -273,9 +285,9 @@ class CodeCollector {
    * Check if we reached a [Comment] containing given textual marker and
    * standing right after it.
    */
-  isAfterMarker(marker) =>
-      0 < currentPos && currentPos < instructions.length &&
-      _atMarker(instructions[currentPos - 1], marker);
+  isAtMarker(marker) =>
+      0 <= currentPos && currentPos < instructions.length &&
+      _atMarker(instructions[currentPos], marker);
 
   static _atMarker(instr, marker) =>
     instr is Comment && instr.comment.contains(marker);

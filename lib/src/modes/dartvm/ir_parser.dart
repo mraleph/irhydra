@@ -15,12 +15,9 @@
 /** Parser for dumps of Dart VM intermediate language. */
 library ir_parser;
 
-import 'dart:html';
-
-import 'package:irhydra/src/html_utils.dart';
 import 'package:irhydra/src/modes/ir.dart' as IR;
+import 'package:irhydra/src/formatting.dart' as formatting;
 import 'package:irhydra/src/parsing.dart' as parsing;
-import 'package:irhydra/src/xref.dart' as xref;
 
 /** Parse given IR dumps. */
 parse(text) {
@@ -39,7 +36,14 @@ class IRParser extends parsing.ParserBase {
 
   IR.Block currentBlock;
 
-  IRParser(text) : super(text.split('\n'));
+  var parseOperands;
+
+  IRParser(text) : super(text.split('\n')) {
+    parseOperands = formatting.makeSplitter({
+      r"B\d+\b": (val) => new IR.BlockRef(val),
+      r"[tv]\d+\b": (val) => new IR.ValRef(val),
+    });
+  }
 
   /** Regular expression stripping lifetime position from the line. */
   final lineRe = new RegExp(r"^\s*\d+:\s+(.*)$");
@@ -55,11 +59,14 @@ class IRParser extends parsing.ParserBase {
     // BlockEntryInstr
     r"^(B\d+)\[": (block_name) {
       currentBlock = builder.block(block_name);
+      currentBlock.hir.add(new IR.Instruction(null, null, null));
     },
 
     // GotoInstr
     r"goto[^\s]*\s+(\d+)$": (successor) {
-      builder.edge(currentBlock.name, "B${successor}");
+      final target = "B${successor}";
+      currentBlock.hir.add(new IR.Instruction(null, "goto", [new IR.BlockRef(target)]));
+      builder.edge(currentBlock.name, target);
     },
 
     // BranchInstr
@@ -70,9 +77,8 @@ class IRParser extends parsing.ParserBase {
 
       builder.edge(currentBlock.name, true_successor);
       builder.edge(currentBlock.name, false_successor);
-      currentBlock.hir.add(new IR.Branch(currentLine,
-                                         cond_op,
-                                         cond_args,
+      currentBlock.hir.add(new IR.Branch(cond_op,
+                                         parseOperands(cond_args),
                                          true_successor,
                                          false_successor));
     },
@@ -80,12 +86,12 @@ class IRParser extends parsing.ParserBase {
     // Definition (with an SSA name).
     r"^(v\d+) <- (\w+)[^\(]*(\(.*\))": (id, op, args) {
       if (op == "phi") op = "Phi";  // Rename phis to match style.
-      currentBlock.hir.add(new IR.Instruction(currentLine, id, op, args));
+      currentBlock.hir.add(new IR.Instruction(id, op, parseOperands(args)));
     },
 
     // Instruction.
     r"^(\w+):\d+(\(.*\))": (op, args) {
-      currentBlock.hir.add(new IR.Instruction(currentLine, null, op, args));
+      currentBlock.hir.add(new IR.Instruction(null, op, parseOperands(args)));
     },
   };
 }

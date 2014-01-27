@@ -39,10 +39,11 @@ class HydraElement extends PolymerElement {
   enteredView() {
     super.enteredView();
     async.Future.wait([
-      HttpRequest.getString("demos/v8/deopt-lazy/hydrogen.cfg").then(loadData),
-      HttpRequest.getString("demos/v8/deopt-lazy/code.asm").then(loadData)
+      HttpRequest.getString("demos/dart/code.asm").then(loadData)
+      //HttpRequest.getString("demos/v8/deopt-lazy/code.asm").then(loadData),
+      //HttpRequest.getString("demos/v8/deopt-lazy/hydrogen.cfg").then(loadData)
     ]).then((_) {
-      var m = currentMethods.firstWhere((m) => m.deopts.length != 0);
+      var m = currentMethods.firstWhere((m) => m.name.short == "loop1");
       displayPhase(null, [m, m.phases.last], null);
     });
   }
@@ -68,12 +69,15 @@ class HydraElement extends PolymerElement {
       reset();
     }
     currentFiles = files;
-    reloadCurrentFiles(e, files, target);
+    _loadFiles();
   }
 
   reloadCurrentFiles(e, detail, target) {
     reset();
+    _loadFiles();
+  }
 
+  _loadFiles() {
     final spinner = $['spinner'];
     spinner.start();
     async.Future.wait(
@@ -91,7 +95,7 @@ class HydraElement extends PolymerElement {
 
   navigateToDeoptAction(event, deopt, target) {
     if (currentMethod.inlined.isEmpty)
-      return;
+      return;reloadCurrentFiles
 
     buildStack(position) {
       if (position == null) {
@@ -174,13 +178,27 @@ class HydraElement extends PolymerElement {
     text = text.replaceAll(new RegExp(r"\r\n|\r"), "\n");
 
     // Select mode that can handle it.
-    currentMode = null;
+    var newMode = null;
     for (var mode in MODES) {
       if (mode.canRecognize(text)) {
-        currentMode = mode;
+        newMode = mode;
         break;
       }
     }
+
+    if (newMode == null) {
+      print("can't recognize file!");
+      return;
+    }
+
+    if (newMode != currentMode) {
+      if (currentMode != null) {
+        currentMode.reset();
+      }
+      newMode.reset();
+    }
+
+    currentMode = newMode;
 
     // Parse.
     currentMethods = toObservable(currentMode.parse(text));

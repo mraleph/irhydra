@@ -15,14 +15,16 @@
 /** Dart VM mode */
 library dartvm;
 
-import 'package:irhydra/src/modes/code.dart';
 import 'package:irhydra/src/modes/dartvm/code_parser.dart' as code_parser;
 import 'package:irhydra/src/modes/dartvm/ir_parser.dart' as ir_parser;
 import 'package:irhydra/src/modes/dartvm/preparser.dart' as preparser;
-import 'package:irhydra/src/modes/dartvm/view.dart' as view;
+import 'package:irhydra/src/modes/ir.dart' as ir;
+import 'package:irhydra/src/modes/code.dart' show CodeCollector;
 import 'package:irhydra/src/modes/mode.dart';
-import 'package:irhydra/src/ui/graph.dart' as graphview;
-import 'package:irhydra/src/xref.dart' as xref;
+
+class _Descriptions {
+  lookup(ns, value) => null;
+}
 
 class Mode extends BaseMode {
   canRecognize(text) =>
@@ -31,42 +33,42 @@ class Mode extends BaseMode {
   parse(String str) =>
     preparser.parse(str);
 
-  displayPhase(method, phase) {
-    ir = ir_parser.parse(phase.ir);
-    code = code_parser.parse(phase.code);
+  final descriptions = new _Descriptions();
 
-    blockTicks = ticks = null;
-    if (profile != null) {
-      var profiles = profile.where((p) => p.name == method.name.full);
-      if (profiles.length > 1) {
-        final lastOffset = code.code.where((val) => val is Instruction).last.offset;
-        profiles = profiles.where((p) => p.lastOffset == lastOffset);
-      }
-
-      if (profiles.length == 1) {
-        ticks = profiles.first.ticks;
-
-        blockTicks = new Map();
-        for (var name in code.blocks.keys) {
-          blockTicks[name] = 0;
-          for (var instr in code.codeOf(name).where((val) => val is Instruction)) {
-            if (ticks.containsKey(instr.offset)) {
-              blockTicks[name] += ticks[instr.offset];
-            }
-          }
-        }
-      }
-    }
-
-    updateIRView();
-
-    final attachRef =
-        xref.makeAttachableReferencer(pane.rangeContentAsHtmlFull);
-    graphview.display(graphPane, ir, attachRef, blockTicks: blockTicks);
+  toIr(method, phase) {
+    final blocks = ir_parser.parse(phase.ir);
+    final code = code_parser.parse(phase.code);
+    _attachCode(blocks, code);
+    return new ir.ParsedIr(this, blocks, code, method.deopts);
   }
 
-  updateIRView() {
-    pane.clear();
-    view.display(pane, ir, code, codeMode, ticks: ticks, blockTicks: blockTicks);
+  reset() { }
+
+  _attachCode(blocks, code) {
+    for (var block in blocks.values) {
+      final codeCollector = new CodeCollector(code.codeOf(block.name));
+
+      var previous = block.hir.first;
+      assert(previous.op == null);
+      for (var instr in block.hir.skip(1)) {
+        // TODO(mraleph) previously we used deoptid to improve matching quality.
+        final marker = instr.id != null ? "${instr.id} <- ${instr.op}" : "${instr.op}";
+        codeCollector.collectUntil(marker);
+
+        if (!codeCollector.isEmpty) {
+          if (previous.code == null) previous.code = [];
+          previous.code.addAll(codeCollector.collected);
+        }
+
+        previous = instr;
+      }
+
+      codeCollector.collectRest();
+
+      if (!codeCollector.isEmpty) {
+        if (previous.code == null) previous.code = [];
+        previous.code.addAll(codeCollector.collected);
+      }
+    }
   }
 }

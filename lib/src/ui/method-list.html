@@ -41,6 +41,7 @@
       }
 
       .nav > li > h3 {
+        font-family: 'Lato';
         white-space: nowrap;
       }
 
@@ -124,6 +125,15 @@
       .toggle:checked:after {
         color: red;
       }
+
+      .method-name-source {
+        font-size: 0.6em;
+        font-weight: bold;
+        /* background-color: #1ABC9C; */
+        padding: 2px;
+        border-radius: 4px;
+        border: 1px dashed #95A5A6;
+      }
     </style>
 
     <div class="method-list">
@@ -132,7 +142,12 @@
           <template repeat="{{method in filteredMethods | enumerate }}">
             <li>
               <template if="{{!method.value.hasSinglePhase}}">
-                <h3 class="deopt-{{method.value.worstDeopt}}">{{method.value.name.short}}</h3>
+                <h3 class="deopt-{{method.value.worstDeopt}}">
+                  <template if="{{method.value.name.source != null}}">
+                    <div><span class="method-name-source">{{method.value.name.source}}</span></div>
+                  </template>
+                  {{method.value.name.short}}
+                </h3>
                 <ul class="phases">
                   <template repeat="{{phase in method.value.phases | enumerate}}">
                     <li><a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},{{phase.index}}">{{phase.value.name}}</a></li>

@@ -95,7 +95,7 @@
         </div>
       </template>
       <template if="{{ir != null}}">
-        <tab-pane>
+        <tab-pane disabled="{{ { 'source': currentMethod.sources.isEmpty  } }}">
           <div data-title="IR" data-href="ir">
             <ir-pane id="ir-pane" ir="{{ir}}" codeMode="{{codeMode}}"></ir-pane>
           </div>
@@ -104,8 +104,8 @@
             </graph-pane>
           </div>
           <div data-title="Source" data-href="source">
-            <source-pane id="source-pane" path="{{sourcePath}}" on-deopt-click="{{showDeoptAction}}">
-            </source-pane>
+              <source-pane id="source-pane" path="{{sourcePath}}" on-deopt-click="{{showDeoptAction}}">
+              </source-pane>
           </div>
           <span class="after-tabs" data-when="ir">
             <template if="{{!ir.code.isEmpty}}">

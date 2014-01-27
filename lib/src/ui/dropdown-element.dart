@@ -52,8 +52,10 @@ class DropdownElement extends PolymerElement {
   }
 
   selectAction(event, detail, target) {
-    value = event.target.attributes['data-value'];
-    fire("changed", detail: value);
+    if (event.target.attributes.containsKey('data-value')) {
+      value = event.target.attributes['data-value'];
+      fire("changed", detail: value);
+    }
   }
 
   leftView() {

@@ -18,6 +18,7 @@ import 'dart:async' as async;
 import 'dart:math' as math;
 import 'dart:html';
 
+import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/modes/code.dart' show CodeRenderer;
 import 'package:irhydra/src/html_utils.dart' show toHtml, span;
 import 'package:irhydra/src/xref.dart' as xref;
@@ -149,14 +150,40 @@ class IRPane extends PolymerElement {
       return element;
     }
 
+    format(ctx, opcode, operands) =>
+      new SpanElement()..append(formatOpcode(ctx, opcode))
+                       ..appendText(" ")
+                       ..append(new SpanElement()..nodes.addAll(operands.map(ctx.format)));
+
     addEx(ctx, id, opcode, operands) {
-      operands = new SpanElement()..nodes.addAll(operands.map(ctx.format));
-      var ln = add(id, new SpanElement()..append(formatOpcode(ctx, opcode))
-                                        ..appendText(" ")
-                                        ..append(operands));
+      if (opcode == null) {
+        return;
+      }
+
+      if (id == null) {
+        id = "";
+      }
+
+      var ln = add(id, format(ctx, opcode, operands));
       ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
       ln.text.parentNode.classes.add("${ctx.ns}-line");
     }
+
+    /** Output a [Branch] instruction. */
+    addBranch(ctx, instr) {
+      final ln = add(" ", new SpanElement()
+                    ..append(span("boldy", "if "))
+                    ..append(format(ctx, instr.op, instr.args))
+                    ..append(span("boldy", " goto "))
+                    ..appendText("(")
+                    ..append(makeBlockRef(instr.true_successor))
+                    ..appendText(", ")
+                    ..append(makeBlockRef(instr.false_successor))
+                    ..appendText(")"));
+      ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
+      ln.text.parentNode.classes.add("${ctx.ns}-line");
+    }
+
 
     final hirContext = new FormattingContext("hir", makeBlockRef, makeValueRef);
     final lirContext = new FormattingContext("lir", makeBlockRef, makeValueRef);
@@ -172,18 +199,42 @@ class IRPane extends PolymerElement {
       add(" ", " ");
       add(span('boldy', block.name), " ", id: block.name);
 
-      for (var instr in block.hir) {
-        addEx(hirContext, instr.id, instr.op, instr.args);
+      if (!block.hir.isEmpty) {
+        var branch = block.hir.last;
+
+        for (var index = 0; index < block.hir.length - 1; index++) {
+          final instr = block.hir[index];
+          addEx(hirContext, instr.id, instr.op, instr.args);
+          if (codeMode == 'inline' && instr.code != null) {
+            instr.code.skip(1).forEach(codeRenderer.display);
+          }
+        }
+
+        if (branch is IR.Branch) {
+          addBranch(hirContext, branch);
+        } else {
+          addEx(hirContext, branch.id, branch.op, branch.args);
+        }
+
+        if (codeMode == 'inline' && branch.code != null) {
+          branch.code.skip(1).forEach(codeRenderer.display);
+        }
       }
 
       for (var instr in block.lir) {
         addEx(lirContext, instr.id, instr.op, instr.args);
         if (codeMode == 'inline' && instr.code != null) {
-          instr.code.forEach(codeRenderer.display);
+          instr.code.skip(1).forEach(codeRenderer.display);
         }
       }
 
       if (codeMode == 'split') {
+        for (var instr in block.hir) {
+          if (instr.code != null) {
+            instr.code.forEach(codeRenderer.display);
+          }
+        }
+
         for (var instr in block.lir) {
           if (instr.code != null) {
             instr.code.forEach(codeRenderer.display);

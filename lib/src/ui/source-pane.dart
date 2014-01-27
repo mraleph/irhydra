@@ -54,6 +54,12 @@ class SourcePaneElement extends PolymerElement {
   }
 
   pathChanged() {
+    if (path.isEmpty) {
+      source = [];
+      widgets = [];
+      return;
+    }
+
     source = currentFunction.source.source;
     executePendingScroll();
     final inlineWidgets = currentFunction.method.inlined

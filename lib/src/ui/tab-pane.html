@@ -72,11 +72,15 @@
         border: 0px solid #16A085;
         border-bottom-color: transparent;
       }
+
+      #tab-headers > li.disabled {
+        display: none;
+      }
     </style>
     <div>
       <ul id="tab-headers">
         <template repeat="{{tab in tabs}}">
-          <li class="{{ { 'active': tab.href == activeTab } }}">
+          <li class="{{ { 'active': tab.href == activeTab, 'disabled': tab.isDisabled } }}">
             <a href="#{{tab.href}}" on-click="{{switchTabAction}}" data-target="{{tab.href}}">
               {{tab.title}}
             </a>

@@ -203,9 +203,6 @@ class Block {
 
 /** IR instruction. */
 class Instruction {
-  /** Raw representation of the instruction in the textual artifact. */
-  final String raw;
-
   /** Unique identifier (e.g. SSA name). */
   final String id;
 
@@ -218,7 +215,10 @@ class Instruction {
   /** Native code generated from the instruction */
   var code;
 
-  Instruction(this.raw, this.id, this.op, this.args);
+  Instruction(this.id, this.op, this.args);
+
+  toString() => id != null ? "${id} <- ${op}(${args.join(', ')})"
+                            : "${op}(${args.join(', ')})";
 }
 
 /** Branch instruction in the IR */
@@ -229,8 +229,8 @@ class Branch extends Instruction {
   /** Name of the successor for the false case. */
   final false_successor;
 
-  Branch(raw, op, args, this.true_successor, this.false_successor)
-      : super(raw, null, op, args);
+  Branch(op, args, this.true_successor, this.false_successor)
+      : super(null, op, args);
 }
 
 abstract class Operand {

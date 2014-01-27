@@ -57,8 +57,8 @@ class CodeParser extends parsing.ParserBase {
       blocks[name] = block = new Range(_code.length);
     },
 
-    // Other comments between instrcutions.
-    r"^\s+;;+(.*)$": (comment) {
+    // Other comments between instructions.
+    r"^\s+;;+\s*(.*)$": (comment) {
       // Check if this comment ends the last block and start code epilogue
       // which contains instructions' slow paths and deopt stubs.
       if (block != null &&
@@ -67,9 +67,32 @@ class CodeParser extends parsing.ParserBase {
         block.end = _code.length;
         block = null;
       }
-      _code.add(new Comment(comment));
+
+      comment = cleanRedundantParallelMove(comment);
+      if (comment != null) {
+        _code.add(new Comment(comment));
+      }
     },
   };
+
+  final PARALLEL_MOVE = new RegExp(r"^ParallelMove\s+(.*)$");
+  final SINGLE_MOVE = new RegExp(r"([-\w+]+) <\- ([-\w+]+),?");
+
+  cleanRedundantParallelMove(comment) {
+    final m = PARALLEL_MOVE.firstMatch(comment);
+    if (m == null) {
+      return comment;
+    }
+
+    final args = m.group(1).replaceAllMapped(SINGLE_MOVE,
+        (m) => (m.group(1) == m.group(2)) ? "" : m.group(0));
+
+    if (!SINGLE_MOVE.hasMatch(args)) {
+      return null;
+    }
+
+    return "ParallelMove ${args}";
+  }
 
   get code {
     if (block != null) {  // Finalize the last block.

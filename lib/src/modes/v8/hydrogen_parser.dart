@@ -220,7 +220,7 @@ class CfgParser extends parsing.ParserBase {
       deoptimizing.add(block);
     }
 
-    return id2hir[id] = new IR.Instruction(line, id, opcode, hirOperands(operands, context: id));
+    return id2hir[id] = new IR.Instruction(id, opcode, hirOperands(operands, context: id));
   }
 
   parseLir(line) {
@@ -243,7 +243,7 @@ class CfgParser extends parsing.ParserBase {
     }
 
     final lirId = "$id";
-    return id2lir[lirId] = new IR.Instruction(line, "$id", opcode, lirOperands(operands, context: lirId));
+    return id2lir[lirId] = new IR.Instruction("$id", opcode, lirOperands(operands, context: lirId));
   }
 
   get patterns => {
@@ -264,7 +264,7 @@ class CfgParser extends parsing.ParserBase {
 
         r"^\s+\d+\s+(\w\d+)\s+(.*)$": (id, args) {
           final raw = " 0 0 $id Phi $args <|@";
-          block.hir.add(new IR.Instruction(raw, id, "Phi", hirOperands(args, context: id)));
+          block.hir.add(new IR.Instruction(id, "Phi", hirOperands(args, context: id)));
         }
       },
 

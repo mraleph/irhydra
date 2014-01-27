@@ -23,8 +23,6 @@ import 'package:irhydra/src/modes/mode.dart';
 import 'package:irhydra/src/modes/v8/code_parser.dart' as code_parser;
 import 'package:irhydra/src/modes/v8/hydrogen_parser.dart' as hydrogen_parser;
 
-import 'package:irhydra/src/modes/v8/ui/descriptions.dart';
-
 /**
  * Mode for viewing of V8's compilation artifacts.
  *
@@ -98,11 +96,18 @@ class Mode extends BaseMode {
         // This tries to workaround cases when some instructions from lithium
         // level (e.g. goto) produce no code and their markers are not present in the
         // resulting code comments.
-        if (codeCollector.isAfterMarker("@${instr.id}")) {
+        if (codeCollector.isAtMarker("@${instr.id}")) {
+          codeCollector.collectCurrent();  // Collect marker itself.
           codeCollector.collectWhile((comment) => !_lirIdMarker.hasMatch(comment));
           instr.code = codeCollector.collected;
         }
         previous = instr;
+      }
+
+      codeCollector.collectRest();
+      if (!codeCollector.isEmpty) {
+        if (previous.code == null) previous.code = [];
+        previous.code.addAll(codeCollector.collected);
       }
     }
   }

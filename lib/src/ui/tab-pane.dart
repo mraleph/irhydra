@@ -23,7 +23,7 @@ import 'package:polymer/polymer.dart';
  */
 @CustomTag('tab-pane')
 class TabPane extends PolymerElement {
-  // get applyAuthorStyles => true;
+  @published var disabled = {};
 
   /** List of tab bodies */
   @observable var tabs;
@@ -71,13 +71,25 @@ class TabPane extends PolymerElement {
     activeTab = href;
   }
 
+  disabledChanged() {
+    for (var tab in tabs) tab.isDisabled = _isDisabled(tab.href);
+
+    final active = tabs.firstWhere((tab) => tab.href == activeTab);
+    if (active.isDisabled) {
+      activeTab = tabs.firstWhere((tab) => !_isDisabled(tab.href)).href;
+    }
+  }
+
   /** Compute display property value for the given tab [pane] */
   _displayStyle(pane) => (pane.attributes["data-href"] == activeTab) ? "block" : "none";
+
+  _isDisabled(href) => disabled[href] == true;
 }
 
-@observable
-class Tab {
-  final href;
-  final title;
+class Tab extends Observable {
+  @observable final href;
+  @observable final title;
+  @observable var isDisabled = false;
+
   Tab(this.href, this.title);
 }
