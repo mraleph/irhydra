@@ -34,12 +34,12 @@ const TOOLTIP = const _Tooltip();
 class XRef {
   final getContent;
   final type;
-  
+
   final _delayed = new DelayedReaction();
   var _target;
-  
+
   XRef(ResolutionCallback this.getContent, [this.type = POPOVER]);
-  
+
   show(target, id) {
     hide();
     _target = target;
@@ -50,7 +50,7 @@ class XRef {
       }
     });
   }
-  
+
   hide() {
     if (_target != null) {
       _delayed.cancel();

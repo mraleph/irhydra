@@ -13,6 +13,9 @@
       <p>V8 generates then on control flow paths that were never executed before and thus contain no actionable type feedback that could be used to optimize the code.</p>
       <p>For a function with a long running loop it is not uncommon to hit at OSR in the loop and then deoptimize on a <code>Deoptimize</code> emitted after the loop</p>
     </div>
+    <div data-lir="lazy-bailout">
+      <p>A pseudo instruction that follows every call</p>
+    </div>
     <div data-hir="Change">
       <p>This instruction converts value from one internal representation to another.</p>
       <p>It will deoptimize if the value can't be converted</p>

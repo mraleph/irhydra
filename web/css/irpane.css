@@ -92,3 +92,7 @@
   padding-right: 3px;
   font-size: 11px;
 }
+
+.known-opcode {
+  cursor: help;
+}

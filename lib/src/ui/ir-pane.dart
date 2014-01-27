@@ -107,6 +107,29 @@ class IRPane extends PolymerElement {
   enteredView() {
     super.enteredView();
     _table = $['rows'];
+
+    final info = new xref.XRef((x) => x, xref.POPOVER);
+    _table.onMouseOver.listen((e) {
+      final target = e.target;
+      if (!target.attributes.containsKey('data-opcode')) {
+        return;
+      }
+
+      final ns = target.attributes['data-ns'];
+      final opcode = target.attributes['data-opcode'];
+      final desc = ir.mode.descriptions.lookup(ns, opcode);
+      if (desc != null) {
+        info.show(target, desc);
+      }
+    });
+
+    _table.onMouseOut.listen((e) {
+      final target = e.target;
+      if (!target.attributes.containsKey('data-opcode')) {
+        return;
+      }
+      info.hide();
+    });
   }
 
   irChanged() => _renderTask.schedule();
@@ -118,19 +141,11 @@ class IRPane extends PolymerElement {
 
     formatOpcode(ctx, opcode) {
       final element = span('boldy', opcode);
-
-      final desc = ir.mode.descriptions.lookup(ctx.ns, opcode);
-      if (desc != null) {
-        js.context.jQuery(element).popover(js.map({
-          "title": opcode,
-          "content": desc,
-          "trigger": "hover",
-          "placement": "bottom",
-          "html": true,
-          "container": "body"
-        }));
+      if (ir.mode.descriptions.lookup(ctx.ns, opcode) != null) {
+        element.attributes['data-opcode'] = opcode;
+        element.attributes['data-ns'] = ctx.ns;
+        element.classes.add("known-opcode");
       }
-
       return element;
     }
 

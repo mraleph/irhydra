@@ -24,10 +24,27 @@ import 'package:polymer/polymer.dart';
  */
 @CustomTag('ir-descriptions-v8')
 class Descriptions extends PolymerElement {
-  Descriptions.created() : super.created();
+  var _hir, _lir;
+
+  Descriptions.created() : super.created() {
+    _hir = new Map.fromIterable(
+      shadowRoot.querySelectorAll("[data-hir]"),
+      key: (n) => n.attributes["data-hir"],
+      value: (n) => n.innerHtml
+    );
+
+    _lir = new Map.fromIterable(
+      shadowRoot.querySelectorAll("[data-lir]"),
+      key: (n) => n.attributes["data-lir"],
+      value: (n) => n.innerHtml
+    );
+  }
 
   lookup(ns, opcode) {
-    final elem = shadowRoot.querySelector("div[data-$ns=$opcode]");
-    return (elem != null) ? elem.innerHtml : null;
+    switch (ns) {
+      case "lir": return _lir[opcode];
+      case "hir": return _hir[opcode];
+    }
+    return null;
   }
 }
