@@ -140,7 +140,7 @@ class MethodList extends PolymerElement {
    */
   _createFilter() {
     if (_currentFilter == "") {
-      return (wrapper) => true;
+      return (wrapper) => !wrapper.method.phases.isEmpty;
     }
 
     final pattern =
@@ -149,7 +149,7 @@ class MethodList extends PolymerElement {
               .replaceAll(new RegExp(r" +"), ".*"),
               caseSensitive: false);
 
-    return (wrapper) => pattern.hasMatch(wrapper.name);
+    return (wrapper) => !wrapper.method.phases.isEmpty && pattern.hasMatch(wrapper.name);
   }
  }
 

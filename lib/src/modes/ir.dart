@@ -40,6 +40,8 @@ class Name {
   /** Create a [Name] that has no short form. */
   Name.fromFull(String full) : this(full, null, full);
 
+  get display => short != "" ? short : "<anonymous>";
+
   /** Two names are equal if they have equal full forms. */
   operator ==(other) => other.full == full;
 }

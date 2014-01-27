@@ -27,11 +27,12 @@ canRecognize(String text) =>
 
 /** Split [text] into separate optimized code dumps. */
 List<IR.Method> preparse(String text) =>
-  (new PreParser(text)..parse()).methods;
+    (new PreParser(text)..parse()).methods;
 
 /** Parse given code dump. */
-Code parse(Iterable<String> lines) => lines != null ?
-  (new Parser(lines)..parse()).code : new Code.empty();
+Code parse(Iterable<String> lines) =>
+    lines != null ? (new Parser(lines)..parse()).code : new Code.empty();
+
 
 /** Class that recognizes code disassembly and deoptimization events */
 class PreParser extends parsing.ParserBase {
@@ -69,9 +70,10 @@ class PreParser extends parsing.ParserBase {
       r"^Instructions": {  // Disassembly of the body.
         r"^\s+;;; Safepoint table": () {
           // Code is produced during the very last compilation phase.
-          if (currentMethod == null) {
+          if (!optId.isEmpty) {
             enterMethod("", optId.take());
           }
+
           currentMethod.phases.add(new IR.Phase("Z_Code generation", code: subrange()));
           leaveMethod();
           // Leave this (instructions) and outer (code) states.
@@ -248,4 +250,6 @@ class Optional {
     _value = null;
     return v;
   }
+
+  get isEmpty => _value == null;
 }
