@@ -41,16 +41,24 @@ class MethodList extends PolymerElement {
 
   sortByDeoptsChanged() => _recomputeList(force: true);
   methodsChanged() {
-    _currentMethods = new List(methods.length);
-    for (var i = 0; i < methods.length; i++)
-      _currentMethods[i] = new _MethodWrapper(i, methods[i]);
+    if (methods != null) {
+      _currentMethods = new List(methods.length);
+      for (var i = 0; i < methods.length; i++)
+        _currentMethods[i] = new _MethodWrapper(i, methods[i]);
+    } else {
+      _currentMethods = [];
+    }
 
     sortByDeopts = _sortedByDeopts = false;
     _recomputeList(force: true);
   }
 
-  filterUpdated() => delayed.schedule(_recomputeList);
-
+  filterUpdated() {
+    if (filter.startsWith("src:") && filter.length < 10) {
+      return;
+    }
+    delayed.schedule(_recomputeList);
+  }
   filterChanged() {
     delayed.cancel();
     _recomputeList();
@@ -143,15 +151,34 @@ class MethodList extends PolymerElement {
       return (wrapper) => !wrapper.method.phases.isEmpty;
     }
 
-    final pattern =
-        new RegExp(_currentFilter.replaceAllMapped(new RegExp(r"[-+$]"),
-            (m) => "\\${m.group(0)}")
-              .replaceAll(new RegExp(r" +"), ".*"),
-              caseSensitive: false);
+    if (_currentFilter.startsWith("src:")) {
+      final pattern = _filterToPattern(_currentFilter.substring(4));
+      return (wrapper) {
+        for (var source in wrapper.method.sources) {
+          for (var ln in source.source) {
+            if (pattern.hasMatch(ln)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+    }
 
+    final pattern = _filterToPattern(_currentFilter);
     return (wrapper) => !wrapper.method.phases.isEmpty && pattern.hasMatch(wrapper.name);
   }
- }
+
+  _filterToPattern(filter) =>
+      new RegExp(filter.replaceAllMapped(new RegExp(r"[-+$]"),
+          (m) => "\\${m.group(0)}")
+            .replaceAll(new RegExp(r" +"), ".*"),
+            caseSensitive: false);
+
+
+}
+
+
 
 /**
  * Wrapper around [IR.Method] that contains a DOM node that is used to display
