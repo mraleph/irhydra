@@ -18,9 +18,11 @@ import 'dart:async' as async;
 import 'dart:math' as math;
 import 'dart:html';
 
-import 'package:irhydra/src/modes/ir.dart' as IR;
-import 'package:irhydra/src/modes/code.dart' show CodeRenderer;
+
+import 'package:irhydra/src/formatting.dart' as formatting;
 import 'package:irhydra/src/html_utils.dart' show toHtml, span;
+import 'package:irhydra/src/modes/ir.dart' as IR;
+import 'package:irhydra/src/modes/code.dart' as code;
 import 'package:irhydra/src/xref.dart' as xref;
 
 import 'package:js/js.dart' as js;
@@ -503,8 +505,8 @@ class _RefsPanel {
     onScroll = document.window.onScroll.listen((e) => position());
     onResize = document.window.onResize.listen((e) => position());
 
-    root.query(".close").onClick.listen((e) => close());
-    root.query(".irpane-refs-inner").nodes.add(content);
+    root.querySelector(".close").onClick.listen((e) => close());
+    root.querySelector(".irpane-refs-inner").nodes.add(content);
 
     document.body.nodes.add(root);
 
@@ -552,4 +554,107 @@ class _RefsPanel {
     root.style.top = "${top}px";
     root.style.maxWidth = "${leftBorderOffset - 3 * PADDING}px";
   }
+}
+
+/**
+ * Utility class that allows to splice disassembly into intermediate
+ * representation when displaying both.
+ */
+class CodeRenderer {
+  final pane;
+
+  final code.Code _code;
+
+  CodeRenderer(IRPane this.pane, this._code);
+
+  /** Output a single instruction to the [IRPane]. */
+  display(instr) {
+    if (instr is code.Instruction) {
+      pane.add("${instr.offset}",
+               _formatInstruction(instr),
+               id: "offset-${instr.offset}",
+               klass: 'native-code');
+    } else if (instr is code.Comment) {
+      pane.add(" ",
+               _em(";; ${instr.comment}"),
+               klass: 'native-code');
+    } else if (instr is code.Jump) {
+      pane.add("${instr.offset}",
+               _formatJump(instr),
+               id: "offset-${instr.offset}",
+               klass: 'native-code');
+    }
+  }
+
+  /** Opcode mnemonic regular expression. Strips REX.W prefix. */
+  final opcodeRe = new RegExp(r"^(REX.W\s+)?([\w()]+)(.*)$");
+
+  /** Object address constant regular expression used to decode V8 comments. */
+  final addressImmediateRe = new RegExp(r"^;; object: (0x[a-f0-9]+) (.*)$");
+
+  /** Format a single [Instruction]. */
+  _formatInstruction(instr) {
+    final m = opcodeRe.firstMatch(instr.instr);
+
+    final opcode = m[2];
+    final operands = m[3];
+
+    var formattedOperands;
+    if (instr.comment != null) {
+      // If there is a comment available for this instruction try to
+      // extract an information about address immediate embedded into the
+      // instruction.
+      final immediateDef = addressImmediateRe.firstMatch(instr.comment);
+      if (immediateDef != null) {
+        final immAddress = immediateDef.group(1);
+        final immValue = immediateDef.group(2);
+
+        // Reformat instruction operands renaming immediate address to display
+        // immediate value inline.
+        final map = {};
+        map[immAddress] = (_) =>
+            span('native-code-constant', "${immAddress} (${immValue})");
+
+        formattedOperands = formatting.makeFormatter(map)(operands);
+      }
+    }
+
+    if (formattedOperands == null) {
+      // Operands were not handled specially. Just wrap them into a SpanElement
+      // and append emphasized comment (if any).
+      formattedOperands = new SpanElement()..appendText(operands);
+      if (instr.comment != null) {
+        formattedOperands.append(_em(";; ${instr.comment}"));
+      }
+    }
+
+    return new SpanElement()..append(span('boldy', opcode))
+                            ..append(formattedOperands);
+  }
+
+  /** Format a single jump instruction. */
+  _formatJump(instr) {
+    final elem = new SpanElement()..append(span('boldy', instr.opcode))
+                                  ..appendText(" ");
+
+    if (0 <= instr.target && instr.target <= _code.code.last.offset) {
+      // Jump target belongs to this code object. Display it as an offset and
+      // format it as a reference to enable navigation.
+      final anchor = pane.href("offset-${instr.target}");
+      elem.append(new AnchorElement(href: "#${anchor}")..appendText("${instr.target}"));
+    } else {
+      // Jump target does not belong to this code object. Display it as an
+      // absolute address.
+      elem.appendText("${_code.start + instr.target}");
+    }
+
+    if (instr.comment != null) {  // Append emphasized comment if available.
+      elem.append(_em(";; ${instr.comment}"));
+    }
+
+    return elem;
+  }
+
+  /** Wrap text into `em` tag. */
+  static _em(text) => new Element.tag('em')..appendText(text);
 }

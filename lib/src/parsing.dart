@@ -15,6 +15,88 @@
 /** Apply regular expressions to single strings and lists of strings. */
 library parsing;
 
+/** Formatting function that turns text into HTML element based on some rules */
+typedef Object Callback(String text);
+
+makeSplitter(Map<String, Callback> map, {Callback other}) {
+  final actions = map.values.toList();
+  final patterns = map.keys.map((re) => new RegExp("^${re}")).toList();
+
+  if (other == null) {
+    other = (val) => val;
+  }
+
+  apply(action, context, args) {
+    if (args is List) {
+      if (context != null) {
+        args = [context]..addAll(args);
+      }
+      return Function.apply(action, args);
+    } else {
+      assert(args is String);
+      return context != null ? action(context, args) : action(args);
+    }
+  }
+
+  return (text, {context}) {
+    final result = [];
+
+    _apply(patterns, text, (idx, val) {
+      val = (idx != null) ? apply(actions[idx], context, val) : other(val);
+      if (val != null) result.add(val);
+    });
+
+    return result;
+  };
+}
+
+/** Regular expression to skip words that do not match any rule. */
+final wordRe = new RegExp(r"^[-\w]+");
+
+/**
+ * Given a list of regular expressions [patterns] invoke [callback] for every
+ * match passing index of the matched expression and matched substring.
+ *
+ * Substrings between matches are passed to [callback] with [null] instead
+ * of index.
+ */
+_apply(List<RegExp> patterns, String text, Function callback) {
+  final unmatched = [];
+
+  outer: while (text.length > 0) {
+    for (var i = 0; i < patterns.length; i++) {
+      final m = patterns[i].firstMatch(text);
+      if (m != null) {
+        if (!unmatched.isEmpty) {  // There is a pending unmatched substring.
+          callback(null, unmatched.join());
+          unmatched.clear();
+        }
+
+        final value = m.groupCount == 0 ? m.group(0) : m.groups(new List.generate(m.groupCount, (idx) => idx + 1));
+        callback(i, value);
+        text = text.substring(m.group(0).length);  // Skip matched part.
+        continue outer;
+      }
+    }
+
+    // No matching pattern found. If we are standing at the start of the word
+    // then skip it as whole. Otherwise skip a single character.
+    final wordMatch = wordRe.firstMatch(text);
+    if (wordMatch != null) {
+      final word = wordMatch.group(0);
+      unmatched.add(word);
+      text = text.substring(word.length);
+    } else {
+      unmatched.add(text[0]);
+      text = text.substring(1);
+    }
+  }
+
+  if (!unmatched.isEmpty) {  // There is a pending unmatched substring.
+    callback(null, unmatched.join());
+  }
+}
+
 /**
  * Applies given regular expression [re] to a string [str] and if matched
  * invokes callback [action] passing matched groups as arguments.

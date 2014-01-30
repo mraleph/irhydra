@@ -15,7 +15,6 @@
 /** Parser for hydrogen.cfg files. */
 library hydrogen_parser;
 
-import 'package:irhydra/src/formatting.dart' as formatting;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
@@ -145,7 +144,7 @@ class CfgParser extends parsing.ParserBase {
   var lirOperands, hirOperands;
 
   CfgParser(str) : super(str.split('\n')) {
-    hirOperands = formatting.makeSplitter({
+    hirOperands = parsing.makeSplitter({
       r"0x[a-f0-9]+": (hirId, val) => new Constant(val),
       r"B\d+\b": (hirId, val) => new IR.BlockRef(val),
       r"[a-zA-Z]\d+\b": (hirId, val) => new IR.ValRef(val),
@@ -169,7 +168,7 @@ class CfgParser extends parsing.ParserBase {
       }
     });
 
-    lirOperands = formatting.makeSplitter({
+    lirOperands = parsing.makeSplitter({
       r"\[id=.*?\](?= )": (lirId, val) {
         parsing.match(val, deoptIdRe, (deoptId) => recordDeopt(lirId, deoptId));
         return new DeoptEnv(val);

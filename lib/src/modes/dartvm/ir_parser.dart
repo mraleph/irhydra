@@ -16,7 +16,6 @@
 library ir_parser;
 
 import 'package:irhydra/src/modes/ir.dart' as IR;
-import 'package:irhydra/src/formatting.dart' as formatting;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
 /** Parse given IR dumps. */
@@ -39,7 +38,7 @@ class IRParser extends parsing.ParserBase {
   var parseOperands;
 
   IRParser(text) : super(text.split('\n')) {
-    parseOperands = formatting.makeSplitter({
+    parseOperands = parsing.makeSplitter({
       r"B\d+\b": (val) => new IR.BlockRef(val),
       r"[tv]\d+\b": (val) => new IR.ValRef(val),
     });

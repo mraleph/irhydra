@@ -242,6 +242,9 @@ abstract class Operand {
 class Ref extends Operand {
   final target;
   Ref(this.target);
+
+  get tag => "ref";
+  get text => target;
 }
 
 class BlockRef extends Ref {
