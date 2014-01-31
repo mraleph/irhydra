@@ -16,6 +16,7 @@
 library hydrogen_parser;
 
 import 'package:irhydra/src/modes/ir.dart' as IR;
+import 'package:irhydra/src/modes/v8/name_parser.dart' as name_parser;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
 bool canRecognize(String str) =>
@@ -53,7 +54,7 @@ List<IR.Method> preparse(String str) {
       final substr = str.substring(start, match.start);
       parsing.match(substr, compilationRe, (name, optId) {
         // Create the method and make it current.
-        method = new IR.Method(new IR.Name.fromFull(name),
+        method = new IR.Method(name_parser.parse(name),
                                optimizationId: optId);
         methods.add(method);
       });

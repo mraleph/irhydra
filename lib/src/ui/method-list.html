@@ -156,6 +156,9 @@
               </template>
               <template if="{{method.value.hasSinglePhase}}">
                 <h3 class="deopt-{{method.value.worstDeopt}}">
+                  <template if="{{method.value.name.source != null}}">
+                    <div><span class="method-name-source">{{method.value.name.source}}</span></div>
+                  </template>
                   <a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},0">{{method.value.name.display}}</a>
                 </h3>
               </template>

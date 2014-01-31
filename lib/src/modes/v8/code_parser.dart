@@ -17,6 +17,7 @@ library code_parser;
 
 import 'package:irhydra/src/modes/code.dart';
 import 'package:irhydra/src/modes/ir.dart' as IR;
+import 'package:irhydra/src/modes/v8/name_parser.dart' as name_parser;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
 /** Start of the optimized code dump. */
@@ -49,7 +50,7 @@ class PreParser extends parsing.ParserBase {
     if (currentMethod != null && currentMethod.optimizationId == optimizationId) {
       return;
     }
-    currentMethod = new IR.Method(new IR.Name(name, null, name),
+    currentMethod = new IR.Method(name_parser.parse(name),
                                   optimizationId: optimizationId);
     methods.add(currentMethod);
   }
