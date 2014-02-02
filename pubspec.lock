@@ -12,7 +12,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.11.0+1"
+    version: "0.11.0+3"
   browser:
     description: browser
     source: hosted
@@ -56,7 +56,7 @@ packages:
   polymer:
     description: polymer
     source: hosted
-    version: "0.9.4"
+    version: "0.9.5"
   polymer_expressions:
     description: polymer_expressions
     source: hosted
