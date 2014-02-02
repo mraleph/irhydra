@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /** Parser for dumps of Dart VM intermediate language. */
-library ir_parser;
+library modes.dartvm.ir_parser;
 
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/parsing.dart' as parsing;

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /** Mode for parsing V8's hydrogen.cfg and code dumps. */
-library v8;
+library modes.v8;
 
 import 'dart:html' as html;
 

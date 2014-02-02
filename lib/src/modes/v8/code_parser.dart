@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /** Parsing disassembly dumped by V8. */
-library code_parser;
+library modes.v8.code_parser;
 
 import 'package:irhydra/src/modes/code.dart';
 import 'package:irhydra/src/modes/ir.dart' as IR;

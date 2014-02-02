@@ -15,7 +15,7 @@
 library tab_pane;
 
 import 'dart:html';
-
+import 'package:irhydra/src/task.dart';
 import 'package:polymer/polymer.dart';
 
 /**
@@ -33,7 +33,11 @@ class TabPane extends PolymerElement {
 
   var _panes;
 
-  TabPane.created() : super.created();
+  var renderTask;
+
+  TabPane.created() : super.created() {
+    renderTask = new Task(render, frozen: true, type: MICROTASK);
+  }
 
   enteredView() {
     super.enteredView();
@@ -45,11 +49,34 @@ class TabPane extends PolymerElement {
                                      e.attributes['data-title']))
                  .toList();
     if (!tabs.isEmpty) activeTab = tabs.first.href;
+
+    renderTask.unfreeze();
   }
 
   @observable get activeTab => _activeTab;
   set activeTab (tab) {
     _activeTab = notifyPropertyChange(const Symbol("activeTab"), _activeTab, tab);
+    renderTask.schedule();
+  }
+
+  disabledChanged() => renderTask.schedule();
+
+  switchTabAction(event, detail, target) {
+    activeTab = target.attributes["data-target"];
+  }
+
+  render() {
+    if (tabs == null) {
+      return;
+    }
+
+    for (var tab in tabs) tab.isDisabled = _isDisabled(tab.href);
+
+    final active = tabs.firstWhere((tab) => tab.href == activeTab);
+    if (active.isDisabled) {
+      activeTab = tabs.firstWhere((tab) => !_isDisabled(tab.href)).href;
+    }
+
     _panes.forEach((pane) => pane.style.display = _displayStyle(pane));
 
     for (var node in $['after-tabs'].getDistributedNodes()) {
@@ -60,24 +87,6 @@ class TabPane extends PolymerElement {
     }
 
     document.dispatchEvent(new CustomEvent("DisplayChanged"));
-  }
-
-  switchTabAction(event, detail, target) {
-    switchTo(target.attributes["data-target"]);
-  }
-
-  /** Switch to the tab that has `data-href` equal to the given [href]. */
-  switchTo(href) {
-    activeTab = href;
-  }
-
-  disabledChanged() {
-    for (var tab in tabs) tab.isDisabled = _isDisabled(tab.href);
-
-    final active = tabs.firstWhere((tab) => tab.href == activeTab);
-    if (active.isDisabled) {
-      activeTab = tabs.firstWhere((tab) => !_isDisabled(tab.href)).href;
-    }
   }
 
   /** Compute display property value for the given tab [pane] */

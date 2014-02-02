@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /** Parsing native code artifacts dumped by Dart VM disassembler. */
-library code_parser;
+library modes.dartvm.code_parser;
 
 import 'package:irhydra/src/modes/code.dart';
 import 'package:irhydra/src/parsing.dart' as parsing;

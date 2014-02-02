@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /** Parser for hydrogen.cfg files. */
-library hydrogen_parser;
+library modes.v8.hydrogen_parser;
 
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/modes/v8/name_parser.dart' as name_parser;
@@ -187,7 +187,7 @@ class CfgParser extends parsing.ParserBase {
 
   final lir2hir = new Map<String, String>();
 
-  final hir2pos = new Map<String, SourcePosition>();
+  final hir2pos = new Map<String, IR.SourcePosition>();
 
   final id2hir = new Map<String, IR.Instruction>();
   final id2lir = new Map<String, IR.Instruction>();

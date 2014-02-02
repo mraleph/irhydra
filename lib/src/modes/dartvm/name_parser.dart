@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /** Parsing of fully qualified function names printed by Dart VM. */
-library name_parser;
+library modes.dartvm.name_parser;
 
 import 'package:irhydra/src/modes/ir.dart' as IR;
 

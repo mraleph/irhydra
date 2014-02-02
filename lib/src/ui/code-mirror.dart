@@ -14,6 +14,7 @@
 
 library code_mirror;
 
+import 'package:irhydra/src/task.dart';
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 import 'dart:html' as html;
@@ -34,19 +35,23 @@ class Widget {
 class CodeMirrorElement extends PolymerElement {
   final applyAuthorStyles = true;
 
-  CodeMirrorElement.created() : super.created();
+  CodeMirrorElement.created() : super.created() {
+    renderTask = new Task(render, frozen: true);
+  }
 
   var _instance;
 
-  @published var lines;
+  @published var lines = [];
   var _lines;
 
-  @published List<Widget> widgets;
+  @published List<Widget> widgets = [];
   List<_Widget> _widgets = const <_Widget>[];
 
   var _pendingScroll;
   var _pendingScrollDelayed;
   var _refresher;
+
+  var renderTask;
 
   enteredView() {
     super.enteredView();
@@ -55,16 +60,11 @@ class CodeMirrorElement extends PolymerElement {
     _refresher = (_) => _refresh();
 
     html.document.addEventListener("DisplayChanged", _refresher, false);
+    renderTask.unfreeze();
   }
 
-  linesChanged() {
-    _lines = lines.toList();
-    _instance.setValue(_lines.join('\n'));
-
-    if (_pendingScroll != null && !_pendingScrollDelayed) {
-      _executePendingScroll(forceRefresh: true);
-    }
-  }
+  linesChanged() => renderTask.schedule();
+  widgetsChanged() => renderTask.schedule();
 
   scrollTo(position, delayed, {force: false}) {
     _pendingScroll = position;
@@ -94,10 +94,16 @@ class CodeMirrorElement extends PolymerElement {
   _toWidget(Widget w) =>
     new _Widget(_toCMPosition(w.position), w.element);
 
-  widgetsChanged() {
+  render() {
+    _lines = lines.toList();
+    _instance.setValue(_lines.join('\n'));
     _widgets.forEach((w) => w.remove());
     _widgets = widgets.map(_toWidget).toList();
     _widgets.forEach((w) => w.insertInto(_instance));
+
+    if (_pendingScroll != null && !_pendingScrollDelayed) {
+      _executePendingScroll(forceRefresh: true);
+    }
   }
 
   _refresh() {

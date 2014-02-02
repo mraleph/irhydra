@@ -15,6 +15,7 @@
 library graph_pane;
 
 import 'dart:html';
+import 'package:irhydra/src/task.dart';
 import 'package:irhydra/src/ui/graph.dart' as graphview;
 import 'package:polymer/polymer.dart';
 
@@ -42,21 +43,26 @@ class GraphPane extends PolymerElement {
 
   @published var ir;
 
-  GraphPane.created() : super.created();
+  var _renderTask;
 
-  irChanged() {
-    if (ir == null) {
-      clear();
-    } else {
-      render();
-    }
+  GraphPane.created() : super.created() {
+    _renderTask = new Task(render, frozen: true);
   }
 
-  clear() {
-    $["graph"].nodes.clear();
+  enteredView() {
+    super.enteredView();
+    _renderTask.unfreeze();
   }
+
+  irChanged() => _renderTask.schedule();
+
+  clear() => $["graph"].nodes.clear();
 
   render() {
+    if (ir == null) {
+      return;
+    }
+
     final stopwatch = new Stopwatch()..start();
     graphview.display($["graph"], ir.blocks, (label, blockId) {
       label.onMouseOver.listen((event) => fire("block-mouse-over", detail: new HoverDetail(event.target, blockId)));

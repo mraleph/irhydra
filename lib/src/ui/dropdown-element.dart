@@ -15,7 +15,7 @@
 library dropdown_element;
 
 import 'dart:html' as html;
-
+import 'package:irhydra/src/task.dart';
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
@@ -30,12 +30,13 @@ class DropdownElement extends PolymerElement {
   @observable var valueText;
 
   var _texts;
+  var renderTask;
 
-  valueChanged() {
-    valueText = _texts[value];
+  valueChanged() => renderTask.schedule();
+
+  DropdownElement.created() : super.created() {
+    renderTask = new Task(render, frozen: true, type: MICROTASK);
   }
-
-  DropdownElement.created() : super.created();
 
   enteredView() {
     super.enteredView();
@@ -49,6 +50,8 @@ class DropdownElement extends PolymerElement {
       key: (node) => node.attributes["data-value"],
       value: (node) => node.text
     );
+
+    renderTask.unfreeze();
   }
 
   selectAction(event, detail, target) {
@@ -56,6 +59,10 @@ class DropdownElement extends PolymerElement {
       value = event.target.attributes['data-value'];
       fire("changed", detail: value);
     }
+  }
+
+  render() {
+    valueText = _texts[value];
   }
 
   leftView() {

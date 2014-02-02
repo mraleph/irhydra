@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /** Dart VM mode */
-library dartvm;
+library modes.dartvm;
 
 import 'package:irhydra/src/modes/dartvm/code_parser.dart' as code_parser;
 import 'package:irhydra/src/modes/dartvm/ir_parser.dart' as ir_parser;

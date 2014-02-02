@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /** Splits full compilation log into IR and native code artifacts. */
-library preparser;
+library modes.dartvm.preparser;
 
 import 'package:irhydra/src/modes/dartvm/name_parser.dart' as name_parser;
 import 'package:irhydra/src/modes/ir.dart' as IR;

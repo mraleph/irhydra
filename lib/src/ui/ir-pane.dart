@@ -18,11 +18,11 @@ import 'dart:async' as async;
 import 'dart:math' as math;
 import 'dart:html';
 
-
 import 'package:irhydra/src/formatting.dart' as formatting;
 import 'package:irhydra/src/html_utils.dart' show toHtml, span;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/modes/code.dart' as code;
+import 'package:irhydra/src/task.dart';
 import 'package:irhydra/src/xref.dart' as xref;
 
 import 'package:js/js.dart' as js;
@@ -46,22 +46,6 @@ class FormattingContext {
       return new Text(operand);
     } else {
       return operand.toHtml(this);
-    }
-  }
-}
-
-class Task {
-  final _callback;
-  var _task;
-
-  Task(this._callback);
-
-  schedule() {
-    if (_task == null) {
-      _task = new async.Timer(const Duration(milliseconds: 50), () {
-        _task = null;
-        _callback();
-      });
     }
   }
 }
@@ -107,7 +91,7 @@ class IRPane extends PolymerElement {
     makeValueRef = xref.makeReferencer(rangeContentAsHtml,
                                        href,
                                        type: xref.TOOLTIP);
-    _renderTask = new Task(render);
+    _renderTask = new Task(render, frozen: true);
   }
 
   enteredView() {
@@ -136,6 +120,8 @@ class IRPane extends PolymerElement {
       }
       info.hide();
     });
+
+    _renderTask.unfreeze();
   }
 
   irChanged() => _renderTask.schedule();
