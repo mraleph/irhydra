@@ -30,24 +30,25 @@ final DEMOS = {
 
 @CustomTag('hydra-app')
 class HydraElement extends PolymerElement {
-  @observable var currentMode;
-  @observable var currentFiles;
-  @observable var currentPhase;
-  @observable var currentMethod;
-  @observable var currentMethods;
+  @observable var mode;
+  @observable var files;
+  @observable var phase;
+  @observable var method;
+  @observable var methods;
 
   @observable var ir;
 
-  @observable get codeModes => IRPane.CODE_MODES;
-  @observable var codeMode = IRPane.CODE_MODES.first;
+  @observable var codeMode;
 
   @observable var sourcePath = toObservable([]);
+
+  @observable var activeTab = "ir";
 
   var blockRef;
 
   get applyAuthorStyles => true;
 
-  get currentFileNames => currentFiles.map((file) => file.name).join(', ');
+  get currentFileNames => files.map((file) => file.name).join(', ');
 
   HydraElement.created() : super.created();
 
@@ -63,8 +64,13 @@ class HydraElement extends PolymerElement {
         return;
       }
 
-      if (to.startsWith("ir") && tabPane.activeTab != "ir") {
-        tabPane.activeTab = "ir";
+      if (to == "source" || to == "ir" || to == "graph") {
+        activeTab = to;
+        return;
+      }
+
+      if (to.startsWith("ir") && activeTab != "ir") {
+        activeTab = "ir";
 
         new async.Timer(const Duration(milliseconds: 50), () {
           final anchor = irpane.shadowRoot.querySelector("a[id='$to']");
@@ -85,26 +91,26 @@ class HydraElement extends PolymerElement {
   displayPhase(a, phaseAndMethod, b) {
     closeSplash();
 
-    currentMethod = phaseAndMethod[0];
-    currentPhase = phaseAndMethod[1];
-    ir = currentMode.toIr(phaseAndMethod[0], currentPhase);
+    activeTab = "ir";
+    method = phaseAndMethod[0];
+    phase = phaseAndMethod[1];
+    ir = mode.toIr(phaseAndMethod[0], phase);
     blockRef = new XRef((id) => irpane.rangeContentAsHtmlFull(id));
 
     sourcePath.clear();
-    if (!currentMethod.sources.isEmpty) {
-      sourcePath.add(currentMethod.inlined.first);
+    if (!method.sources.isEmpty) {
+      sourcePath.add(method.inlined.first);
     }
   }
 
   get irpane => shadowRoot.querySelector("#ir-pane");
-  get tabPane => shadowRoot.querySelector("tab-pane");
   get sourcePane => shadowRoot.querySelector("#source-pane");
 
-  openCompilation(e, files, target) {
-    if (files.length > 1) {
+  openCompilation(e, selectedFiles, target) {
+    if (selectedFiles.length > 1) {
       reset();
     }
-    currentFiles = files;
+    files = selectedFiles;
     _loadFiles();
   }
 
@@ -115,7 +121,7 @@ class HydraElement extends PolymerElement {
 
   _loadFiles() {
     closeSplash();
-    _wait(currentFiles.map((file) => readAsText(file).then(loadData)));
+    _wait(files.map((file) => readAsText(file).then(loadData)));
   }
 
   _wait(actions) {
@@ -135,29 +141,29 @@ class HydraElement extends PolymerElement {
   }
 
   navigateToDeoptAction(event, deopt, target) {
-    if (currentMethod.inlined.isEmpty)
+    if (method.inlined.isEmpty)
       return;
 
     buildStack(position) {
       if (position == null) {
         return [];
       } else {
-        final f = currentMethod.inlined[position.inlineId];
+        final f = method.inlined[position.inlineId];
         return buildStack(f.position)..add(f);
       }
     }
 
     sourcePath = toObservable(buildStack(deopt.srcPos));
-    sourcePane.scrollTo(deopt, tabPane.activeTab != "source");
+    sourcePane.scrollTo(deopt, activeTab != "source");
   }
 
   _formatDeoptInfo(deopt) {
     final contents = [];
 
     var instr = deopt.hir;
-    var description = currentMode.descriptions.lookup("hir", deopt.hir.op);
+    var description = mode.descriptions.lookup("hir", deopt.hir.op);
     if (description == null) {
-      description = currentMode.descriptions.lookup("lir", deopt.lir.op);
+      description = mode.descriptions.lookup("lir", deopt.lir.op);
       if (description != null) {
         instr = deopt.lir;
       }
@@ -213,11 +219,13 @@ class HydraElement extends PolymerElement {
   }
 
   reset() {
-    currentMode = currentMethods = null;
+    mode = methods = null;
   }
 
-  currentMethodsChanged() {
-    currentPhase = ir = null;
+  methodsChanged() {
+    codeMode = "split";
+    activeTab = "ir";
+    phase = ir = null;
   }
 
   /** Load given file. */
@@ -233,10 +241,10 @@ class HydraElement extends PolymerElement {
     // Normalize line endings.
     text = text.replaceAll(new RegExp(r"\r\n|\r"), "\n");
 
-    if (currentMode == null || !currentMode.load(text)) {
+    if (mode == null || !mode.load(text)) {
       var newMode;
-      for (var mode in MODES) {
-        final candidate = mode();
+      for (var modeFactory in MODES) {
+        final candidate = modeFactory();
         if (candidate.load(text)) {
           newMode = candidate;
         }
@@ -246,8 +254,10 @@ class HydraElement extends PolymerElement {
         return;
       }
 
-      currentMode = newMode;
+      mode = newMode;
     }
-    currentMethods = toObservable(currentMode.methods);
+
+    methods = toObservable(mode.methods);
+    closeSplash();
   }
 }

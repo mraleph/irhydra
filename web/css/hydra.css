@@ -194,11 +194,12 @@ h4.deopt-header-soft > .first-word {
 
 #welcome-splash {
   position: absolute;
-  padding-left: 250px;
   left: 0px;
   right: 0px;
-  top: 0px;
+  top: 40px;
   bottom: 0px;
+  z-index: 1000;
+  overflow: auto;
 }
 
 #splash-spinner {

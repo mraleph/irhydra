@@ -19,20 +19,15 @@ import 'package:irhydra/src/task.dart';
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
-/**
- * Primitive tabbed pane WebComponent.
- */
 @CustomTag('dropdown-element')
 class DropdownElement extends PolymerElement {
-  final applyAuthorStyles = false;
-
-  @published var value;
+  @published var selected;
   @observable var valueText;
 
   var _texts;
   var renderTask;
 
-  valueChanged() => renderTask.schedule();
+  selectedChanged(from, to) => renderTask.schedule();
 
   DropdownElement.created() : super.created() {
     renderTask = new Task(render, frozen: true, type: MICROTASK);
@@ -45,8 +40,7 @@ class DropdownElement extends PolymerElement {
     _texts = new Map.fromIterable(
       shadowRoot.querySelector("content")
                 .getDistributedNodes()
-                .where((node) => node is! html.Text)
-                .map((node) => node.querySelector("[data-value]")),
+                .where((node) => (node is html.Element && node.attributes.containsKey("data-value"))),
       key: (node) => node.attributes["data-value"],
       value: (node) => node.text
     );
@@ -55,14 +49,14 @@ class DropdownElement extends PolymerElement {
   }
 
   selectAction(event, detail, target) {
-    if (event.target.attributes.containsKey('data-value')) {
-      value = event.target.attributes['data-value'];
-      fire("changed", detail: value);
+    final attrs = event.target.attributes;
+    if (attrs.containsKey('data-value')) {
+      selected = attrs['data-value'];
     }
   }
 
   render() {
-    valueText = _texts[value];
+    valueText = _texts[selected];
   }
 
   leftView() {
