@@ -16,3 +16,5 @@ web/precompiled.js
 deploy/
 irhydra.sublime-project
 irhydra.sublime-workspace
+build.sh
+serve.sh
