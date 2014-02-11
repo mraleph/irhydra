@@ -194,7 +194,9 @@
         <switching-scope active="{{activeTab}}" class="pane-controls">
           <div when-ir class="tab-header"><a href="#ir">IR</a></div>
           <div when-graph class="tab-header"><a href="#graph">Graph</a></div>
-          <div when-source class="tab-header"><a href="#source">Source</a></div>
+          <template if="{{!sourcePath.isEmpty}}">
+            <div when-source class="tab-header"><a href="#source">Source</a></div>
+          </template>
           <div when-ir>
             <dropdown-element selected="{{codeMode}}">
               <a href="#" data-value="split">Split Disassembly</a>
