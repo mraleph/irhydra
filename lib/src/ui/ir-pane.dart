@@ -242,13 +242,14 @@ class IRPane extends PolymerElement {
 
   /** Create marker for [deopt] at the line corresponding to [deopt.lir.id]. */
   _createDeoptMarkersAt(deopt) {
-    if (deopt.lir.id != null) {
-      line(deopt.lir.id).text.append(_createDeoptMarkerFor(deopt));
-    }
+    if (deopt.lir != null) _createDeoptMarkersAtId(deopt, deopt.lir.id);
+    if (deopt.hir != null) _createDeoptMarkersAtId(deopt, deopt.hir.id);
+  }
 
-    if (deopt.hir.id != null) {
-      line(deopt.hir.id).text.append(_createDeoptMarkerFor(deopt));
-    }
+  _createDeoptMarkersAtId(deopt, id) {
+    final marker = _createDeoptMarkerFor(deopt);
+    marker.attributes["id"] = "deopt-ir-${id}";
+    line(id).text.append(marker);
   }
 
   /** Create marker for [deopt] at the line corresponding to [deopt.lirId]. */

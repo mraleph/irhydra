@@ -73,7 +73,7 @@ class HydraElement extends PolymerElement {
         activeTab = "ir";
 
         new async.Timer(const Duration(milliseconds: 50), () {
-          final anchor = irpane.shadowRoot.querySelector("a[id='$to']");
+          final anchor = irpane.shadowRoot.querySelector("#${to}");
           if (anchor != null) {
             anchor.scrollIntoView();
           }
