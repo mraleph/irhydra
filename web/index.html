@@ -32,10 +32,6 @@
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
 
-    <link rel="import" href="packages/irhydra/src/ui/hydra.html">
-    <script type="application/dart">export "package:polymer/init.dart";</script>
-    <script src="packages/browser/dart.js"></script>
-
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/spin.js/1.3.2/spin.min.js"></script>
 
     <script src="deps/codemirror-3.21/codemirror.js"></script>
@@ -44,6 +40,8 @@
 
     <script src="jquery-2.0.3.js"></script>
     <script src="bootstrap/js/bootstrap.js"></script>
+    
+    <link rel="import" href="packages/irhydra/src/ui/hydra.html">
   </head>
 
   <body>
@@ -125,5 +123,8 @@
       }
     </script>
     <hydra-app></hydra-app>
+
+    <script type="application/dart">export "package:polymer/init.dart";</script>
+    <script src="packages/browser/dart.js"></script>
   </body>
 </html>
