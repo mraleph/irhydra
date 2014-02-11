@@ -21,7 +21,9 @@
            right: 0px;
            top: 0px;
            bottom: 0px;
+           display: -webkit-flex;
            display: flex;
+           -webkit-flex-flow: column;
            flex-flow: column;
          }
       }
@@ -54,9 +56,12 @@
       }
 
       .pane {
+        display: -webkit-flex;
         display: flex;
+        -webkit-flex-flow: row;
         flex-flow: row;
         position: relative;
+        -webkit-flex: 1 1;
         flex: 1 1;
       }
 
@@ -67,6 +72,7 @@
       }
 
       .pane > * {
+        -webkit-flex: 1 1;
         flex: 1 1;
       }
 
@@ -175,12 +181,29 @@
       }
 
       .pane > switching-scope {
+        display: -webkit-flex;
         display: flex;
         overflow: auto;
       }
 
       .panes, .panes > div {
+        -webkit-flex: 1 1;
         flex: 1 1;
+      }
+
+      .ir-placeholder {
+        display: -webkit-flex;
+        display: flex;
+        -webkit-justify-content: center;
+        justify-content: center;
+        -webkit-align-items: center;
+        align-items: center;
+        text-align: center;
+        font-size: 6em;
+        font-family: Lato;
+        font-weight: 700;
+        background: #ECF0F1;
+        color: #BDC3C7;
       }
     </style>
 
@@ -221,6 +244,11 @@
         <div class="sidebar">
           <method-list methods="{{methods}}" on-selected="{{displayPhase}}"></method-list>
         </div>
+        <template if="{{ir == null}}">
+          <div class="ir-placeholder">
+            <span>select a method</span>
+          </div>
+        </template>
         <template if="{{ir != null}}">
           <switching-scope active="{{activeTab}}" class="panes">
             <div when-ir>

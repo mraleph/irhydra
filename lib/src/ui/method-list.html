@@ -4,13 +4,20 @@
   <template>
     <style>
       .method-list {
+        display: -webkit-flex;
         display: flex;
+
+        -webkit-flex-flow: column;
         flex-flow: column;
+
+        -webkit-flex-direction: column;
         flex-direction: column;
+
         min-height: 0px;
       }
 
       .method-list-methods {
+        flex: 1 1;
         -webkit-flex: 1 1 auto;
         overflow-y: auto;
         min-height: 0px;
