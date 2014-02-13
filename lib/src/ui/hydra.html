@@ -69,9 +69,22 @@
         min-width: 250px;
         max-width: 250px;
         background: #2C3E50;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-flow: column;
+        flex-flow: column;
       }
 
       .pane > * {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+      }
+
+      .sidebar > * {
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-flow: column;
+        flex-flow: column;
         -webkit-flex: 1 1;
         flex: 1 1;
       }
