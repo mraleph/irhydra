@@ -69,7 +69,7 @@ class GraphPane extends PolymerElement {
       label.onMouseOut.listen((_) => fire("block-mouse-out"));
       label.onClick.listen((event) {
         // TODO(mraleph): Shadow DOM polyfill seems to be interfering with links in SVG. Have to switch manually.
-        document.window.location.hash = "ir-${blockId}";
+        (document.window.location as AnchorElement).hash = "ir-${blockId}";
       });
     });
     print("GraphPane.render() took ${stopwatch.elapsedMilliseconds}");

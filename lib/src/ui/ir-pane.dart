@@ -14,7 +14,6 @@
 
 library ir_pane;
 
-import 'dart:async' as async;
 import 'dart:math' as math;
 import 'dart:html';
 
@@ -489,8 +488,8 @@ class _RefsPanel {
   static const PADDING = 5;
 
   _RefsPanel(this.baselineOffset, this.rightBorder, content) {
-    onScroll = document.window.onScroll.listen((e) => position());
-    onResize = document.window.onResize.listen((e) => position());
+    onScroll = (document.window as Window).onScroll.listen((e) => position());
+    onResize = (document.window as Window).onResize.listen((e) => position());
 
     root.querySelector(".close").onClick.listen((e) => close());
     root.querySelector(".irpane-refs-inner").nodes.add(content);

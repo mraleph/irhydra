@@ -15,7 +15,6 @@
 /** Management of tooltips and popovers for cross-references. */
 library xref;
 
-import 'dart:async';
 import 'dart:html';
 
 import "package:irhydra/src/delayed_reaction.dart";

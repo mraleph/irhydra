@@ -47,7 +47,7 @@ class SourcePaneElement extends PolymerElement {
       _pendingScroll = null;
 
       if (currentFunction.contains(scroll.position)) {
-        $["editor"].scrollTo(
+        ($["editor"] as code_mirror.CodeMirrorElement).scrollTo(
           scroll.position.position, scroll.delayed, force: force);
       }
     }

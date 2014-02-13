@@ -26,7 +26,7 @@ js.Proxy _spinner;
 start() {
   stop();  // Ensure that spinner is stopped.
 
-  final target = html.document.query(".navbar-inner > .container");
+  final target = html.document.querySelector(".navbar-inner > .container");
   final opts = js.map({
     "lines": 13, // The number of lines to draw
     "length": 7, // The length of each line

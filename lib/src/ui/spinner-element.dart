@@ -14,8 +14,6 @@
 
 library spinner_element;
 
-import 'dart:html' as html;
-
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
@@ -32,7 +30,6 @@ class SpinnerElement extends PolymerElement {
   start() {
     stop();  // Ensure that spinner is stopped.
 
-    final target = $["spinner"];
     final opts = js.map({
       "lines": 13, // The number of lines to draw
       "length": 7, // The length of each line
@@ -50,7 +47,7 @@ class SpinnerElement extends PolymerElement {
       "top": '0px', // Top position relative to parent in px
       "left": '0px' // Left position relative to parent in px
     });
-    _spinner = new js.Proxy(js.context.Spinner, opts).spin(target);
+    _spinner = new js.Proxy(js.context.Spinner, opts).spin(this);
   }
 
   /** Stop spinner. */

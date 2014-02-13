@@ -610,8 +610,8 @@ class ShortestPathRouter {
         growPassChangedObstacles = true;
         if (index != -1) {
           Collections.remove(path.grownSegments, segment);
-          path.grownSegments.insertRange(index, 1, newSegmentStart);
-          path.grownSegments.insertRange(index + 1, 1, newSegmentEnd);
+          path.grownSegments.insert(index, newSegmentStart);
+          path.grownSegments.insert(index + 1, newSegmentEnd);
         } else {
           path.grownSegments.add(newSegmentStart);
           path.grownSegments.add(newSegmentEnd);

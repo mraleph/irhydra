@@ -237,6 +237,9 @@ class Branch extends Instruction {
 
 abstract class Operand {
   toHtml(pane) => pane.formatOperand(this.tag, this.text);
+
+  get tag;
+  get text;
 }
 
 class Ref extends Operand {

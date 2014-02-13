@@ -38,9 +38,9 @@ class DropdownElement extends PolymerElement {
     js.context.jQuery.fn.dropdown.install(shadowRoot);
 
     _texts = new Map.fromIterable(
-      shadowRoot.querySelector("content")
-                .getDistributedNodes()
-                .where((node) => (node is html.Element && node.attributes.containsKey("data-value"))),
+      (shadowRoot.querySelector("content") as html.ContentElement)
+                 .getDistributedNodes()
+                 .where((node) => (node is html.Element && node.attributes.containsKey("data-value"))),
       key: (node) => node.attributes["data-value"],
       value: (node) => node.text
     );
