@@ -1,7 +1,5 @@
 library open_file_button;
 
-import 'dart:html';
-import 'package:irhydra/src/delayed_reaction.dart';
 import 'package:polymer/polymer.dart';
 import 'package:js/js.dart' as js;
 

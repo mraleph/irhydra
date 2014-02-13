@@ -59,9 +59,4 @@ class Rank extends NodeList {
       n.height = rowHeight;
     }
   }
-  /**
-   * @deprecated Do not call
-   */
-  void sort() {
-  }
 }

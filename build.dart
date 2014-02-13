@@ -13,11 +13,10 @@
 // limitations under the License.
 
 import 'package:polymer/builder.dart';
-import 'dart:io';
 
 const OPT_CHANGED = "--changed=";
 
-void main() {
+void main(List<String> args) {
   /*
   final args = new Options().arguments;
   final changed = args.where((opt) => opt.startsWith(OPT_CHANGED))
@@ -30,5 +29,5 @@ void main() {
     Process.run("./bin/build.sh", []);
   }*/
 
-  build(entryPoints: ['web/index.html']);
+  build(entryPoints: ['web/index.html'], options: parseOptions(args));
 }

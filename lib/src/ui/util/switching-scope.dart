@@ -51,7 +51,7 @@ class SwitchingScope extends PolymerElement {
     document.dispatchEvent(new CustomEvent("DisplayChanged"));
   }
 
-  _query(sel) => shadowRoot.querySelector("content")
-                           .getDistributedNodes()
-                           .where((n) => n is Element && n.matches(sel));
+  _query(sel) => (shadowRoot.querySelector("content") as ContentElement)
+                            .getDistributedNodes()
+                            .where((n) => n is Element && n.matches(sel));
 }

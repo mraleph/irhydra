@@ -15,7 +15,6 @@
 /** Rendering control flow graph using SVG. */
 library graph;
 
-import 'dart:html';
 import 'dart:math' as math;
 import 'dart:svg';
 

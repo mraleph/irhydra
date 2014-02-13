@@ -2,10 +2,11 @@ library hydra;
 
 import 'dart:html';
 import 'dart:async' as async;
+
 import 'package:irhydra/src/html_utils.dart' show toHtml;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
-import 'package:irhydra/src/ui/ir-pane.dart' show IRPane;
+import 'package:irhydra/src/ui/spinner-element.dart';
 import 'package:irhydra/src/xref.dart' show XRef, POPOVER;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
@@ -125,7 +126,7 @@ class HydraElement extends PolymerElement {
   }
 
   _wait(actions) {
-    final spinner = $['spinner'];
+    final SpinnerElement spinner = $["spinner"];
     spinner.start();
     async.Future.wait(
       actions
@@ -188,24 +189,6 @@ class HydraElement extends PolymerElement {
     contents.add(toHtml(raw));
 
     return contents.join("\n");
-  }
-
-  showDeoptAction(event, detail, target) {
-    var $widget = js.context.jQuery(detail.widget);
-    if ($widget.data('bs.popover') != null) {
-      $widget.popover('destroy');
-      return;
-    }
-
-    $widget.popover(js.map({
-      "title": "",
-      "content": "${content}",
-      "placement": "bottom",
-      "html": true,
-      "container": 'body',
-      "trigger": "manual"
-    })).data('bs.popover').tip().addClass('deopt');
-    $widget.popover('show');
   }
 
   final deoptPopover = new XRef((x) => x, POPOVER);

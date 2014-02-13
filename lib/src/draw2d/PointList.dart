@@ -21,7 +21,7 @@ class PointList {
   Rectangle bounds;
 
   PointList();
-  
+
   void addAll(PointList source) {
     for (var p in source.points) points.add(p.clone());
   }
@@ -29,7 +29,7 @@ class PointList {
   void addPoint(Point p) {
     points.add(p.clone());
   }
-  
+
   /**
    * Returns the smallest Rectangle which contains all Points.
    */
@@ -65,7 +65,7 @@ class PointList {
       bounds = null;
     }
 
-    points.insertRange(index, 1, p.clone());
+    points.insert(index, p.clone());
   }
 
   void setPoint(Point p, int index) {  // TODO(vegorov) verify
@@ -75,7 +75,7 @@ class PointList {
 
     points[index] = p.clone();
   }
-  
+
   /**
    * Removes all the points stored by this list. Resets all the properties
    * based on the point information.
@@ -97,9 +97,9 @@ class PointList {
   void reverse() {
     Collections.reverse(points);
   }
-  
+
   int get length => points.length;
-  
+
   /**
    * Transposes all x and y values. Useful for orientation changes.
    * @since 3.2
@@ -108,7 +108,7 @@ class PointList {
     if (bounds != null) {
       bounds.transpose();
     }
-    
+
     for (var p in points) p.transpose();
-  }        
+  }
 }
