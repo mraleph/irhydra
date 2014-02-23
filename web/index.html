@@ -76,7 +76,7 @@
         <h2>Compilation Artifacts Cheatsheet</h2>
         <p>If you already have some artifacts collected go ahead and explore them with&nbsp;<i class="fa fa-folder-open"></i>&nbsp;otherwise here is how you can collect some.</p>
         <h3>V8</h3>
-        <p class="alpha-warning">Currently you need to apply a <a href="https://code.google.com/p/irhydra/source/browse/patches/v8.r18822.patch?name=polymerized">patch</a> to your <em>recent version</em> of V8 to be able to collect all necessary information.</p>
+        <p class="alpha-warning">You need V8 version >= 2.24.39 to use IRHydra<sup>2</sup>. You can check <code>about:version</code> to see if your browser comes with the suitable version.</p>
         <p>You need to pass the following flags to V8 to collect IR and deoptimization artifacts and be able to use source level view:</p>
         <pre>
 <span data-toggle="tooltip" data-title="Produce hydrogen.cfg containing high-level and low-level intermediate representations used by Crankshaft optimizing compiler.">--trace-hydrogen</span>
