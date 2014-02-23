@@ -21,10 +21,12 @@ import 'package:irhydra/src/modes/v8/name_parser.dart' as name_parser;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
 /** Start of the optimized code dump. */
-final MARKER = "--- Optimized code ---";
+final CODE_MARKER = "--- Optimized code ---";
+final DEOPT_MARKER = new RegExp(r"\[deoptimizing \(DEOPT \w+\): begin");
+final SOURCE_MARKER = new RegExp(r"\-\-\- FUNCTION SOURCE \(");
 
 canRecognize(String text) =>
-  text.contains(MARKER);
+  text.contains(CODE_MARKER) || DEOPT_MARKER.hasMatch(text) || SOURCE_MARKER.hasMatch(text);
 
 /** Split [text] into separate optimized code dumps. */
 List<IR.Method> preparse(String text) =>
