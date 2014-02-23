@@ -28,6 +28,13 @@ class Widget {
   toString() => "${element} @ ${position}";
 }
 
+class LineClass {
+  final lineNum;
+  final className;
+
+  LineClass(this.lineNum, this.className);
+}
+
 /**
  * Primitive tabbed pane WebComponent.
  */
@@ -47,8 +54,12 @@ class CodeMirrorElement extends PolymerElement {
   @published List<Widget> widgets = [];
   List<_Widget> _widgets = const <_Widget>[];
 
+  @published var lineClasses = [];
+  var _appliedLineClasses = [];
+
   var _pendingScroll;
   var _pendingScrollDelayed;
+
   var _refresher;
 
   var renderTask;
@@ -95,11 +106,13 @@ class CodeMirrorElement extends PolymerElement {
     new _Widget(_toCMPosition(w.position), w.element);
 
   render() {
+    _appliedLineClasses.forEach((handle) => _instance.removeLineClass(handle, "wrap"));
     _lines = lines.toList();
     _instance.setValue(_lines.join('\n'));
     _widgets.forEach((w) => w.remove());
     _widgets = widgets.map(_toWidget).toList();
     _widgets.forEach((w) => w.insertInto(_instance));
+    _appliedLineClasses = lineClasses.map((line) => _instance.addLineClass(line.lineNum, "wrap", line.className)).toList();
 
     if (_pendingScroll != null && !_pendingScrollDelayed) {
       _executePendingScroll(forceRefresh: true);

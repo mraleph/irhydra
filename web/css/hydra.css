@@ -229,3 +229,11 @@ h4.deopt-header-soft > .first-word {
   color: inherit;
   background: inherit;
 }
+
+.line-dead {
+  opacity: 0.2;
+}
+
+.line-licm {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAICAYAAADA+m62AAAAPUlEQVQYV2NkQAMfj/D/57f5yIgujiIAU4RNMVwhuiQ6H6wQl3XI4oy4FMHcCJPHcDS6J2A2EqUQpJhohQB77CbMiYyfvgAAAABJRU5ErkJggg==) repeat;
+}

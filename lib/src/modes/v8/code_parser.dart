@@ -90,8 +90,9 @@ class PreParser extends parsing.ParserBase {
       enterMethod(name, optId);
       enter({
         r"^\-\-\- END \-\-\-$": () {
-          assert(currentMethod.sources.length == int.parse(funcId));
-          currentMethod.sources.add(new IR.FunctionSource(name, subrange()));
+          final id = int.parse(funcId);
+          assert(currentMethod.sources.length == id);
+          currentMethod.sources.add(new IR.FunctionSource(id, name, subrange()));
 
           if (currentMethod.sources.length == 1) {
             assert(currentMethod.inlined.isEmpty);

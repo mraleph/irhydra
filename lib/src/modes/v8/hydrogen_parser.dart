@@ -17,6 +17,7 @@ library modes.v8.hydrogen_parser;
 
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/modes/v8/name_parser.dart' as name_parser;
+import 'package:irhydra/src/modes/v8/source_annotator.dart' as source_annotator;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
 bool canRecognize(String str) =>
@@ -133,6 +134,8 @@ Map parse(IR.Method method, Function ir) {
       }
     }
   }
+
+  source_annotator.annotate(method, blocks, parser);
 
   print("hydrogen_parser.parse took ${stopwatch.elapsedMilliseconds}");
   return blocks;

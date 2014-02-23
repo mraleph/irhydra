@@ -16,6 +16,7 @@ library source_pane;
 
 import 'dart:html' as html;
 
+import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/ui/code-mirror.dart' as code_mirror;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
@@ -27,6 +28,7 @@ class SourcePaneElement extends PolymerElement {
   @published var path;
   @observable var source;
   @observable var widgets;
+  @observable var lineClasses;
 
   var _pendingScroll;
 
@@ -90,7 +92,21 @@ class SourcePaneElement extends PolymerElement {
     widgets = []..addAll(inlineWidgets)
                 ..addAll(deoptWidgets);
 
-
+    // Annotate lines.
+    lineClasses = const [];
+    if (currentFunction.annotations != null) {
+      lineClasses = [];
+      for (var i = 0; i < currentFunction.annotations.length; i++) {
+        switch (currentFunction.annotations[i]) {
+          case IR.LINE_DEAD:
+            lineClasses.add(new code_mirror.LineClass(i, "line-dead"));
+            break;
+          case IR.LINE_LICM:
+            lineClasses.add(new code_mirror.LineClass(i, "line-licm"));
+            break;
+        }
+      }
+    }
   }
 }
 

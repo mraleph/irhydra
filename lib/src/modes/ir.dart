@@ -103,10 +103,11 @@ class Deopt {
 }
 
 class FunctionSource {
+  final int id;
   final String name;
   final Iterable source;
 
-  FunctionSource(this.name, this.source);
+  FunctionSource(this.id, this.name, this.source);
 }
 
 class SourcePosition {
@@ -118,11 +119,23 @@ class SourcePosition {
   toString() => "<${inlineId}:${position}>";
 }
 
+/// Line is dead: no instructions were produced from it.
+const LINE_DEAD = 0;
+
+/// Line was moved by LICM: all produced instructions are outside of the
+/// loop to which the line belongs syntactically.
+const LINE_LICM = 1;
+
+/// Line is live: instructions were produced from this line and not moved.
+const LINE_LIVE = 3;
+
 class InlinedFunction {
   final Method method;
   final int inlineId;
   final FunctionSource source;
   final SourcePosition position;
+
+  var annotations;
 
   contains(SourcePosition other) =>
     other != null && other.inlineId == inlineId;
