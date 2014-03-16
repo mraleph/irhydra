@@ -145,10 +145,6 @@ span.lir-env, span.lir-map { display: none; }
   color: #9B59B6;
 }
 
-.CodeMirror {
-  font-size: 16pt;
-}
-
 .popover.deopt > .popover-content > pre {
   font-size: 0.7em;
 }
