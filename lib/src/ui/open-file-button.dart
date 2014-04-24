@@ -5,8 +5,6 @@ import 'package:js/js.dart' as js;
 
 @CustomTag('open-file-button')
 class OpenFileButton extends PolymerElement {
-  get applyAuthorStyles => true;
-
   OpenFileButton.created() : super.created();
 
   enteredView() {

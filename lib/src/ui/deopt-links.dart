@@ -21,8 +21,6 @@ import 'package:polymer/polymer.dart';
  */
 @CustomTag('deopt-links')
 class DeoptLinksElement extends PolymerElement {
-  final applyAuthorStyles = false;
-
   @published var deopts;
   @observable var deoptInfo;
 

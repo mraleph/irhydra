@@ -40,8 +40,6 @@ class LineClass {
  */
 @CustomTag('code-mirror')
 class CodeMirrorElement extends PolymerElement {
-  final applyAuthorStyles = true;
-
   CodeMirrorElement.created() : super.created() {
     renderTask = new Task(render, frozen: true);
   }

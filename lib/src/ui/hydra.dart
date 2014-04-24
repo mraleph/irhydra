@@ -47,8 +47,6 @@ class HydraElement extends PolymerElement {
 
   var blockRef;
 
-  get applyAuthorStyles => true;
-
   get currentFileNames => files.map((file) => file.name).join(', ');
 
   HydraElement.created() : super.created();

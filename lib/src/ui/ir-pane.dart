@@ -63,8 +63,6 @@ class FormattingContext {
  */
 @CustomTag('ir-pane')
 class IRPane extends PolymerElement {
-  final applyAuthorStyles = true;
-
   static const CODE_MODES = const ['split', 'inline', 'none'];
 
   @published var codeMode;

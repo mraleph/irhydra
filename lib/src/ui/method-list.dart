@@ -18,8 +18,6 @@ class MethodList extends PolymerElement {
 
   final delayed = new DelayedReaction(delay: const Duration(milliseconds: 200));
 
-  get applyAuthorStyles => true;
-
   MethodList.created() : super.created();
 
   enteredView() {

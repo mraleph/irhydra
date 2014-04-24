@@ -18,8 +18,6 @@ import 'package:polymer/polymer.dart';
 
 @CustomTag('source-path')
 class SourcePathElement extends PolymerElement {
-  final applyAuthorStyles = true;
-
   @published var path;
   @observable var isEmpty;
 

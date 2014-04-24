@@ -39,8 +39,6 @@ class HoverDetail {
  */
 @CustomTag('graph-pane')
 class GraphPane extends PolymerElement {
-  final applyAuthorStyles = true;
-
   @published var ir;
 
   var _renderTask;

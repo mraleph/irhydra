@@ -23,8 +23,6 @@ import 'package:polymer/polymer.dart';
 
 @CustomTag('source-pane')
 class SourcePaneElement extends PolymerElement {
-  final applyAuthorStyles = true;
-
   @published var path;
   @observable var source;
   @observable var widgets;
