@@ -1,0 +1,891 @@
+diff --git a/lib/src/ui/hydra.dart b/lib/src/ui/hydra.dart
+index 1b75f6b..3b97d04 100644
+--- a/lib/src/ui/hydra.dart
++++ b/lib/src/ui/hydra.dart
+@@ -76,6 +76,12 @@ class HydraElement extends PolymerElement {
+     });
+ 
+     document.dispatchEvent(new CustomEvent("HydraReady"));
++    async.Future.wait(
++        DEMOS.values.first.map((path) => HttpRequest.getString(path).then(loadData))
++    ).then((_) {
++      final m = currentMethods.firstWhere((m) => m.name.short == "loop");
++      displayPhase(null, [m, m.phases.last], null);
++    });
+   }
+ 
+   closeSplash() {
+diff --git a/lib/src/ui/hydra.html b/lib/src/ui/hydra.html
+index 92eb6d0..70fe304 100644
+--- a/lib/src/ui/hydra.html
++++ b/lib/src/ui/hydra.html
+@@ -14,13 +14,87 @@
+   <link rel="import" href="tab-pane.html">
+   <template>
+     <style>
++      @host {
++         *, :scope, scrollable-table {
++           position: fixed;
++           left: 0px;
++           right: 0px;
++           top: 0px;
++           bottom: 0px;
++           background: #ccc;
++           display: flex;
++           flex-flow: column;
++         }
++       }
++
++       .header {
++         height: 40px;
++         padding: 0px;
++         background: #2C3E50;
++       }
++
++       button {
++         background: #2C3E50;
++         border: 0px;
++         color: white;
++         width: 40px;
++         height: 40px;
++         font-size: 16pt;
++       }
++
++       button:hover {
++         background: #34495E;
++       }
++
++       button:disabled {
++         color: #95A5A6;
++       }
++
++       button:disabled:hover {
++         background: #2C3E50;
++       }
++
++       .pane {
++         display: flex;
++         flex-flow: row;
++         position: relative;
++         flex: 1 1;
++         background: yellow;
++       }
++
++       .sidebar {
++         position: absolute;
++         width: 40px;
++         background: #2C3E50;
++         left: 0px;
++         top: 0px;
++         bottom: 0px;
++       }
++
++       .sidebar > * {
++         visibility: hidden;
++       }
++
++       .sidebar:hover {
++         width: 300px;
++       }
++
++       .sidebar:hover > * {
++         visibility: visible;
++       }
++
++       .pane > *:not(.sidebar) {
++         background-color: blue;
++         flex: 1 1;
++       }
++
++    /*
+       #sidebar {
+         position: fixed;
+         top: 0px;
+         left: 0px;
+         bottom: 0px;
+         width: 250px;
+-        background: #2C3E50;
+ 
+         display: flex;
+         flex-flow: column;
+@@ -28,22 +102,7 @@
+         padding: 5px;
+       }
+ 
+-      #sidebar button {
+-        background: #2C3E50;
+-        border: 0px;
+-        color: white;
+-        width: 40px;
+-        height: 40px;
+-        font-size: 16pt;
+-      }
+-
+-      #sidebar button:hover {
+-        background: #34495E;
+-      }
+-
+       #header {
+-        min-height: 40px;
+-        padding: 0px;
+       }
+ 
+       #pane {
+@@ -57,39 +116,44 @@
+         flex-direction: column;
+         min-height: 0px;
+       }
++    */
+     </style>
+ 
+-    <div id="sidebar">
+-      <div id="header">
+-        <open-file-button on-opened="{{openCompilation}}" data-title="Load Compilation Artifacts"><i class="fa fa-folder-open"></i></open-file-button>
+-        <template if="{{currentFiles != null}}">
+-          <button href="#" on-click="{{reloadCurrentFiles}}" title="Reload Current Files"><i class="fa fa-repeat"></i></button>
+-        </template>
+-        <!-- TODO(mraleph): enable profiles back.
+-        <template if="{{currentMode != null}}">
+-          <open-file-button><i class="fa fa-bolt"></i></open-file-button>
+-        </template>
+-        -->
+-        <spinner-element id="spinner"></spinner-element>
+-      </div>
++    <div class="header">
++      <open-file-button on-opened="{{openCompilation}}" data-title="Load Compilation Artifacts"><i class="fa fa-folder-open"></i></open-file-button>
++      <button href="#" on-click="{{reloadCurrentFiles}}" title="Reload Current Files" disabled="{{currentFiles == null}}"><i class="fa fa-repeat"></i></button>
++      <spinner-element id="spinner"></spinner-element>
++    </div>
+ 
+-      <method-list methods="{{currentMethods}}" on-selected="{{displayPhase}}"></method-list>
++    <div class="pane">
++      <div class="sidebar">
++        <method-list methods="{{currentMethods}}" on-selected="{{displayPhase}}">
++        </method-list>
++      </div>
++      <template if="{{ir != null}}">
++        <ir-pane id="ir-pane" ir="{{ir}}" codeMode="{{codeMode}}"></ir-pane>
++      </template>
+     </div>
+ 
++      <!--  -->
++
+     <div id="pane">
+       <template if="{{ir != null}}">
+-        <tab-pane disabled="{{ { 'source': currentMethod.sources.isEmpty  } }}">
+-          <div data-title="IR" data-href="ir">
+-            <ir-pane id="ir-pane" ir="{{ir}}" codeMode="{{codeMode}}"></ir-pane>
+-          </div>
+-          <div data-title="Graph" data-href="graph">
++
++
++        <!--
++          <div data-name="graph">
+             <graph-pane ir="{{ir}}" on-block-mouse-over="{{showBlockAction}}" on-block-mouse-out="{{hideBlockAction}}">
+             </graph-pane>
+           </div>
+-          <div data-title="Source" data-href="source">
+-              <source-pane id="source-pane" path="{{sourcePath}}" on-deopt-enter="{{enterDeoptAction}}" on-deopt-leave="{{leaveDeoptAction}}">
+-              </source-pane>
++          <div data-name="source">
++            <source-pane id="source-pane" path="{{sourcePath}}" on-deopt-enter="{{enterDeoptAction}}" on-deopt-leave="{{leaveDeoptAction}}">
++            </source-pane>
+           </div>
++         -->
++
++<!--
++        <tab-pane disabled="{{ { 'source': currentMethod.sources.isEmpty  } }}">
+           <span class="after-tabs" data-when="ir">
+             <template if="{{!ir.code.isEmpty}}">
+               <dropdown-element value="{{codeMode}}">
+@@ -108,6 +172,7 @@
+             </source-path>
+           </span>
+         </tab-pane>
++-->
+       </template>
+     </div>
+   </template>
+diff --git a/lib/src/ui/ir-pane.dart b/lib/src/ui/ir-pane.dart
+index 2c11e28..d42602d 100644
+--- a/lib/src/ui/ir-pane.dart
++++ b/lib/src/ui/ir-pane.dart
+@@ -100,6 +100,8 @@ class IRPane extends PolymerElement {
+   var makeValueRef;
+   var _renderTask;
+ 
++  @observable var blockRenderers = [];
++
+   IRPane.created() : super.created() {
+     makeBlockRef = xref.makeReferencer(rangeContentAsHtmlFull,
+                                        href,
+@@ -142,6 +144,11 @@ class IRPane extends PolymerElement {
+   codeModeChanged() => _renderTask.schedule();
+ 
+   render() {
++    final contexts = ir.mode.irs.map((irDesc) =>
++        new FormattingContext(irDesc, makeBlockRef, makeValueRef)).toList();
++    blockRenderers = ir.blocks.values.map((block) => new BlockRenderer(block, contexts)).toList();
++
++/*
+     final stopwatch = new Stopwatch()..start();
+     clear();
+ 
+@@ -252,6 +259,7 @@ class IRPane extends PolymerElement {
+     ir.deopts.forEach(_createDeoptMarkersAt);
+ 
+     print("IRPane.render() took ${stopwatch.elapsedMilliseconds}");
++*/
+   }
+ 
+   /** Create marker for [deopt] at the line corresponding to [deopt.lir.id]. */
+@@ -556,6 +564,131 @@ class _RefsPanel {
+   }
+ }
+ 
++class BlockRenderer {
++  final block;
++  final contexts;
++
++  BlockRenderer(this.block, this.contexts);
++
++  get length => block.hir.length + block.lir.length + 2;
++
++  generate() {
++    final rows = [];
++
++    formatOpcode(ctx, opcode) {
++      final element = span('boldy', opcode);
++      return element;
++    }
++
++    format(ctx, opcode, operands) =>
++      new SpanElement()..append(formatOpcode(ctx, opcode))
++                       ..appendText(" ")
++                       ..append(new SpanElement()..nodes.addAll(operands.map(ctx.format)));
++
++    add(gutter, text, {String id, String klass}) {
++      rows.add(makeRow(gutter, text, id: id, klass: klass));
++    }
++
++    addEx(ctx, id, opcode, operands) {
++      if (opcode == null) {
++        return;
++      }
++
++      if (id == null) {
++        id = "";
++      }
++
++      var ln = add(id, format(ctx, opcode, operands));
++      // ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
++      // ln.text.parentNode.classes.add("${ctx.ns}-line");
++    }
++
++    /** Output a [Branch] instruction. */
++    addBranch(ctx, instr) {
++      final ln = add(" ", new SpanElement()
++                    ..append(span("boldy", "if "))
++                    ..append(format(ctx, instr.op, instr.args))
++                    ..append(span("boldy", " goto "))
++                    ..appendText("(")
++                    ..appendText(instr.true_successor)  // TODO
++                    ..appendText(", ")
++                    ..appendText(instr.false_successor) // TODO
++                    ..appendText(")"));
++      // ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
++      // ln.text.parentNode.classes.add("${ctx.ns}-line");
++    }
++
++
++    final lastCtx = contexts.last;
++
++    // Block name.
++    add(" ", " ");
++    add(span('boldy', block.name), " ", id: block.name);
++
++    for (var ctx in contexts) {
++      final blockIr = ctx.ir(block);
++      if (blockIr.isEmpty) continue;
++
++      var branch = blockIr.last;
++      for (var index = 0; index < blockIr.length - 1; index++) {
++        final instr = blockIr[index];
++        addEx(ctx, instr.id, instr.op, instr.args);
++      }
++
++      if (branch is IR.Branch) {
++        addBranch(ctx, branch);
++      } else {
++        addEx(ctx, branch.id, branch.op, branch.args);
++      }
++    }
++
++    assert(rows.length == length);
++    print("${rows.length} vs ${length}");
++    return rows;
++  }
++
++  makeRow(gutter, text, {String id, String klass}) {
++    if (gutter is String && (id == null)) {
++      id = gutter;
++    }
++
++    // Wrap raw strings in Text element.
++    gutter = _wrapElement(gutter);
++    text = _wrapElement(text);
++
++    // First column content: gutter.
++    gutter = new Element.html("<pre/>")..append(
++        new AnchorElement()
++          ..id = "ir-${id}"
++          ..nodes.add(gutter));
++
++    // Second column content: text.
++    text = new Element.html("<pre/>")..nodes.add(text);
++
++    final row = new TableRowElement()
++      ..nodes.addAll([
++        new TableCellElement()..nodes.add(gutter),
++        new TableCellElement()..nodes.add(text)
++      ]);
++
++    if (klass != null) {
++      row.classes.add(klass);
++    }
++
++    // Append the row.
++    // _table.nodes.add(row);
++
++    // final line = new IRPaneLine(gutter, text);
++    // _lines.add(line);
++    // if (id != null) _ranges[id] = new _Range(_lines.length - 1);
++
++    // return line;
++
++    return row;
++  }
++
++}
++
+ /**
+  * Utility class that allows to splice disassembly into intermediate
+  * representation when displaying both.
+diff --git a/lib/src/ui/ir-pane.html b/lib/src/ui/ir-pane.html
+index f866bf0..613fa97 100644
+--- a/lib/src/ui/ir-pane.html
++++ b/lib/src/ui/ir-pane.html
+@@ -1,6 +1,7 @@
+ <!DOCTYPE html>
+ 
+ <polymer-element name="ir-pane">
++  <link rel="import" href="util/scrollable-table.html">
+   <template>
+     <style type='text/css' scoped>
+       /**
+@@ -10,10 +11,21 @@
+        * globally to style xref popup the same way and it is currently created
+        * by bootstrap from a raw HTML not a component.
+        */
++       @host {
++         *, :scope, ir-pane {
++           display: flex;
++           flex-flow: column;
++           overflow: hidden;
++           position: relative;
++         }
++       }
++
++       scrollable-table {
++         display: block;
++         flex: 1 1;
++       }
+     </style>
+-    <div style="display: inline-block; position: relative;">
+-      <table id="rows" class="irpane"></table>
+-    </div>
++    <scrollable-table sources="{{blockRenderers}}" height="20" class="irpane"></scrollable-table>
+   </template>
+   <script type="application/dart" src='ir-pane.dart'></script>
+ </polymer-element>
+\ No newline at end of file
+diff --git a/lib/src/ui/ir/ir-block.dart b/lib/src/ui/ir/ir-block.dart
+new file mode 100644
+index 0000000..7cc8480
+--- /dev/null
++++ b/lib/src/ui/ir/ir-block.dart
+@@ -0,0 +1,66 @@
++library ir_block;
++
++import 'dart:async' as async;
++import 'dart:math' as math;
++import 'dart:html';
++
++import 'package:irhydra/src/formatting.dart' as formatting;
++import 'package:irhydra/src/html_utils.dart' show toHtml, span;
++import 'package:irhydra/src/modes/ir.dart' as IR;
++import 'package:irhydra/src/modes/code.dart' as code;
++import 'package:irhydra/src/xref.dart' as xref;
++
++import 'package:js/js.dart' as js;
++
++import 'package:polymer/polymer.dart';
++
++class FormattingContext {
++  final _irDesc;
++  get ns => _irDesc.ns;
++  final makeBlockRef;
++  final makeValueRef;
++
++  FormattingContext(this._irDesc, this.makeBlockRef, this.makeValueRef);
++
++  ir(block) => _irDesc.from(block);
++
++  formatOperand(tag, text) => span("${ns}-${tag}", text);
++
++  format(operand) {
++    if (operand is String) {
++      return new Text(operand);
++    } else {
++      return operand.toHtml(this);
++    }
++  }
++}
++
++class Task {
++  final _callback;
++  var _task;
++
++  Task(this._callback);
++
++  schedule() {
++    if (_task == null) {
++      _task = new async.Timer(const Duration(milliseconds: 50), () {
++        _task = null;
++        _callback();
++      });
++    }
++  }
++}
++
++@CustomTag('ir-block')
++class IRBlock extends PolymerElement {
++  @published var generator;
++
++  IRBlock.created() : super.created();
++
++  enteredView() {
++    super.enteredView();
++    if (generator != null) {
++      shadowRoot.querySelector(".irpane").nodes.addAll(generator.generate());
++    }
++  }
++}
+diff --git a/lib/src/ui/ir/ir-block.html b/lib/src/ui/ir/ir-block.html
+new file mode 100644
+index 0000000..4a943c7
+--- /dev/null
++++ b/lib/src/ui/ir/ir-block.html
+@@ -0,0 +1,58 @@
++<!DOCTYPE html>
++
++<polymer-element name="ir-block">
++  <template>
++    <style type='text/css'>
++      .irpane {
++        font-family: monospace;
++      }
++
++      .irpane > tr > td:first-child,
++      .irpane > tbody > tr > td:first-child {
++        background-color: #F7F7F7;
++        border-right: 1px solid #EEE;
++        width: 5em;
++        color: #AAA;
++        text-align: right;
++        padding-right: 2px;
++      }
++
++      .irpane > tr > td:last-child,
++      .irpane > tbody > tr > td:last-child {
++        padding-left: 2px;
++        background-color: white;
++        color: #333;
++        text-align: left;
++      }
++
++      .irpane pre {
++        -moz-border-radius: 0;
++        -webkit-border-radius: 0;
++        -o-border-radius: 0;
++        border-radius: 0;
++        border-width: 0;
++        margin: 0;
++        padding: 0;
++        background: transparent;
++        font-family: inherit;
++        font-size: inherit;
++        word-wrap: normal;
++        color: inherit;
++      }
++
++      .irpane,
++      .irpane > tr,
++      .irpane > tr > td,
++      .irpane > tbody > tr,
++      .irpane > tbody > tr > td {
++        margin: 0px;
++        padding: 0px;
++        outline: 0px;
++        border-spacing: 0px;
++        border-collapse: collapse;
++      }
++    </style>
++    <table class="irpane"></table>
++  </template>
++  <script type="application/dart" src='ir-block.dart'></script>
++</polymer-element>
+diff --git a/lib/src/ui/method-list.html b/lib/src/ui/method-list.html
+index 9a85e11..c00f351 100644
+--- a/lib/src/ui/method-list.html
++++ b/lib/src/ui/method-list.html
+@@ -137,6 +137,11 @@
+     </style>
+ 
+     <div class="method-list">
++      <div class="method-list-footer">
++        <input type="text" placeholder="Filter methods" on-key-up="{{filterUpdated}}" on-changed="{{filterChanged}}" value="{{filter}}">
++        <input type="checkbox" class="toggle" checked="{{sortByDeopts}}" data-title="Sort by deopts">
++      </div>
++
+       <div class="method-list-methods">
+         <ul class="nav nav-list">
+           <template repeat="{{method in filteredMethods | enumerate }}">
+@@ -163,11 +168,6 @@
+           </template>
+         </ul>
+       </div>
+-
+-      <div class="method-list-footer">
+-        <input type="text" placeholder="Filter methods" on-key-up="{{filterUpdated}}" on-changed="{{filterChanged}}" value="{{filter}}">
+-        <input type="checkbox" class="toggle" checked="{{sortByDeopts}}" data-title="Sort by deopts">
+-      </div>
+     </div>
+   </template>
+   <script src="method-list.dart" type="application/dart"></script>
+diff --git a/lib/src/ui/util/scrollable-table.dart b/lib/src/ui/util/scrollable-table.dart
+new file mode 100644
+index 0000000..b328256
+--- /dev/null
++++ b/lib/src/ui/util/scrollable-table.dart
+@@ -0,0 +1,194 @@
++// Copyright 2014 Google Inc. All Rights Reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++library scrollable_table;
++
++import 'dart:math';
++import 'dart:html';
++import 'package:polymer/polymer.dart';
++
++/**
++ * A Polymer click counter element.
++ */
++@CustomTag('scrollable-table')
++class ScrollableTable extends PolymerElement {
++  final applyAuthorStyles = true;
++
++  ScrollableTable.created() : super.created();
++
++  @published var height = 20;
++  @published var sources = [];
++  final chunks = [];
++
++  var prefixStart, activeStart, activeEnd, suffixEnd;
++
++  Element get table => $['rows'];
++
++  _initialize() {
++    chunks.clear();
++    table.nodes.clear();
++
++    if (sources.isEmpty) {
++      return;
++    }
++
++    var start = 0;
++    for (var index = 0; index < sources.length; index++) {
++      chunks.add(new Chunk(start, sources[index]));
++      start = chunks.last.end + 1;
++    }
++
++    final p = $["container"];
++    final top = p.scrollTop;
++    final bottom = p.getBoundingClientRect().height + p.scrollTop;
++
++    final firstVisible = top ~/ height;
++    final lastVisible = bottom ~/ height;
++    prefixStart = activeStart = activeEnd = suffixEnd = 0;
++
++    while (activeEnd < chunks.length - 1 && chunks[activeEnd].end < lastVisible) {
++      activeEnd++;
++    }
++
++    suffixEnd = activeEnd;
++
++    final nodes = [];
++    for (var i = activeStart; i <= activeEnd; i++) {
++      nodes.addAll(chunks[i].generate());
++    }
++    table.nodes.addAll(nodes);
++
++    pump();
++  }
++
++  pump() {
++    pumpPrefix();
++    pumpSuffix();
++
++    final ephemeralPrefix = prefixStart == 0 ? 0 : chunks.getRange(0, prefixStart).fold(0, (val, chunk) => val + chunk.length);
++    final ephemeralSuffix = activeEnd == chunks.length - 1 ? 0 : chunks.getRange(activeEnd + 1, chunks.length).fold(0, (val, chunk) => val + chunk.length);
++
++    table.style.marginTop = "${ephemeralPrefix * height}px";
++    table.style.marginBottom = "${ephemeralSuffix * height}px";
++  }
++
++  pumpPrefix() {
++    var prefixLength = activeStart - prefixStart;
++    if (prefixLength > 3) {
++      // destroy first chunks
++      destroyChunks(prefixStart, activeStart - 4);
++      prefixStart = activeStart - 3;
++    } else if (prefixLength < 3 && prefixStart > 0) {
++      // load more chunks
++      insertChunks(max(0, prefixStart - 3 + prefixLength), prefixStart - 1);
++      prefixStart = max(0, prefixStart - 3 + prefixLength);
++    }
++  }
++
++  pumpSuffix() {
++    var suffixLength = suffixEnd - activeEnd;
++    if (suffixLength > 3) {
++      destroyChunks(activeEnd + 4, suffixEnd);
++      suffixEnd = activeEnd + 3;
++    } else if (suffixLength < 3 && suffixEnd < chunks.length - 1) {
++      insertChunks(suffixEnd + 1, min(chunks.length - 1, suffixEnd + 3 - suffixLength));
++      suffixEnd = min(chunks.length - 1, suffixEnd + 3 - suffixLength);
++    }
++  }
++
++  destroyChunks(from, to) {
++    final totalRows = chunks.getRange(from, to + 1)
++                             .fold(0, (val, chunk) => val + chunk.length);
++
++    if (from == prefixStart) {
++      final t = table;
++      for (var i = 0; i < totalRows; i++) {
++        t.nodes.remove(t.firstChild);
++      }
++    } else {
++      assert(to == suffixEnd);
++      final t = table;
++      for (var i = 0; i < totalRows; i++) {
++        t.nodes.remove(t.lastChild);
++      }
++    }
++  }
++
++  insertChunks(from, to) {
++    final nodes = [];
++    for (var i = from; i <= to; i++) {
++      nodes.addAll(chunks[i].generate());
++    }
++
++    if (to == prefixStart - 1) {
++      table.nodes.insertAll(0, nodes);
++    } else {
++      assert(from == suffixEnd + 1);
++      table.nodes.addAll(nodes);
++    }
++  }
++
++  enteredView() {
++    super.enteredView();
++
++    var p = $["container"];
++    p.onScroll.listen((event) {
++      if (chunks.isEmpty) {
++        return;
++      }
++
++      final top = p.scrollTop;
++      final bottom = p.getBoundingClientRect().height + p.scrollTop;
++
++      final firstVisible = top ~/ height;
++      final lastVisible = bottom ~/ height;
++
++      while (chunks[activeStart].end < firstVisible) {
++        activeStart++;
++      }
++
++      while (activeStart > 0 && chunks[activeStart].start > firstVisible) {
++        activeStart--;
++      }
++
++      while (chunks[activeEnd].start > lastVisible) {
++        activeEnd--;
++      }
++
++      while (activeEnd < chunks.length - 1 && chunks[activeEnd].end < lastVisible) {
++        activeEnd++;
++      }
++
++      pump();
++    });
++  }
++
++  sourcesChanged() {
++    _initialize();
++  }
++}
++
++class Chunk {
++  final start;
++  final source;
++
++  Chunk(this.start, this.source);
++
++  toString() => "(${start}, ${end})";
++
++  get end => start + source.length - 1;
++  get length => source.length;
++
++  generate() => source.generate();
++}
+diff --git a/lib/src/ui/util/scrollable-table.html b/lib/src/ui/util/scrollable-table.html
+new file mode 100644
+index 0000000..f0e5abf
+--- /dev/null
++++ b/lib/src/ui/util/scrollable-table.html
+@@ -0,0 +1,40 @@
++<polymer-element name="scrollable-table">
++  <template>
++    <style>
++       @host {
++         *, :scope, scrollable-table {
++           display: flex;
++           overflow: hidden;
++           position: relative;
++           flex-flow: column;
++         }
++       }
++
++      :host {
++        display: block;
++        overflow: hidden;
++        position: relative;
++      }
++
++      #container {
++        position: absolute;
++        top: 0;
++        bottom: 0;
++        left: 0;
++        right: 0;
++        overflow: auto;
++      }
++
++      /*
++      #rows {
++        width: 100%;
++      }
++      */
++    </style>
++    <div id="container">
++      <div id="rows"></div>
++    </div>
++  </template>
++  <script type="application/dart" src="scrollable-table.dart"></script>
++</polymer-element>
++
+diff --git a/web/css/irpane.css b/web/css/irpane.css
+index 1c8e889..97635f0 100644
+--- a/web/css/irpane.css
++++ b/web/css/irpane.css
+@@ -1,52 +1,3 @@
+-.irpane {
+-  font-family: monospace;
+-}
+-
+-.irpane > tr > td:first-child,
+-.irpane > tbody > tr > td:first-child {
+-  background-color: #F7F7F7;
+-  border-right: 1px solid #EEE;
+-  min-width: 4em;
+-  color: #AAA;
+-  text-align: right;
+-  padding-right: 2px;
+-}
+-
+-.irpane > tr > td:last-child,
+-.irpane > tbody > tr > td:last-child {
+-  padding-left: 2px;
+-  background-color: white;
+-  color: #333;
+-  text-align: left;
+-}
+-
+-.irpane pre {
+-  -moz-border-radius: 0;
+-  -webkit-border-radius: 0;
+-  -o-border-radius: 0;
+-  border-radius: 0;
+-  border-width: 0;
+-  margin: 0;
+-  padding: 0;
+-  background: transparent;
+-  font-family: inherit;
+-  font-size: inherit;
+-  word-wrap: normal;
+-  color: inherit;
+-}
+-
+-.irpane,
+-.irpane > tr,
+-.irpane > tr > td,
+-.irpane > tbody > tr,
+-.irpane > tbody > tr > td {
+-  margin: 0px;
+-  padding: 0px;
+-  outline: 0px;
+-  border-spacing: 0px;
+-  border-collapse: collapse;
+-}
+-
+ /** Styles for the floating panel used to display references. */
+ .irpane-refs {
+   position: fixed;
+diff --git a/web/index.html b/web/index.html
+index ef56ea3..36c9be7 100644
+--- a/web/index.html
++++ b/web/index.html
+@@ -53,7 +53,7 @@
+         <p class="lead">This is an <span class="alpha-warning">alpha preview</span> of the tool that can display intermediate representations used by V8 and Dart VM optimizing compilers.</p>
+         <p>Originally it was intended for compiler developers but since release of the first version has been used by JavaScript/Dart developers investigating performance of their applications.</p>
+         <p>If it's you first time trying IRHydra consider watching the following screencast showcasing its main features:</p>
+-        <p><iframe width="560" height="315" src="https://www.youtube.com/embed/y8hVeKMD_oM" frameborder="0" allowfullscreen></iframe></p>
++        <p><!-- <iframe width="560" height="315" src="https://www.youtube.com/embed/y8hVeKMD_oM" frameborder="0" allowfullscreen></iframe> --></p>
+         <h2>Demos</h2>
+         <p>Try clicking on the links below to explore features that IRHydra provides. Each link loads compilation artifacts collected from a single V8 or Dart VM run on a given source file.</p>
+         <ul>

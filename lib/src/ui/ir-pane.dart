@@ -65,6 +65,7 @@ class FormattingContext {
 class IRPane extends PolymerElement {
   static const CODE_MODES = const ['split', 'inline', 'none'];
 
+  @observable var blockRenderers = [];
   @published var codeMode;
   @published var ir;
 
@@ -75,7 +76,7 @@ class IRPane extends PolymerElement {
   final Map<String, _Range> _ranges = new Map<String, _Range>();
 
   /** Root [TableElement] */
-  TableElement _table;
+  var _table;
 
   var makeBlockRef;
   var makeValueRef;
@@ -125,11 +126,63 @@ class IRPane extends PolymerElement {
   codeModeChanged() => _renderTask.schedule();
 
   render() {
+    print("here");
     final stopwatch = new Stopwatch()..start();
     clear();
 
     if (ir == null) {
       return;
+    }
+
+    blockRenderers = ir.blocks.values.map((block) {
+      return new BlockRenderer(block.hir.length + block.lir.length + 2, () => renderBlock(ir, block));
+    }).toList();
+
+    print("IRPane.render() took ${stopwatch.elapsedMilliseconds}");
+  }
+
+  renderBlock(ir, block) {
+    final result = [];
+    IRPaneLine add(gutter, text, {String id, String klass}) {
+      if (gutter is String && (id == null)) {
+        id = gutter;
+      }
+
+      // Wrap raw strings in Text element.
+      gutter = _wrapElement(gutter);
+      text = _wrapElement(text);
+
+      // First column content: gutter.
+      gutter = new Element.html("<pre/>")..append(
+          new AnchorElement()
+            ..id = href(id)
+            ..nodes.add(gutter)
+            ..onClick.listen((event) {
+              if (id != null) showRefsTo(id);
+            }));
+
+
+      // Second column content: text.
+      text = new Element.html("<pre/>")..nodes.add(text);
+
+      final row = new TableRowElement()
+        ..nodes.addAll([
+          new TableCellElement()..nodes.add(gutter),
+          new TableCellElement()..nodes.add(text)
+        ]);
+
+      if (klass != null) {
+        row.classes.add(klass);
+      }
+
+      // Append the row.
+      result.add(row);
+
+      final line = new IRPaneLine(gutter, text);
+      // _lines.add(line);
+      // if (id != null) _ranges[id] = new _Range(_lines.length - 1);
+
+      return line;
     }
 
     formatOpcode(ctx, opcode) {
@@ -187,54 +240,38 @@ class IRPane extends PolymerElement {
       }
     }
 
+    // Block name.
+    add(" ", " ");
+    add(span('boldy', block.name), " ", id: block.name);
 
-    if (codeMode != 'none') {
-      ir.code.prologue.forEach(codeRenderer.display);
-    }
+    for (var ctx in contexts) {
+      final blockIr = ctx.ir(block);
+      if (blockIr.isEmpty) continue;
 
-    for (var block in ir.blocks.values) {
-      // Block name.
-      add(" ", " ");
-      add(span('boldy', block.name), " ", id: block.name);
-
-      for (var ctx in contexts) {
-        final blockIr = ctx.ir(block);
-        if (blockIr.isEmpty) continue;
-
-        var branch = blockIr.last;
-        for (var index = 0; index < blockIr.length - 1; index++) {
-          final instr = blockIr[index];
-          addEx(ctx, instr.id, instr.op, instr.args);
-          emitInlineCode(ctx, instr);
-        }
-
-        if (branch is IR.Branch) {
-          addBranch(ctx, branch);
-        } else {
-          addEx(ctx, branch.id, branch.op, branch.args);
-        }
-        emitInlineCode(ctx, branch);
+      var branch = blockIr.last;
+      for (var index = 0; index < blockIr.length - 1; index++) {
+        final instr = blockIr[index];
+        addEx(ctx, instr.id, instr.op, instr.args);
+        emitInlineCode(ctx, instr);
       }
 
-      if (codeMode == 'split') {
-        for (var instr in lastCtx.ir(block)) {
-          if (instr.code != null) {
-            instr.code.forEach(codeRenderer.display);
-          }
+      if (branch is IR.Branch) {
+        addBranch(ctx, branch);
+      } else {
+        addEx(ctx, branch.id, branch.op, branch.args);
+      }
+      emitInlineCode(ctx, branch);
+    }
+
+    if (codeMode == 'split') {
+      for (var instr in lastCtx.ir(block)) {
+        if (instr.code != null) {
+          instr.code.forEach(codeRenderer.display);
         }
       }
-
-      createRange(block.name);
     }
 
-    if (codeMode != 'none') {
-      add(" ", " ");
-      ir.code.epilogue.forEach(codeRenderer.display);
-    }
-
-    ir.deopts.forEach(_createDeoptMarkersAt);
-
-    print("IRPane.render() took ${stopwatch.elapsedMilliseconds}");
+    return result;
   }
 
   /** Create marker for [deopt] at the line corresponding to [deopt.lir.id]. */
@@ -641,4 +678,11 @@ class CodeRenderer {
 
   /** Wrap text into `em` tag. */
   static _em(text) => new Element.tag('em')..appendText(text);
+}
+
+class BlockRenderer {
+  final length;
+  final generate;
+
+  BlockRenderer(this.length, this.generate);
 }

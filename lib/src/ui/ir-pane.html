@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <polymer-element name="ir-pane">
+  <link rel="import" href="util/scrollable-table.html">
   <template>
     <style type='text/css' scoped>
       /**
@@ -12,7 +13,8 @@
        */
     </style>
     <div style="display: inline-block; position: relative;">
-      <table id="rows" class="irpane"></table>
+      <!-- <table id="rows" class="irpane"></table> -->
+      <scrollable-table id="rows" sources="{{blockRenderers}}"></scrollable-table>
     </div>
   </template>
   <script type="application/dart" src='ir-pane.dart'></script>

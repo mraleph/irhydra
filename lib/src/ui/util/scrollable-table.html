@@ -1,0 +1,39 @@
+<polymer-element name="scrollable-table">
+  <template>
+    <style>
+       @host {
+         *, :scope, scrollable-table {
+           display: flex;
+           overflow: hidden;
+           position: relative;
+           flex-flow: column;
+         }
+       }
+
+      :host {
+        display: block;
+        overflow: hidden;
+        position: relative;
+      }
+
+      #container {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow: auto;
+      }
+
+      /*
+      #rows {
+        width: 100%;
+      }
+      */
+    </style>
+    <div id="container">
+      <div id="rows"></div>
+    </div>
+  </template>
+  <script type="application/dart" src="scrollable-table.dart"></script>
+</polymer-element>
