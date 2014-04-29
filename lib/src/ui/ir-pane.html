@@ -2,14 +2,11 @@
 
 <polymer-element name="ir-pane">
   <template>
-    <style type='text/css' scoped>
-      /**
-       * Styles are in web/css/irpane.css.
-       *
-       * Not using scoped style for now because we need classes be visible
-       * globally to style xref popup the same way and it is currently created
-       * by bootstrap from a raw HTML not a component.
-       */
+    <link rel="stylesheet" href="css/irpane.css" type="text/css">
+    <link rel="stylesheet" href="css/hydra.css" type="text/css">
+
+    <style type='text/css' >
+
     </style>
     <div style="display: inline-block; position: relative;">
       <table id="rows" class="irpane"></table>

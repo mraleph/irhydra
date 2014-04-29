@@ -2,6 +2,74 @@
 <polymer-element name="source-pane" attributes="method path">
   <link rel="import" href="code-mirror.html">
   <template>
+    <style>
+      /* TODO(mraleph): fix combinator */
+      code-mirror ^ .line-dead {
+        opacity: 0.2;
+      }
+
+      /* TODO(mraleph): fix combinator */
+      code-mirror ^ .line-licm {
+        background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAICAYAAADA+m62AAAAPUlEQVQYV2NkQAMfj/D/57f5yIgujiIAU4RNMVwhuiQ6H6wQl3XI4oy4FMHcCJPHcDS6J2A2EqUQpJhohQB77CbMiYyfvgAAAABJRU5ErkJggg==) repeat;
+      }
+
+      code-mirror ^ .inline-marker {
+  	    cursor: pointer;
+  	    z-index: 1000;
+  	    color: #428bca;
+  	  }
+
+      code-mirror ^ .inline-marker:hover {
+        color: #2a6496;
+      }
+
+      code-mirror ^ .fa {
+        display: inline-block;
+        font-family: FontAwesome;
+        font-style: normal;
+        font-weight: normal;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      code-mirror ^ .fa-chevron-circle-down:before {
+        content: "\f13a";
+      }
+
+      code-mirror ^ .fa-warning:before {
+        content: "\f071";
+      }
+
+      code-mirror ^ .deopt-bookmark {
+        cursor: pointer;
+        z-index: 1000;
+      }
+
+      code-mirror ^ .deopt-bookmark-eager {
+        color: #C0392B;
+      }
+
+      code-mirror ^ .deopt-bookmark-eager:hover {
+        color: #E74C3C;
+      }
+
+      code-mirror ^ .deopt-bookmark-lazy {
+        color: #F39C12;
+      }
+
+      code-mirror ^ .deopt-bookmark-lazy:hover {
+        color: #F1C40F;
+      }
+
+      code-mirror ^ .deopt-bookmark-soft {
+        color: #8E44AD;
+      }
+
+      code-mirror ^ .deopt-bookmark-soft:hover {
+        color: #9B59B6;
+      }
+    </style>
     <code-mirror id="editor" lines="{{source}}" widgets="{{widgets}}" lineClasses="{{lineClasses}}">
     </code-mirror>
   </template>

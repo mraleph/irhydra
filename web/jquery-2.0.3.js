@@ -8602,9 +8602,9 @@ jQuery.fn.offset = function( options ) {
 	docElem = doc.documentElement;
 
 	// Make sure it's not a disconnected DOM node
-	if ( !jQuery.contains( docElem, elem ) ) {
-		return box;
-	}
+	// if ( !jQuery.contains( docElem, elem ) ) {
+	//	return box;
+	// }
 
 	// If we don't have gBCR, just use 0,0 rather than error
 	// BlackBerry 5, iOS 3 (original iPhone)

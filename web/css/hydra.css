@@ -106,45 +106,6 @@ span.lir-env, span.lir-map { display: none; }
   margin-bottom: 500px;
 }
 
-.inline-marker {
-  cursor: pointer;
-  z-index: 1000;
-  color: #428bca;
-}
-
-.inline-marker:hover {
-  color: #2a6496;
-}
-
-.deopt-bookmark {
-  cursor: pointer;
-  z-index: 1000;
-}
-
-.deopt-bookmark-eager {
-  color: #C0392B;
-}
-
-.deopt-bookmark-eager:hover {
-  color: #E74C3C;
-}
-
-.deopt-bookmark-lazy {
-  color: #F39C12;
-}
-
-.deopt-bookmark-lazy:hover {
-  color: #F1C40F;
-}
-
-.deopt-bookmark-soft {
-  color: #8E44AD;
-}
-
-.deopt-bookmark-soft:hover {
-  color: #9B59B6;
-}
-
 .popover.deopt > .popover-content > pre {
   font-size: 0.7em;
 }
@@ -226,10 +187,15 @@ h4.deopt-header-soft > .first-word {
   background: inherit;
 }
 
-.line-dead {
-  opacity: 0.2;
-}
-
-.line-licm {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAICAYAAADA+m62AAAAPUlEQVQYV2NkQAMfj/D/57f5yIgujiIAU4RNMVwhuiQ6H6wQl3XI4oy4FMHcCJPHcDS6J2A2EqUQpJhohQB77CbMiYyfvgAAAABJRU5ErkJggg==) repeat;
+.label {
+  display: inline;
+  padding: .2em .6em .3em;
+  font-size: 75%;
+  font-weight: bold;
+  line-height: 1;
+  color: #ffffff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25em;
 }
