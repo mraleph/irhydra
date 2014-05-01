@@ -22,17 +22,17 @@
     });
     </script>
 
-    <link href='http://fonts.googleapis.com/css?family=Oswald:400,700' rel='stylesheet' type='text/css'>
-    <link href='http://fonts.googleapis.com/css?family=Lato:400,700,900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Oswald:400,700' type='text/css'>
+    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Lato:400,700,900' type='text/css'>
 
-    <link type="text/css" href="css/irpane.css" rel="stylesheet" >
-    <link type="text/css" href="css/hydra.css" rel="stylesheet" >
+    <link rel="stylesheet" href="web/css/irpane.css">
+    <link rel="stylesheet" href="css/hydra.css">
 
-    <link href="deps/fa/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="deps/fa/css/font-awesome.min.css">
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
 
-    <script type="text/javascript" src="deps/spin.min.js"></script>
+    <script src="deps/spin.min.js"></script>
 
     <script src="deps/esprima.js"></script>
     <script src="deps/estraverse.js"></script>
@@ -40,6 +40,7 @@
     <script src="jquery-2.0.3.js"></script>
     <script src="bootstrap/js/bootstrap.js"></script>
 
+    <link rel="import" href="packages/polymer/polymer.html">
     <link rel="import" href="packages/irhydra/src/ui/hydra.html">
   </head>
 
@@ -133,7 +134,6 @@
     </script>
     <hydra-app></hydra-app>
 
-    <script type="application/dart">export "package:polymer/init.dart";</script>
     <script src="packages/browser/dart.js"></script>
   </body>
 </html>

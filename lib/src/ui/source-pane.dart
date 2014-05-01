@@ -17,7 +17,7 @@ library source_pane;
 import 'dart:html' as html;
 
 import 'package:irhydra/src/modes/ir.dart' as IR;
-import 'package:irhydra/src/ui/code-mirror.dart' as code_mirror;
+import 'package:irhydra/src/ui/util/code-mirror/code-mirror.dart' as code_mirror;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 

@@ -85,6 +85,15 @@ class HydraElement extends PolymerElement {
 
   closeSplash() {
     js.context.DESTROY_SPLASH();
+
+    try {
+      for (var style in document.querySelectorAll("body /deep/ style")) {
+        style.text = style.text.replaceAll(" ^ ", "::shadow ")
+                               .replaceAll(" ^^ ", " /deep/ ");
+      }
+    } catch (e) {
+      // Ignore.
+    }
   }
 
   displayPhase(a, phaseAndMethod, b) {

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<polymer-element name="source-pane" attributes="method path">
-  <link rel="import" href="code-mirror.html">
+<polymer-element name="source-pane">
+  <link rel="import" href="util/code-mirror/code-mirror.html">
   <template>
     <style>
       /* TODO(mraleph): fix combinator */
@@ -73,5 +73,5 @@
     <code-mirror id="editor" lines="{{source}}" widgets="{{widgets}}" lineClasses="{{lineClasses}}">
     </code-mirror>
   </template>
-  <script type="application/dart" src='source-pane.dart'></script>
+  <script type="application/dart;component=1" src='source-pane.dart'></script>
 </polymer-element>
