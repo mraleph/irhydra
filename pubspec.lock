@@ -48,7 +48,7 @@ packages:
   polymer:
     description: polymer
     source: hosted
-    version: "0.10.0-pre.9"
+    version: "0.10.0-pre.10"
   polymer_expressions:
     description: polymer_expressions
     source: hosted
