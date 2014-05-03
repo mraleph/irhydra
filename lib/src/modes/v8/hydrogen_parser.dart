@@ -265,7 +265,7 @@ class CfgParser extends parsing.ParserBase {
       r"begin_locals": {  // Block phis.
         r"end_locals": () => leave(),
 
-        r"^\s+\d+\s+(\w\d+)\s+(.*)$": (id, args) {
+        r"^\s+\-?\d+\s+(\w\d+)\s+(.*)$": (id, args) {
           final raw = " 0 0 $id Phi $args <|@";
           block.hir.add(new IR.Instruction(id, "Phi", hirOperands(args, context: id)));
         }
