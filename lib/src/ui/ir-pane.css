@@ -114,3 +114,86 @@ a:focus {
   outline-offset: -2px;
 }
 
+pre {
+  white-space: pre;
+}
+
+.boldy {
+  font-weight: bold;
+  line-height: 18px !important;
+}
+
+.hir-constant,
+.native-code-constant {
+  color: purple;
+}
+
+.hir-range,
+.hir-type, 
+.hir-changes, 
+.lir-env,
+.lir-map {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.hir-changes-all {
+  color: red;
+}
+
+.lir-env,
+.lir-map {
+  display: none;
+}
+
+.lir-line {
+  background: rgba(125, 167, 217, 0.15) !important;
+}
+
+.native-code > td {
+  background: rgba(125, 167, 217, 0.05) !important;
+  font-size: 0.9em;
+}
+
+.label {
+  display: inline;
+  padding: .2em .6em .3em;
+  font-size: 75%;
+  font-weight: bold;
+  line-height: 1;
+  color: #ffffff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25em;
+}
+
+.deopt-marker,
+.deopt-marker:hover {
+  color: white;
+  cursor: pointer;
+}
+
+.deopt-marker-eager {
+  background-color: #C0392B;
+}
+
+.deopt-marker-eager:hover {
+  background-color: #E74C3C;
+}
+
+.deopt-marker-lazy {
+  background-color: #F39C12;
+}
+
+.deopt-marker-lazy:hover {
+  background-color: #F1C40F;
+}
+
+.deopt-marker-soft {
+  background-color: #8E44AD;
+}
+
+.deopt-marker-soft:hover {
+  background-color: #9B59B6;
+}
+

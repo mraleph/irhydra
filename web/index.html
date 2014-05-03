@@ -2,30 +2,15 @@
 
 <html>
   <head>
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-    <script>
-    // Provide a getTag hook to ensure that Shadow DOM polyfill wrappers
-    // are unwrapped before applying getTag to it. This ensures that
-    // correct interceptor is used.
-    (dartNativeDispatchHooksTransformer =
-      window.dartNativeDispatchHooksTransformer || []).push(function (hooks) {
-      var getTag = hooks.getTag;
-      hooks.getTag = function (obj) {
-        // Unwrap Shadow DOM polyfill wrapper.
-        if (obj.constructor.name === "GeneratedWrapper") {
-          return getTag(obj.impl);
-        }
+    <link rel="import" href="packages/polymer/polymer.html">
+    <link rel="import" href="packages/irhydra/src/ui/hydra.html">
 
-        return getTag(obj);
-      };
-      return hooks;
-    });
-    </script>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 
     <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Oswald:400,700' type='text/css'>
     <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Lato:400,700,900' type='text/css'>
 
-    <link rel="stylesheet" href="css/irpane.css">
+    <link rel="stylesheet" href="packages/irhydra/src/ui/ir-pane.css">
     <link rel="stylesheet" href="css/hydra.css">
 
     <link rel="stylesheet" href="deps/fa/css/font-awesome.min.css">
@@ -39,9 +24,6 @@
 
     <script src="jquery-2.0.3.js"></script>
     <script src="bootstrap/js/bootstrap.js"></script>
-
-    <link rel="import" href="packages/polymer/polymer.html">
-    <link rel="import" href="packages/irhydra/src/ui/hydra.html">
   </head>
 
   <body>
@@ -133,7 +115,5 @@
       }
     </script>
     <hydra-app></hydra-app>
-
-    <script src="packages/browser/dart.js"></script>
   </body>
 </html>
