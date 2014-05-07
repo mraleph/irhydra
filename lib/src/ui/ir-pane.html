@@ -2,10 +2,26 @@
 
 <polymer-element name="ir-pane">
   <template>
-    <link rel="stylesheet" href="ir-pane.css" type="text/css">
+    <link rel="stylesheet" type="text/css" href="ir-pane.css">
+    <link rel="stylesheet" type="text/css" href="prettify.css">
+    <style>
+      .src-range-transparent { opacity: 0.3; }
+      .src-range-point {
+        position: relative;
+      }
+      .src-range-point::before {
+        position: absolute;
+        left: 0.0em;
+        top: 0.8em;
+        content: "^";
+        font-weight: 900;
+        color: gold;
+      }
+    </style>
     <div style="display: inline-block; position: relative;">
       <table id="rows" class="irpane"></table>
     </div>
   </template>
   <script type="application/dart;component=1" src='ir-pane.dart'></script>
+  <script src="prettify.js"></script>
 </polymer-element>

@@ -44,7 +44,7 @@ class Mode extends BaseMode {
     final blocks = ir_parser.parse(phase.ir);
     final code = code_parser.parse(phase.code);
     _attachCode(blocks, code);
-    return new ir.ParsedIr(this, blocks, code, method.deopts);
+    return new ir.ParsedIr(method, this, blocks, code, method.deopts);
   }
 
   _attachCode(blocks, code) {

@@ -146,10 +146,29 @@ class IRPane extends PolymerElement {
       new SpanElement()..append(formatOpcode(ctx, opcode))
                        ..appendText(" ")
                        ..append(new SpanElement()..nodes.addAll(operands.map(ctx.format)));
-
+    
     addEx(ctx, id, opcode, operands) {
       if (opcode == null) {
         return;
+      }
+
+      if (ir.method.srcMapping != null) {
+        var srcLine = ir.method.srcMapping[id];
+        if (srcLine != null) {
+          var start = srcLine.str.substring(0, srcLine.range.start);
+          var rangeStart = srcLine.str.substring(srcLine.range.start, srcLine.column);
+          var rangeMiddle = srcLine.str.substring(srcLine.column, srcLine.column + 1);
+          var rangeEnd = srcLine.str.substring(srcLine.column + 1, srcLine.range.end);
+          var end   = srcLine.str.substring(srcLine.range.end);
+          var el = new Element.html(js.context.prettyPrintOne(toHtml(
+              new PreElement()
+                ..append(span('src-range-transparent', start))
+                ..appendText(rangeStart)
+                ..append(span('src-range-point', rangeMiddle))
+                ..appendText(rangeEnd)
+                ..append(span('src-range-transparent', end)))));
+          add("", el);
+        }
       }
 
       if (id == null) {

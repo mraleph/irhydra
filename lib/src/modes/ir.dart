@@ -116,6 +116,12 @@ class SourcePosition {
 
   SourcePosition(this.inlineId, this.position);
 
+  operator == (other) =>
+    inlineId == other.inlineId && position == other.position;
+
+  get hashCode =>
+    other.inlineId.hashCode + other.position.hashCode;
+
   toString() => "<${inlineId}:${position}>";
 }
 
@@ -170,16 +176,19 @@ class Method {
   get hasSinglePhase => phases.length == 1;
   get worstDeopt => Deopt.worstType(deopts);
 
+  var srcMapping;
+
   Method(this.name, {this.optimizationId});
 }
 
 class ParsedIr {
+  final method;
   final mode;
   final Map<String, Block> blocks;
   final code;
   final deopts;
 
-  ParsedIr(this.mode, this.blocks, this.code, this.deopts);
+  ParsedIr(this.method, this.mode, this.blocks, this.code, this.deopts);
 }
 
 /** Block in the control flow graph. */
