@@ -177,6 +177,7 @@ class Method {
   get worstDeopt => Deopt.worstType(deopts);
 
   var srcMapping;
+  var interesting;
 
   Method(this.name, {this.optimizationId});
 }

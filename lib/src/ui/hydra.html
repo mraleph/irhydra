@@ -14,18 +14,16 @@
 <polymer-element name="hydra-app">
   <template>
     <style>
-      @host {
-         *, :scope, scrollable-table {
-           position: fixed;
-           left: 0px;
-           right: 0px;
-           top: 0px;
-           bottom: 0px;
-           display: -webkit-flex;
-           display: flex;
-           -webkit-flex-flow: column;
-           flex-flow: column;
-         }
+      :host {
+        position: fixed;
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-flow: column;
+        flex-flow: column;
       }
 
       .header {
@@ -279,7 +277,7 @@
         <template if="{{ir != null}}">
           <switching-scope active="{{activeTab}}" class="panes">
             <div when-ir>
-              <ir-pane id="ir-pane" ir="{{ir}}" codeMode="{{codeMode}}"></ir-pane>
+              <ir-pane id="ir-pane" ir="{{ir}}" codeMode="{{codeMode}}" showSource="{{showSource}}"></ir-pane>
             </div>
             <div when-graph>
               <graph-pane ir="{{ir}}" on-block-mouse-over="{{showBlockAction}}" on-block-mouse-out="{{hideBlockAction}}">

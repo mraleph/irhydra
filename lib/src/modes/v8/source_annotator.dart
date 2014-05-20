@@ -202,19 +202,22 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
 
     final range = rangeOf(srcPos);
     if (range == null) {
-      return line;
+      return new RangedLine(line, new _Range(0, line.length), columnNum(srcPos));
     }
 
     final startLn = lineNum(new IR.SourcePosition(srcPos.inlineId, range.start));
     final endLn = lineNum(new IR.SourcePosition(srcPos.inlineId, range.end));
 
-    var chRange = null;
-    if (startLn == lineNo && (endLn == lineNo || endLn == lineNo + 1)) {
-      final startCh = columnNum(new IR.SourcePosition(srcPos.inlineId, range.start));
-      final endCh = columnNum(new IR.SourcePosition(srcPos.inlineId, range.end));
-      chRange = new _Range(startCh, endCh);
-    }
-    
+    final startCh = startLn == lineNo ?
+        columnNum(new IR.SourcePosition(srcPos.inlineId, range.start)) :
+        0;
+
+    final endCh = endLn == lineNo ?
+        columnNum(new IR.SourcePosition(srcPos.inlineId, range.end)) :
+        line.length;
+
+    final chRange = new _Range(startCh, endCh);
+
     return new RangedLine(line, chRange, columnNum(srcPos));
   }
 
@@ -223,6 +226,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
       f.annotations = new List.filled(sources[f.source.id].length, IR.LINE_DEAD)).toList();
 
   final mapping = method.srcMapping = {};
+  final interesting = method.interesting = {};
 
   for (var block in blocks.values) {
     if (block.lir != null) {
@@ -232,6 +236,8 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
       for (var instr in block.lir.where(_isInterestingOp)) {
         final hirId = irInfo.lir2hir[instr.id];
         if (hirId == null) continue;
+        
+        interesting[hirId] = true;
 
         final srcPos = irInfo.hir2pos[hirId];
         if (srcPos == null || previous == srcPos) continue;
@@ -239,8 +245,11 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
         mapping[hirId] = rangeStr(srcPos);
         previous = srcPos;
       }
-    }
 
+      for (var instr in block.hir) {
+        if (instr.op == "Phi") interesting[instr.id] = true;
+      }
+    }
   }
 
 
@@ -281,6 +290,7 @@ _isInterestingOp(instr) {
     case "label":  // Branch target.
     case "goto":   // Unconditional branch.
     case "stack-check":  // Interrupt check.
+    case "lazy-bailout":  // Post call lazy deoptimization point.
       return false;
     default:
       return true;

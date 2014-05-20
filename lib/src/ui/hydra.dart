@@ -45,6 +45,8 @@ class HydraElement extends PolymerElement {
 
   @observable var activeTab = "ir";
 
+  @observable var showSource = false;
+
   var blockRef;
 
   get currentFileNames => files.map((file) => file.name).join(', ');
@@ -79,6 +81,13 @@ class HydraElement extends PolymerElement {
         });
       }
     });
+
+    document.onKeyPress
+            .where((e) => e.path.length < 4 && e.keyCode == KeyCode.S)
+            .listen((e) {
+              showSource = !showSource;
+              print("showing source!");
+            });
 
     document.dispatchEvent(new CustomEvent("HydraReady"));
   }
@@ -213,7 +222,7 @@ class HydraElement extends PolymerElement {
   }
 
   methodsChanged() {
-    codeMode = "split";
+    codeMode = "none";
     activeTab = "ir";
     phase = ir = null;
   }
