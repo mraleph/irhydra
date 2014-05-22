@@ -120,6 +120,33 @@ class IRPane extends PolymerElement {
       info.hide();
     });
 
+    _table.onClick.listen((e) {
+      final target = e.target;
+      if (target is AnchorElement) {
+        final toHref = target.attributes['href'];
+        if (toHref.startsWith("#ir-")) {
+          var row = target;
+          while (row != null && row is! TableRowElement) {
+            row = row.parent;
+          }
+
+          var toId = toHref.substring("#ir-".length);
+          var fromId = row.children.first.children.first.children.first.attributes['id'].substring("ir-".length);
+          var fromHref = "#ir-${fromId}";
+
+
+          scrollToRow(toId);
+
+          if (!document.window.location.href.endsWith(fromHref)) {
+            document.window.history.pushState(fromId, fromHref, fromHref);
+          }
+          document.window.history.pushState(toId, toHref, toHref);
+
+          e.preventDefault();
+        }
+      }
+    });
+
     _renderTask.unfreeze();
   }
 
@@ -246,7 +273,9 @@ class IRPane extends PolymerElement {
           final instr = blockIr[index];
           // if (showSource && !ir.method.interesting.containsKey(instr.id)) continue;
           final ln = addEx(ctx, instr.id, instr.op, instr.args);
-          if (ln != null && !ir.method.interesting.containsKey(instr.id))
+          if (ln != null && 
+              ir.method.interesting != null && 
+              !ir.method.interesting.containsKey(instr.id))
             ln.row.classes.add("not-interesting");
           emitInlineCode(ctx, instr);
         }
@@ -486,6 +515,29 @@ class IRPane extends PolymerElement {
       _refsPanel = null;
     }
   }
+
+  scrollToRow(id) {
+    final l = line(id);
+    if (l != null) {
+      l.row.scrollIntoView();
+    }
+
+    var range;
+    if (_ranges[id] == null) {
+      range = js.context.jQuery(l.row);
+    } else {
+      final r = _ranges[id];
+      range = js.context.jQuery(js.array(_table.nodes.sublist(r.start, r.start + r.length)));
+    }
+
+    range.children().effect("highlight", js.map({}), 1500);
+
+    // final anchor = irpane.shadowRoot.querySelector("#${to}");
+    // if (anchor != null) {
+    //  anchor.scrollIntoView();
+    // }
+  }
+
 }
 
 /** Single [IRPane] line */

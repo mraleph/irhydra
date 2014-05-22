@@ -1,5 +1,6 @@
 .irpane {
   font-family: monospace;
+  font-size: 18pt;
 }
 
 .irpane > tr > td:first-child,
@@ -231,23 +232,23 @@ pre {
 }*/
 
 
-.irpane > tr.loop-hotness-1 > td:last-child > pre {
+.irpane.view-source > tr.loop-hotness-1 > td:last-child > pre {
   border-left: 8px #fee5d9 solid;
 }
 
-.irpane > tr.loop-hotness-2 > td:last-child > pre {
+.irpane.view-source > tr.loop-hotness-2 > td:last-child > pre {
   border-left: 8px #fcae91 solid;
 }
 
-.irpane > tr.loop-hotness-3 > td:last-child > pre {
+.irpane.view-source > tr.loop-hotness-3 > td:last-child > pre {
   border-left: 8px #fb6a4a solid;
 }
 
-.irpane > tr.loop-hotness-4 > td:last-child > pre {
+.irpane.view-source > tr.loop-hotness-4 > td:last-child > pre {
   border-left: 8px #de2d26 solid;
 }
 
-.irpane > tr.loop-hotness-5 > td:last-child > pre {
+.irpane.view-source > tr.loop-hotness-5 > td:last-child > pre {
   border-left: 8px #a50f15 solid;
 }
 

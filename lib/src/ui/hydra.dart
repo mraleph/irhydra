@@ -21,11 +21,28 @@ _createV8DeoptDemo(type) => [
   "demos/v8/deopt-${type}/code.asm"
 ];
 
+wr(name, {code: true}) {
+  const PREFIX = "demos/webrebels";
+  return ["${PREFIX}/${name}/hydrogen.cfg"]..addAll(code ? ["${PREFIX}/${name}/code.asm"] : const []);
+}
+
 final DEMOS = {
   "demo-1": _createV8DeoptDemo("eager"),
   "demo-2": _createV8DeoptDemo("soft"),
   "demo-3": _createV8DeoptDemo("lazy"),
   "demo-4": ["demos/dart/code.asm"],
+
+  "webrebels-concat": wr("concat"),
+  "webrebels-concat-fixed": wr("concat-fixed"),
+  "webrebels-method-function": wr("method-function"),
+  "webrebels-method-function-hack": wr("method-function-hacked"),
+  "webrebels-prototype": wr("prototype"),
+  "webrebels-prototype-2": wr("prototype-2"),
+  "webrebels-prototype-node": wr("prototype-node", code: false),
+  "webrebels-prototype-node-function": wr("prototype-node-function", code: false),
+  "webrebels-prototype-tostring": wr("prototype-tostring"),
+  "webrebels-xxx": wr("xxx")
+
 };
 
 
@@ -74,10 +91,18 @@ class HydraElement extends PolymerElement {
         activeTab = "ir";
 
         new async.Timer(const Duration(milliseconds: 50), () {
-          final anchor = irpane.shadowRoot.querySelector("#${to}");
-          if (anchor != null) {
-            anchor.scrollIntoView();
-          }
+          irpane.scrollToRow(to.substring("ir-".length));
+        });
+      }
+    });
+
+    window.onPopState.listen((e) {
+      if (e.state is String) {
+        if (activeTab != "ir")
+          activeTab = "ir";
+
+        new async.Timer(const Duration(milliseconds: 50), () {
+          irpane.scrollToRow(e.state);
         });
       }
     });
@@ -89,20 +114,22 @@ class HydraElement extends PolymerElement {
               print("showing source!");
             });
 
+    try {
+      final nodes = DEMOS.keys.where((key) => key.startsWith("webrebels"))
+          .map((key) => new Element.tag("li")..children.add(
+              new Element.tag("a")
+                ..text = key
+                ..attributes["href"] = "#${key}")).toList();
+
+    final ul = document.querySelector("#webrebels-demos");
+    ul.children.addAll(nodes);
+    } catch (e, stack) { print(e); print(stack); }
+
     document.dispatchEvent(new CustomEvent("HydraReady"));
   }
 
   closeSplash() {
     js.context.DESTROY_SPLASH();
-
-    try {
-      for (var style in document.querySelectorAll("body /deep/ style")) {
-        style.text = style.text.replaceAll(" ^ ", "::shadow ")
-                               .replaceAll(" ^^ ", " /deep/ ");
-      }
-    } catch (e) {
-      // Ignore.
-    }
   }
 
   displayPhase(a, phaseAndMethod, b) {

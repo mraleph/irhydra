@@ -252,6 +252,9 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     }
   }
 
+  if (method.srcMapping.isEmpty) method.srcMapping = null;
+  if (method.interesting.isEmpty || method.srcMapping == null) method.interesting = null;
+
 
   // Process IR and mark lines according to IR instructions that were generated from them.
   for (var block in blocks.values) {

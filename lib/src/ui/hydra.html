@@ -64,13 +64,18 @@
       }
 
       .sidebar {
-        min-width: 250px;
-        max-width: 250px;
+        min-width: 10px;
+        max-width: 10px;
         background: #2C3E50;
         display: -webkit-flex;
         display: flex;
         -webkit-flex-flow: column;
         flex-flow: column;
+      }
+
+      .sidebar:hover {
+        min-width: 240px;
+        max-width: 240px;
       }
 
       .pane > * {
@@ -89,7 +94,7 @@
 
       .pane-controls {
         position: absolute;
-        left: 250px;
+        left: 40px;
         top: 0px;
         height: 40px;
         padding-left: 0;

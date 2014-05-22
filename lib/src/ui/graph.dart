@@ -21,14 +21,14 @@ import 'dart:svg';
 import 'package:irhydra/src/draw2d/graph.dart' as graph;
 
 /** Size of the block in pixels when rendered */
-const BLOCK_SIZE = 40;
+const BLOCK_SIZE = 50;
 
 /** Block margin when rendered in pixels */
 const BLOCK_MARGIN = 10;
 
 /** Default font-family for blocks' labels */
 const LABEL_STYLE = "font-family: Monaco, Menlo, Consolas, "
-                    "\"Courier New\", monospace;";
+                    "\"Courier New\", monospace; font-size: 18pt;";
 
 /**
  * Renders the given control flow graph [blocks] on the [pane].
