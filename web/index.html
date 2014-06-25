@@ -7,8 +7,8 @@
 
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 
-    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Oswald:400,700' type='text/css'>
-    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Lato:400,700,900' type='text/css'>
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Oswald:400,700" type="text/css">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lato:400,700,900" type="text/css">
 
     <link rel="stylesheet" href="packages/irhydra/src/ui/ir-pane.css">
     <link rel="stylesheet" href="css/hydra.css">
@@ -30,9 +30,9 @@
     <div id="welcome-splash">
       <div class="welcome-message">
         <h1>IRHydra<sup>2</sup> <span id="splash-spinner"></span></h1>
-        <p class="lead">This is an <span class="alpha-warning">alpha preview</span> of the tool that can display intermediate representations used by V8 and Dart VM optimizing compilers.</p>
-        <p>Originally it was intended for compiler developers but since release of the first version has been used by JavaScript/Dart developers investigating performance of their applications.</p>
-        <p>If it's you first time trying IRHydra consider watching the following screencast showcasing its main features:</p>
+        <p class="lead">This is an <span class="alpha-warning">alpha preview</span> of the tool that displays intermediate representations used by V8 and Dart VM optimizing compilers.</p>
+        <p>It was originally intended for compiler developers but &mdash; since release of the first version &mdash; has been used by JavaScript/Dart developers to investigate performance of their applications.</p>
+        <p>If it's your first time trying IRHydra, consider watching the following screencast showcasing its main features:</p>
         <p><iframe width="420" height="315" src="https://www.youtube.com/embed/pycQWDuCBN8" frameborder="0" allowfullscreen></iframe></p>
         <h2>Demos</h2>
         <p>Try clicking on the links below to explore features that IRHydra provides. Each link loads compilation artifacts collected from a single V8 or Dart VM run on a given source file.</p>
@@ -53,9 +53,9 @@
           </li>
         </ul>
         <h2>Compilation Artifacts Cheatsheet</h2>
-        <p>If you already have some artifacts collected go ahead and explore them with&nbsp;<i class="fa fa-folder-open"></i>&nbsp;otherwise here is how you can collect some.</p>
+        <p>If you already have some artifacts collected, go ahead and explore them with&nbsp;<i class="fa fa-folder-open"></i>. Otherwise, here is how you can collect some.</p>
         <h3>V8</h3>
-        <p class="alpha-warning">You need V8 version >= 2.24.39 to use IRHydra<sup>2</sup>. You can check <code>about:version</code> to see if your browser comes with the suitable version.</p>
+        <p class="alpha-warning">You need V8 version >= 2.24.39 to use IRHydra<sup>2</sup>. You can check <code>about:version</code> to see if your browser comes with a suitable version.</p>
         <p>You need to pass the following flags to V8 to collect IR and deoptimization artifacts and be able to use source level view:</p>
         <pre>
 <span data-toggle="tooltip" data-title="Produce hydrogen.cfg containing high-level and low-level intermediate representations used by Crankshaft optimizing compiler.">--trace-hydrogen</span>
