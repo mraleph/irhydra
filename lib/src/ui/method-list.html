@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-
+<link rel="import" href="../../../../packages/polymer/polymer.html">
 <polymer-element name="method-list">
   <template>
     <style>
@@ -169,7 +169,7 @@
                 </h3>
                 <ul class="phases">
                   <template repeat="{{phase in method.value.phases | enumerate}}">
-                    <li><a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},{{phase.index}}">{{phase.value.name}}</a></li>
+                    <li><a href="#phase-{{method.index}}-{{phase.index}}" on-click="{{selectPhase}}" data-phase="{{method.index}},{{phase.index}}">{{phase.value.name}}</a></li>
                   </template>
                 </ul>
               </template>
@@ -178,7 +178,7 @@
                   <template if="{{method.value.name.source != null}}">
                     <div><span class="method-name-source">{{method.value.name.source}}</span></div>
                   </template>
-                  <a href="#" on-click="{{selectPhase}}" data-phase="{{method.index}},0">{{method.value.name.display}}</a>
+                  <a href="#phase-{{method.index}}-0" on-click="{{selectPhase}}" data-phase="{{method.index}},0">{{method.value.name.display}}</a>
                 </h3>
               </template>
             </li>
@@ -192,5 +192,5 @@
       </div>
     </div>
   </template>
-  <script  type="application/dart;component=1" src="method-list.dart"></script>
+  <script  type="application/dart" src="method-list.dart"></script>
 </polymer-element>

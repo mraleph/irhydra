@@ -62,8 +62,8 @@ class CodeMirrorElement extends PolymerElement {
 
   var renderTask;
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
     _instance = js.context.CodeMirror($["editor"], js.map({"readOnly": true}));
     _instance.setSize(null, 600);
     _refresher = (_) => _refresh();
@@ -126,10 +126,10 @@ class CodeMirrorElement extends PolymerElement {
     }
   }
 
-  leftView() {
+  detached() {
     _instance = null;
     html.document.removeEventListener("DisplayChanged", _refresher, false);
-    super.leftView();
+    super.detached();
   }
 }
 

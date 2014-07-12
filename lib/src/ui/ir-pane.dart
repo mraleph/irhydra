@@ -93,8 +93,8 @@ class IRPane extends PolymerElement {
     _renderTask = new Task(render, frozen: true);
   }
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
     _table = $['rows'];
 
     final info = new xref.XRef((x) => x, xref.POPOVER);

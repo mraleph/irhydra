@@ -52,8 +52,8 @@ class HydraElement extends PolymerElement {
 
   HydraElement.created() : super.created();
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
 
     window.onHashChange.listen((e) {
       final from = Uri.parse(e.oldUrl).fragment;

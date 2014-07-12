@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<link rel="import" href="../../../../packages/polymer/polymer.html">
 <link rel="import" href="../modes/v8/ui/descriptions.html">
 <link rel="import" href="dropdown-element.html">
 <link rel="import" href="deopt-links.html">
@@ -128,7 +129,7 @@
 
       /* @polyfill .pane-controls > div > a, .pane-controls > div > dropdown-element .ui-dropdown-selected */
       .pane-controls > div > a,
-      .pane-controls > div > dropdown-element ^ .ui-dropdown-selected {
+      .pane-controls > div > dropdown-element::shadow .ui-dropdown-selected {
         font-family: 'Lato';
         letter-spacing: 0.05em;
         position: relative;
@@ -179,7 +180,7 @@
        }
 
       /* @polyfill .pane-controls .ui-dropdown-options */
-      .pane-controls > div > dropdown-element ^ .ui-dropdown-options {
+      .pane-controls > div > dropdown-element::shadow .ui-dropdown-options {
         background-color: #2C3E50;
       }
 
@@ -292,5 +293,5 @@
       </template>
     </div>
   </template>
-  <script type="application/dart;component=1" src="hydra.dart"></script>
+  <script type="application/dart" src="hydra.dart"></script>
 </polymer-element>

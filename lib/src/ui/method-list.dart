@@ -20,8 +20,8 @@ class MethodList extends PolymerElement {
 
   MethodList.created() : super.created();
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
 
     shadowRoot.querySelectorAll('[data-title]').forEach((node){
       js.context.jQuery(node).tooltip(js.map({

@@ -2,7 +2,7 @@ name: irhydra
 dependencies:
   browser: any
   js: any
-  polymer: 0.10.0-pre.10
+  polymer: any
 transformers:
 - polymer:
     entry_points: web/index.html

@@ -47,8 +47,8 @@ class GraphPane extends PolymerElement {
     _renderTask = new Task(render, frozen: true);
   }
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
     _renderTask.unfreeze();
   }
 

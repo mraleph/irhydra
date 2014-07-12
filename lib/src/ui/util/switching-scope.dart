@@ -32,8 +32,8 @@ class SwitchingScope extends PolymerElement {
     renderTask = new Task(render, frozen: true, type: MICROTASK);
   }
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
     renderTask.unfreeze();
   }
 
