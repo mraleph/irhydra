@@ -137,10 +137,12 @@ class IRPane extends PolymerElement {
 
           scrollToRow(toId);
 
-          if (!document.window.location.href.endsWith(fromHref)) {
-            document.window.history.pushState(fromId, fromHref, fromHref);
+          final history = document.window.history;
+          final location = document.window.location;
+          if (!location.href.endsWith(fromHref)) {
+            history.pushState(fromId, fromHref, fromHref);
           }
-          document.window.history.pushState(toId, toHref, toHref);
+          history.pushState(toId, toHref, toHref);
 
           e.preventDefault();
         }

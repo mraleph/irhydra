@@ -120,7 +120,7 @@ class SourcePosition {
     inlineId == other.inlineId && position == other.position;
 
   get hashCode =>
-    other.inlineId.hashCode + other.position.hashCode;
+    inlineId.hashCode + position.hashCode;
 
   toString() => "<${inlineId}:${position}>";
 }
