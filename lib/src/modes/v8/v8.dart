@@ -136,8 +136,10 @@ class Mode extends BaseMode {
         methodIr.phases.last.code = methodCode.phases.last.code;
       }
       methodIr.sources.addAll(methodCode.sources);
-      methodIr.deopts.addAll(methodCode.deopts);
       methodIr.inlined.addAll(methodCode.inlined);
+
+      methodIr.deopts.addAll(methodCode.deopts);
+      methodIr.worstDeopt = methodCode.worstDeopt;
     }
 
     // First try to merge based on optimization IDs.

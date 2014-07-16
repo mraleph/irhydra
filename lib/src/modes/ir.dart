@@ -16,6 +16,7 @@
 library ir;
 
 import 'dart:math' show min;
+import 'package:observe/observe.dart';
 
 // Prevent tree shaking of this library.
 @MirrorsUsed(targets: const['*'])
@@ -90,16 +91,11 @@ class Deopt {
 
   Deopt(this.timestamp, this.id, this.raw, { this.type: "eager", this.optimizationId, this.reason});
 
-  static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2 };
+  static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2, "none": 3 };
   static final _types = _typesOrdering.keys.toList();
 
-  static worstType(deopts) {
-    if (deopts.isEmpty) {
-      return "none";
-    }
-
-    return _types[deopts.map((deopt) => _typesOrdering[deopt.type]).reduce(min)];
-  }
+  static worst(type, deopt) => 
+    _types[min(_typesOrdering[type], _typesOrdering[deopt.type])];
 }
 
 class FunctionSource {
@@ -154,7 +150,7 @@ class InlinedFunction {
  *
  * A unit of granularity for the compilation pipeline.
  */
-class Method {
+class Method extends Observable {
   /** Unique optimization identifier for this method. */
   final optimizationId;
 
@@ -162,24 +158,27 @@ class Method {
   final Name name;
 
   /** List of [Phase] artifacts associated with this method. */
-  final List<Phase> phases = <Phase>[];
+  final List<Phase> phases = new ObservableList<Phase>();
 
   /** List of [Deopt] artifacts associated with this method. */
-  final List<Deopt> deopts = <Deopt>[];
+  @observable final List<Deopt> deopts = new ObservableList<Deopt>();
 
   /** List of function sources associated with this method. */
   final List<FunctionSource> sources = <FunctionSource>[];
 
   final List<InlinedFunction> inlined = <InlinedFunction>[];
 
-  get hasDeopts => deopts.length > 0;
-  get hasSinglePhase => phases.length == 1;
-  get worstDeopt => Deopt.worstType(deopts);
+  @observable var worstDeopt = 'none';
 
   var srcMapping;
   var interesting;
 
   Method(this.name, {this.optimizationId});
+
+  addDeopt(deopt) {
+    worstDeopt = Deopt.worst(worstDeopt, deopt);
+    deopts.add(deopt);
+  }
 }
 
 class ParsedIr {

@@ -141,7 +141,7 @@ class PreParser extends parsing.ParserBase {
 
           for (var currentMethod in methods.reversed) {
             if (currentMethod.optimizationId == optId) {
-              currentMethod.deopts.add(deopt);
+              currentMethod.addDeopt(deopt);
               break;
             }
           }

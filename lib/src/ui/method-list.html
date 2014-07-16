@@ -160,7 +160,7 @@
         <ul class="nav nav-list">
           <template repeat="{{method in filteredMethods | enumerate }}">
             <li>
-              <template if="{{!method.value.hasSinglePhase}}">
+              <template if="{{method.value.phases.length != 1}}">
                 <h3 class="deopt-{{method.value.worstDeopt}}">
                   <template if="{{method.value.name.source != null}}">
                     <div><span class="method-name-source">{{method.value.name.source}}</span></div>
@@ -173,7 +173,7 @@
                   </template>
                 </ul>
               </template>
-              <template if="{{method.value.hasSinglePhase}}">
+              <template if="{{method.value.phases.length == 1}}">
                 <h3 class="deopt-{{method.value.worstDeopt}}">
                   <template if="{{method.value.name.source != null}}">
                     <div><span class="method-name-source">{{method.value.name.source}}</span></div>
