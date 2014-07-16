@@ -12,7 +12,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.14.1+3"
+    version: "0.13.0"
   browser:
     description: browser
     source: hosted
@@ -20,7 +20,7 @@ packages:
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.1.4+2"
+    version: "0.1.5"
   collection:
     description: collection
     source: hosted
@@ -44,7 +44,7 @@ packages:
   observe:
     description: observe
     source: hosted
-    version: "0.10.1+2"
+    version: "0.11.0-dev"
   path:
     description: path
     source: hosted
@@ -52,11 +52,15 @@ packages:
   polymer:
     description: polymer
     source: hosted
-    version: "0.11.0+5"
+    version: "0.12.0-dev"
   polymer_expressions:
     description: polymer_expressions
     source: hosted
-    version: "0.11.2"
+    version: "0.12.0-dev"
+  sass:
+    description: sass
+    source: hosted
+    version: "0.3.1"
   smoke:
     description: smoke
     source: hosted
@@ -68,7 +72,7 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "1.0.2"
+    version: "0.9.3+2"
   string_scanner:
     description: string_scanner
     source: hosted
@@ -76,7 +80,7 @@ packages:
   template_binding:
     description: template_binding
     source: hosted
-    version: "0.11.0"
+    version: "0.12.0-dev"
   utf:
     description: utf
     source: hosted

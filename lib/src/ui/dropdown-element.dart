@@ -53,6 +53,7 @@ class DropdownElement extends PolymerElement {
     if (attrs.containsKey('data-value')) {
       selected = attrs['data-value'];
     }
+    event.preventDefault();
   }
 
   render() {

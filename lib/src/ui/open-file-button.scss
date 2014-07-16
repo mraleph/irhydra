@@ -1,0 +1,29 @@
+@import 'ui';
+
+input[type=file] {
+  visibility: hidden;
+  width: 0px;
+  height: 0px;
+  margin: 0px;
+  padding: 0px;
+}
+
+span.hidden {
+  position: absolute;
+  overflow: hidden;
+  width: 0px;
+  height: 0px;
+}
+
+button {
+  background: $button-background;
+  color: $button-color;
+  font-size: 16pt;
+  width: 40px;
+  height: 40px;
+  border: 0px;
+}
+
+button:hover {
+  background: $button-background-hover;
+}

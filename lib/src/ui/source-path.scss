@@ -1,0 +1,26 @@
+@import 'ui';
+
+.source-path {
+  color: $toolbar-color;
+  background-color: $toolbar-background;
+  font-family: 'RobotoDraft';
+  font-weight: bold;
+  padding: 10px 8px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.source-path a,
+.source-path a:hover,
+.source-path a:focus {
+  text-decoration: none;
+  outline: 0;
+}
+
+.source-path a {
+  color: $toolbar-color;
+}
+
+.source-path a:hover {
+  color: #2a6496;
+}

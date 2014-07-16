@@ -3,32 +3,7 @@
 <polymer-element name="source-path">
   <template>
     <link rel="stylesheet" href="/deps/fa/css/font-awesome.min.css">
-    <style>
-      .source-path {
-        color: white;
-        background-color: #2C3E50;
-        font-family: 'Lato';
-        font-weight: bold;
-        padding: 10px 8px;
-        display: inline-block;
-        vertical-align: middle;
-      }
-
-      .source-path a,
-      .source-path a:hover,
-      .source-path a:focus {
-        text-decoration: none;
-        outline: 0;
-      }
-
-      .source-path a {
-        color: white;
-      }
-
-      .source-path a:hover {
-        color: #1ABC9C;
-      }
-    </style>
+    <link rel="stylesheet" href="source-path.css">
     <span class="source-path">
       <template if="{{!path.isEmpty}}">
         [

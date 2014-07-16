@@ -5,7 +5,7 @@
 #ir-pane {
   background: white;
 }
-  
+
 #graph-pane {
   margin-bottom: 500px;
 }
@@ -67,7 +67,7 @@ h4.deopt-header-soft > .first-word {
 }
 
 .welcome-message {
-  font-family: 'Lato';
+  font-family: 'RobotoDraft';
   margin: 0 auto;
   width: 600px;
   font-size: 16px;
