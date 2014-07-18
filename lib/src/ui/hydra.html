@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <link rel="import" href="../../../../packages/polymer/polymer.html">
+<link rel="import" href="../../../../packages/paper_elements/paper_toast.html">
+<link rel="import" href="../../../../packages/paper_elements/paper_progress.html">
 <link rel="import" href="../modes/v8/ui/descriptions.html">
 <link rel="import" href="dropdown-element.html">
 <link rel="import" href="deopt-links.html">
@@ -16,11 +18,19 @@
   <template>
     <link rel="stylesheet" type="text/css" href="hydra.css">
 
+    <paper-toast text="Downloading {{progressUrl}}" opened="{{progressUrl != null}}" duration="3600000">
+      <template if="{{progressValue != null}}">
+        <paper-progress value="{{progressValue}}"></paper-progress>
+      </template>
+    </paper-toast>
+
     <div class="header">
       <open-file-button on-opened="{{openCompilation}}" data-title="Load Compilation Artifacts"><i class="fa fa-folder-open"></i></open-file-button>
       <template if="{{files != null}}">
         <button href="#" on-click="{{reloadCurrentFiles}}" title="Reload Current Files"><i class="fa fa-repeat"></i></button>
       </template>
+      <!--<template if="{{progress != null}}">
+      </template>-->
       <spinner-element id="spinner"></spinner-element>
       <template if="{{ir != null}}">
         <switching-scope active="{{activeTab}}" class="pane-controls">

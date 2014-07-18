@@ -2,6 +2,7 @@ library hydra;
 
 import 'dart:html';
 import 'dart:async' as async;
+import 'dart:typed_data' show ByteBuffer, Uint8List;
 
 import 'package:irhydra/src/html_utils.dart' show toHtml;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
@@ -10,6 +11,8 @@ import 'package:irhydra/src/ui/spinner-element.dart';
 import 'package:irhydra/src/xref.dart' show XRef, POPOVER;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
+
+import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
 
 final MODES = [
   () => new v8.Mode(),
@@ -21,11 +24,23 @@ _createV8DeoptDemo(type) => [
   "demos/v8/deopt-${type}/code.asm"
 ];
 
+_createWebRebelsDemo(name) => [
+  "demos/webrebels2014/${name}/data.tar.bz2"
+];
+
 final DEMOS = {
   "demo-1": _createV8DeoptDemo("eager"),
   "demo-2": _createV8DeoptDemo("soft"),
   "demo-3": _createV8DeoptDemo("lazy"),
   "demo-4": ["demos/dart/code.asm"],
+  "webrebels-2014-concat": _createWebRebelsDemo("concat"),
+  "webrebels-2014-concat-fixed": _createWebRebelsDemo("concat-fixed"),
+  "webrebels-2014-method-function": _createWebRebelsDemo("method-function"),
+  "webrebels-2014-method-function-hack": _createWebRebelsDemo("method-function-hack"),
+  "webrebels-2014-prototype": _createWebRebelsDemo("prototype"),
+  "webrebels-2014-prototype-node": _createWebRebelsDemo("prototype-node"),
+  "webrebels-2014-prototype-node-getter": _createWebRebelsDemo("prototype-node-getter"),
+  "webrebels-2014-prototype-tostring": _createWebRebelsDemo("prototype-tostring"),
 };
 
 @CustomTag('hydra-app')
@@ -45,6 +60,9 @@ class HydraElement extends PolymerElement {
 
   @observable var showSource = false;
 
+  @observable var progressValue;
+  @observable var progressUrl;
+
   var blockRef;
 
   get currentFileNames => files.map((file) => file.name).join(', ');
@@ -59,7 +77,39 @@ class HydraElement extends PolymerElement {
       final to = Uri.parse(e.newUrl).fragment;
 
       if (DEMOS.containsKey(to)) {
-        _wait(DEMOS[to].map((path) => HttpRequest.getString(path).then(loadData)));
+        _wait(DEMOS[to].map((path) {
+          if (path.endsWith(".tar.bz2")) {
+            unpack(data) {
+              if (data is ByteBuffer) {
+                data = new Uint8List.view(data);
+              }
+              return new TarDecoder().decodeBytes(
+                  new BZip2Decoder().decodeBytes(data)).files;
+            }
+
+            loadFiles(files) =>
+              files.map((file) =>
+                loadData(new String.fromCharCodes(file.content)));
+
+            progress(evt) {
+              progressUrl = path;
+              if (evt.lengthComputable) {
+                progressValue = (evt.loaded * 100 / evt.total).floor();
+              }
+            }
+
+            done(x) {
+              print(x);
+              progressUrl = progressValue = null;
+            }
+
+            return HttpRequest.request(path, responseType: "arraybuffer", onProgress: progress)
+              .then((rq) => loadFiles(unpack(rq.response)))
+              .then(done, onError: done);
+          } else {
+            return HttpRequest.getString(path).then(loadData);
+          }
+        }));
         return;
       }
 

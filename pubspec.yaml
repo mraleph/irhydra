@@ -6,6 +6,8 @@ dependencies:
   sass: 0.3.1
   collection: any
   fixnum: any
+  archive: any
+  paper_elements: any
 transformers:
 - sass
 - polymer:
