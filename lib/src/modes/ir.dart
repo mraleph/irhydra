@@ -17,6 +17,7 @@ library ir;
 
 import 'dart:math' show min;
 import 'package:observe/observe.dart';
+import 'package:collection/equality.dart' show ListEquality;
 
 // Prevent tree shaking of this library.
 @MirrorsUsed(targets: const['*'])
@@ -94,7 +95,7 @@ class Deopt {
   static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2, "none": 3 };
   static final _types = _typesOrdering.keys.toList();
 
-  static worst(type, deopt) => 
+  static worst(type, deopt) =>
     _types[min(_typesOrdering[type], _typesOrdering[deopt.type])];
 }
 
@@ -225,10 +226,20 @@ class Block {
   }
 }
 
+class MultiId {
+  final List<String> ids;
+
+  MultiId(this.ids);
+
+  operator == (other) {
+    return (other is MultiId) && const ListEquality().equals(ids, other.ids);
+  }
+}
+
 /** IR instruction. */
 class Instruction {
   /** Unique identifier (e.g. SSA name). */
-  final String id;
+  final id;
 
   /** Opcode */
   final String op;

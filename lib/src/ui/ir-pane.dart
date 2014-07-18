@@ -184,7 +184,7 @@ class IRPane extends PolymerElement {
       new SpanElement()..append(formatOpcode(ctx, opcode))
                        ..appendText(" ")
                        ..append(new SpanElement()..nodes.addAll(operands.map(ctx.format)));
-    
+
     addEx(ctx, id, opcode, operands) {
       if (opcode == null) {
         return null;
@@ -209,11 +209,16 @@ class IRPane extends PolymerElement {
         }
       }
 
-      if (id == null) {
-        id = "";
+      var gutter;
+      if (id is IR.MultiId) {
+        id = gutter = id.ids;
+      } else if (id == null) {
+        gutter = "";
+      } else {
+        gutter = id;
       }
 
-      var ln = add(id, format(ctx, opcode, operands));
+      var ln = add(gutter, format(ctx, opcode, operands), id: id);
       ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
       ln.text.parentNode.classes.add("${ctx.ns}-line");
       return ln;
@@ -249,7 +254,7 @@ class IRPane extends PolymerElement {
     if (codeMode != 'none') {
       ir.code.prologue.forEach(codeRenderer.display);
     }
-    
+
     final nesting = graph.computeLoopNesting(ir.blocks);
 
     final maxNesting = nesting.fold(0, math.max);
@@ -275,8 +280,8 @@ class IRPane extends PolymerElement {
           final instr = blockIr[index];
           // if (showSource && !ir.method.interesting.containsKey(instr.id)) continue;
           final ln = addEx(ctx, instr.id, instr.op, instr.args);
-          if (ln != null && 
-              ir.method.interesting != null && 
+          if (ln != null &&
+              ir.method.interesting != null &&
               !ir.method.interesting.containsKey(instr.id))
             ln.row.classes.add("not-interesting");
           emitInlineCode(ctx, instr);
@@ -357,7 +362,7 @@ class IRPane extends PolymerElement {
     final range = _ranges[id];
     return (range != null) ? _lines[range.start] : null;
   }
-  
+
   var currentRowClass;
 
   /**
@@ -371,23 +376,36 @@ class IRPane extends PolymerElement {
    *
    * Return newly created [IRPaneLine].
    */
-  IRPaneLine add(gutter, text, {String id, String klass}) {
-    if (gutter is String && (id == null)) {
-      id = gutter;
-    }
+  IRPaneLine add(gutter, text, {id, String klass}) {
+    assert(gutter is List == id is List);
 
     // Wrap raw strings in Text element.
-    gutter = _wrapElement(gutter);
     text = _wrapElement(text);
 
     // First column content: gutter.
-    gutter = new Element.html("<pre/>")..append(
-        new AnchorElement()
-          ..id = href(id)
-          ..nodes.add(gutter)
-          ..onClick.listen((event) {
-            if (id != null) showRefsTo(id);
-          }));
+    wrapSingleId(text, id) =>
+      new Element.html("<pre/>")..append(
+          (id != null) ? (new AnchorElement()
+            ..id = href(id)
+            ..nodes.add(_wrapElement(text))
+            ..onClick.listen((event) {
+              if (id != null) showRefsTo(id);
+            })) : _wrapElement(text));
+
+    if (gutter is String || gutter is Element) {
+      gutter = wrapSingleId(gutter, id);
+    } else if (gutter is List<String>) {
+      if (id is List<String> && (id.length == gutter.length)) {
+        gutter = new Element.tag("span")..nodes.addAll(
+          new List.generate(gutter.length, (idx) =>
+            wrapSingleId(gutter[idx], id[idx]))
+        );
+      } else {
+        gutter = wrapSingleId(gutter.join(', '), null);
+      }
+    } else {
+      throw "gutter must be either String or List<String>: ${gutter}";
+    }
 
 
     // Second column content: text.
@@ -411,7 +429,12 @@ class IRPane extends PolymerElement {
 
     final line = new IRPaneLine(gutter, text, row);
     _lines.add(line);
-    if (id != null) _ranges[id] = new _Range(_lines.length - 1);
+
+    if (id is String) {
+      _ranges[id] = new _Range(_lines.length - 1);
+    } else if (id is List) {
+      for (var i in id) _ranges[i] = new _Range(_lines.length - 1);
+    }
 
     return line;
   }

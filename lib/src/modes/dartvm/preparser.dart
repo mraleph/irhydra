@@ -40,6 +40,7 @@ parse(str) {
     if (functions.isEmpty ||
         functions.last.name.full != name ||
         functions.last.phases.last.name == phaseName ||
+        functions.last.phases.last.name == "After Optimizations" ||
         functions.last.phases.last.code != null) {
       final function = new IR.Method(name_parser.parse(name));
       functions.add(function);
