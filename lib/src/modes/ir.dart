@@ -54,6 +54,8 @@ class Name {
  * Usually a single named step in the compilation pipeline.
  */
 class Phase {
+  final Method method;
+
   /** Phase's name */
   final String name;
 
@@ -63,7 +65,7 @@ class Phase {
   /** Native code artifact produced by the phase. */
   var code;
 
-  Phase(this.name, {this.ir, this.code});
+  Phase(this.method, this.name, {this.ir, this.code});
 }
 
 /**

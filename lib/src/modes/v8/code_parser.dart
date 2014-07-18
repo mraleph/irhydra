@@ -77,7 +77,7 @@ class PreParser extends parsing.ParserBase {
             enterMethod("", optId.take());
           }
 
-          currentMethod.phases.add(new IR.Phase("Z_Code generation", code: subrange()));
+          currentMethod.phases.add(new IR.Phase(currentMethod, "Z_Code generation", code: subrange()));
           leaveMethod();
           // Leave this (instructions) and outer (code) states.
           leave(nstates: 2);

@@ -37,7 +37,7 @@
             </dropdown-element>
           </div>
           <div when-ir when-source>
-            <deopt-links deopts="{{method.deopts}}" on-deopt-click="{{navigateToDeoptAction}}" on-deopt-enter="{{enterDeoptAction}}" on-deopt-leave="{{leaveDeoptAction}}">
+            <deopt-links deopts="{{phase.method.deopts}}" on-deopt-click="{{navigateToDeoptAction}}" on-deopt-enter="{{enterDeoptAction}}" on-deopt-leave="{{leaveDeoptAction}}">
             </deopt-links>
           </div>
           <div when-source>
@@ -51,7 +51,7 @@
     <div class="pane">
       <template if="{{methods != null && !methods.isEmpty}}">
         <div class="sidebar">
-          <method-list methods="{{methods}}" on-selected="{{displayPhase}}"></method-list>
+          <method-list methods="{{methods}}" selected="{{phase}}"></method-list>
         </div>
         <template if="{{ir == null}}">
           <div class="ir-placeholder">

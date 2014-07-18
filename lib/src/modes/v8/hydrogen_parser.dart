@@ -69,7 +69,7 @@ List<IR.Method> preparse(String str) {
       final firstLine = str.substring(start, str.indexOf("\n", start));
       final name = nameRe.firstMatch(firstLine).group(1);
 
-      method.phases.add(new IR.Phase(name, ir: substr));
+      method.phases.add(new IR.Phase(method, name, ir: substr));
     }
   }
 

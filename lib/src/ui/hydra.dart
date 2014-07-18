@@ -33,7 +33,6 @@ class HydraElement extends PolymerElement {
   @observable var mode;
   @observable var files;
   @observable var phase;
-  @observable var method;
   @observable var methods;
 
   @observable var ir;
@@ -103,18 +102,18 @@ class HydraElement extends PolymerElement {
     js.context.DESTROY_SPLASH();
   }
 
-  displayPhase(a, phaseAndMethod, b) {
+  phaseChanged() {
     closeSplash();
-
-    activeTab = "ir";
-    method = phaseAndMethod[0];
-    phase = phaseAndMethod[1];
-    ir = mode.toIr(phaseAndMethod[0], phase);
-    blockRef = new XRef((id) => irpane.rangeContentAsHtmlFull(id));
-
-    sourcePath.clear();
-    if (!method.sources.isEmpty) {
-      sourcePath.add(method.inlined.first);
+    if (phase != null) {
+      activeTab = "ir";
+      ir = mode.toIr(phase.method, phase);
+      blockRef = new XRef((id) => irpane.rangeContentAsHtmlFull(id));
+      sourcePath.clear();
+      if (!phase.method.sources.isEmpty) {
+        sourcePath.add(phase.method.inlined.first);
+      }
+    } else {
+      ir = null;
     }
   }
 
@@ -156,14 +155,14 @@ class HydraElement extends PolymerElement {
   }
 
   navigateToDeoptAction(event, deopt, target) {
-    if (method.inlined.isEmpty)
+    if (phase.method.inlined.isEmpty)
       return;
 
     buildStack(position) {
       if (position == null) {
         return [];
       } else {
-        final f = method.inlined[position.inlineId];
+        final f = phase.method.inlined[position.inlineId];
         return buildStack(f.position)..add(f);
       }
     }

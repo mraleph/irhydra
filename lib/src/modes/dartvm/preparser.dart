@@ -71,9 +71,12 @@ parse(str) {
 
       // Create a phase with substring thunk for an IR.
       final substr = _deferSubstring(str, secondLF + 1, match.start);
-      final phase = new IR.Phase(phaseName, ir: substr);
 
-      createFunction(name, phaseName: phaseName).phases.add(phase);
+      final method = createFunction(name, phaseName: phaseName);
+
+      final phase = new IR.Phase(method, phaseName, ir: substr);
+
+      method.phases.add(phase);
     } else if (tag == "*** END CODE\n") {
       // Code dump.
       final substr = _deferSubstring(str, start, match.start);
@@ -87,7 +90,7 @@ parse(str) {
       if (!function.phases.isEmpty) {
         function.phases.last.code = substr;
       } else {
-        function.phases.add(new IR.Phase("Code", code: substr));
+        function.phases.add(new IR.Phase(function, "Code", code: substr));
       }
     }
   }
