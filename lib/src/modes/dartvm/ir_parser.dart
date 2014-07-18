@@ -132,7 +132,7 @@ class Range extends IR.Operand {
     c("000000007fffffff", "Int32Max"),
     c("00000000ffffffff", "Uint32Max"),
     c("c000000000000000", "Int63Min"),
-    c("3fffffffffffffff", "Int63Max")
+    c("3fffffffffffffff", "Int63Max"),
     c("8000000000000000", "Int64Min"),
     c("7fffffffffffffff", "Int64Max")
   ];
