@@ -97,18 +97,23 @@ _apply(List<RegExp> patterns, String text, Function callback) {
   }
 }
 
+class NoMatch {
+  const NoMatch();
+}
+
+const NO_MATCH = const NoMatch();
+
 /**
  * Applies given regular expression [re] to a string [str] and if matched
  * invokes callback [action] passing matched groups as arguments.
  */
 match(String str, RegExp re, Function action) {
   final m = re.firstMatch(str);
-  if (m == null) return false;
+  if (m == null) return NO_MATCH;
 
   var args = [];
   for (var i = 0; i < m.groupCount; i++) args.add(m.group(i + 1));
-  Function.apply(action, args);
-  return true;
+  return Function.apply(action, args);
 }
 
 /**
@@ -223,7 +228,7 @@ class _Pattern {
       return true;
     }
 
-    return match(str, re, action);
+    return match(str, re, action) != NO_MATCH;
   }
 }
 

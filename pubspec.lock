@@ -29,6 +29,10 @@ packages:
     description: csslib
     source: hosted
     version: "0.10.0+1"
+  fixnum:
+    description: fixnum
+    source: hosted
+    version: "0.9.0"
   html5lib:
     description: html5lib
     source: hosted

@@ -18,6 +18,8 @@ library modes.dartvm.ir_parser;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
+import 'package:fixnum/fixnum.dart' as fixnum;
+
 /** Parse given IR dumps. */
 parse(text) {
   final blocks = (new IRParser(text())..parse()).builder.blocks;
@@ -83,15 +85,23 @@ class IRParser extends parsing.ParserBase {
     },
 
     // Definition (with an SSA name).
-    r"^(v\d+) <- (\w+)[^\(]*(\(.*\))": (id, op, args) {
+    r"^(v\d+) <- (\w+)[^\(]*(\(.*\)) *(\[-?\d+, -?\d+\])?": (id, op, args, [range]) {
       if (op == "phi") op = "Phi";  // Rename phis to match style.
       currentBlock.hir.add(new IR.Instruction(id, op, parseOperands(args)));
+      if (range != null) {
+        currentBlock.hir.last.args..add(" ")
+                                  ..add(Range.fromString(range));
+      }
     },
 
     // Definition (with two SSA names).
-    r"^(v\d+), (v\d+) <- (\w+)[^\(]*(\(.*\))": (id1, id2, op, args) {
+    r"^(v\d+), (v\d+) <- (\w+)[^\(]*(\(.*\)) *(\[-?\d+, -?\d+\])?": (id1, id2, op, args, [range]) {
       if (op == "phi") op = "Phi";  // Rename phis to match style.
       currentBlock.hir.add(new IR.Instruction(new IR.MultiId([id1, id2]), op, parseOperands(args)));
+      if (range != null) {
+        currentBlock.hir.last.args..add(" ")
+                                  ..add(Range.fromString(range));
+      }
     },
 
     // Instruction.
@@ -99,4 +109,53 @@ class IRParser extends parsing.ParserBase {
       currentBlock.hir.add(new IR.Instruction(null, op, parseOperands(args)));
     },
   };
+}
+
+
+class C {
+  final value;
+  final text;
+
+  C(this.value, this.text);
+}
+
+c(v, t) => new C(fixnum.Int64.parseHex(v), t);
+
+class Range extends IR.Operand {
+  final low;
+  final high;
+
+  static final KNOWN_CONSTANTS = [
+    c("ffffffffc0000000", "Int31Min"),
+    c("000000003fffffff", "Int31Max"),
+    c("ffffffff80000000", "Int32Min"),
+    c("000000007fffffff", "Int32Max"),
+    c("00000000ffffffff", "Uint32Max"),
+    c("c000000000000000", "Int63Min"),
+    c("3fffffffffffffff", "Int63Max")
+    c("8000000000000000", "Int64Min"),
+    c("7fffffffffffffff", "Int64Max")
+  ];
+
+  static toReadableName(val) {
+    for (var c in KNOWN_CONSTANTS)
+      if (c.value == val)
+        return c.text;
+    return val.toString();
+  }
+
+  Range(low, high)
+    : low = fixnum.Int64.parseInt(low),
+      high = fixnum.Int64.parseInt(high);
+
+  static final RANGE_RE = new RegExp(r"\[(-?\d+), (-?\d+)\]");
+
+  static fromString(str) {
+    return parsing.match(str, RANGE_RE, (lo, hi) => new Range(lo, hi));
+  }
+
+  final tag = "range";
+  get text => "[${toReadableName(low)}, ${toReadableName(high)}]";
+
+
 }
