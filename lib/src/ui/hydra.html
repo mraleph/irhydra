@@ -30,6 +30,7 @@
             <div when-source class="tab-header"><a href="#source">SOURCE</a></div>
           </template>
           <div when-ir>
+            <button on-click="{{toggleInterestingMode}}" title="Splice source into IR" class="{{ {'unchecked': !showSource} }}"><i class="fa fa-eye"></i></button>
             <dropdown-element selected="{{codeMode}}">
               <a data-value="split">Split Disassembly</a>
               <a data-value="inline">Inline Disassembly</a>

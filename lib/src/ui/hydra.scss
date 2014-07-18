@@ -41,6 +41,10 @@ button:disabled:hover {
   background: $toolbar-background;
 }
 
+button.unchecked {
+  color: #95A5A6;
+}
+
 .pane {
   display: -webkit-flex;
   display: flex;
@@ -224,4 +228,8 @@ button:disabled:hover {
 
 .fa-repeat:before {
   content: "\f01e";
+}
+
+.fa-eye:before {
+  content:"\f06e";
 }

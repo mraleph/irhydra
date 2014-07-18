@@ -92,10 +92,13 @@ class HydraElement extends PolymerElement {
             .where((e) => e.path.length < 4 && e.keyCode == KeyCode.S)
             .listen((e) {
               showSource = !showSource;
-              print("showing source!");
             });
 
     document.dispatchEvent(new CustomEvent("HydraReady"));
+  }
+
+  toggleInterestingMode() {
+    showSource = !showSource;
   }
 
   closeSplash() {
