@@ -43,6 +43,13 @@ final DEMOS = {
   "webrebels-2014-prototype-tostring": _createWebRebelsDemo("prototype-tostring"),
 };
 
+timeAndReport(action, report) {
+  final stopwatch = new Stopwatch()..start();
+  final result = action();
+  print(report(stopwatch.elapsedMilliseconds));
+  return result;
+}
+
 @CustomTag('hydra-app')
 class HydraElement extends PolymerElement {
   @observable var mode;
@@ -62,6 +69,8 @@ class HydraElement extends PolymerElement {
 
   @observable var progressValue;
   @observable var progressUrl;
+  @observable var progressAction;
+
 
   var blockRef;
 
@@ -83,28 +92,40 @@ class HydraElement extends PolymerElement {
               if (data is ByteBuffer) {
                 data = new Uint8List.view(data);
               }
-              return new TarDecoder().decodeBytes(
-                  new BZip2Decoder().decodeBytes(data)).files;
+
+              final tar = timeAndReport(() => js.context.BUNZIP2(data),
+                  (ms) => "Unpacking ${path} (${data.length} bytes) in JS took ${ms} ms (${data.length / ms} bytes/ms)");
+
+              return new TarDecoder().decodeBytes(tar).files;
             }
 
-            loadFiles(files) =>
-              files.map((file) =>
-                loadData(new String.fromCharCodes(file.content)));
+            loadFiles(files) {
+              for (var file in files)
+                loadData(new String.fromCharCodes(file.content));
+            }
 
             progress(evt) {
-              progressUrl = path;
               if (evt.lengthComputable) {
                 progressValue = (evt.loaded * 100 / evt.total).floor();
               }
             }
 
             done(x) {
-              print(x);
-              progressUrl = progressValue = null;
+              shadowRoot.querySelector("paper-toast").dismiss();
+              progressUrl = progressValue = progressAction = null;
             }
 
+            progressAction = "Downloading";
+            progressUrl = path;
+            shadowRoot.querySelector("paper-toast").show();
             return HttpRequest.request(path, responseType: "arraybuffer", onProgress: progress)
-              .then((rq) => loadFiles(unpack(rq.response)))
+              .then((rq) {
+                progressAction = "Unpacking";
+                shadowRoot.querySelector("paper-toast").show();
+                return new async.Future.delayed(const Duration(milliseconds: 100), () => rq.response);
+              })
+              .then(unpack)
+              .then(loadFiles)
               .then(done, onError: done);
           } else {
             return HttpRequest.getString(path).then(loadData);

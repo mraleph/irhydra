@@ -18,7 +18,7 @@
   <template>
     <link rel="stylesheet" type="text/css" href="hydra.css">
 
-    <paper-toast text="Downloading {{progressUrl}}" opened="{{progressUrl != null}}" duration="3600000">
+    <paper-toast text="{{progressAction}} {{progressUrl}}" duration="3600000">
       <template if="{{progressValue != null}}">
         <paper-progress value="{{progressValue}}"></paper-progress>
       </template>

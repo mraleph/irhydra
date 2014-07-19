@@ -34,7 +34,7 @@ class RangedLine {
   final str;
   final range;
   final column;
-  
+
   RangedLine(this.str, this.range, this.column);
 }
 
@@ -69,7 +69,7 @@ class _AST {
     } catch (e) {
       return null;
     }
-  } 
+  }
 
   factory _AST(lines) {
     // Source is dumped in the form (args) { body }. We prepend SUFFIX and PREFIX
@@ -132,7 +132,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     if (ast == null) {
       return [];
     }
-    
+
     final loops = [];
     ast.traverse(onEnter: (node, parent) {
       switch (node.type) {
@@ -164,15 +164,6 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
 
   final loops = asts.map(findLoops).toList();
 
-  print("loops: ${loops}");
-
-  //final loopsForInlined = method.inlined.map((f) {
-  //  var result = [];
-  //  while (f != null) {
-  //    result.insertAll(0, loopsForAsts[f.source.id]);
-  //  }
-  //}).toList();
-
   final ranges = new List.generate(asts.length, (_) => {});
 
   rangeOf(srcPos) {
@@ -180,7 +171,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     if (ast == null) {
       return null;
     }
-    
+
     var range = null;
     ast.traverse(
       onEnter: (node, parent) {
@@ -256,7 +247,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
   lineStr(IR.SourcePosition srcPos) {
     final lines = sources[sourceId(srcPos)];
     final n = lineNum(srcPos);
-    return n < lines.length ? lines[n] : null; 
+    return n < lines.length ? lines[n] : null;
   }
 
   rangeStr(srcPos) {
@@ -297,7 +288,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
       for (var instr in block.lir.where(_isInterestingOp)) {
         final hirId = irInfo.lir2hir[instr.id];
         if (hirId == null) continue;
-        
+
         interesting[hirId] = true;
 
         final srcPos = irInfo.hir2pos[hirId];
@@ -324,8 +315,6 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
       final blockPos = irInfo.hir2pos[blockEntry];
       final blockLoop = loopOf(blockPos);
 
-      print("${block.name} ${blockEntry} ${blockPos} is in the loop ${blockLoop}");
-
       // When processing LIR skip all artificial instructions (gap moves,
       // labels, gotos and stack-checks). Even if they have position falling
       // into some line, that does not make that line alive.
@@ -342,9 +331,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
         if (instrLoop != null && blockLoop.isOutsideOf(instrLoop)) {
           // Instruction was hoisted from its loop. Mark the line as LICMed.
           annotations[srcPos.inlineId][lineNum(srcPos)] |= IR.LINE_LICM;
-          print("`${lineStr(srcPos)}` is licmed due to ${hirId} (${blockLoop} vs ${instrLoop})"); 
         } else {
-          print("`${lineStr(srcPos)}` is alive due to ${hirId} (${blockLoop} vs ${instrLoop})"); 
           annotations[srcPos.inlineId][lineNum(srcPos)] |= IR.LINE_LIVE;
         }
       }
@@ -359,21 +346,6 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
 
       final outer = method.inlined[f.position.inlineId];
       if (!worklist.contains(outer)) worklist.add(outer);
-    }
-  }
-
-  for (var f in method.inlined) {
-    var lines = f.source.source.toList();
-    for (var i = 0; i < lines.length; i++) {
-      var ch = " ";
-
-      if (f.annotations[i] == IR.LINE_LIVE) {
-        ch = "+";
-      } else if (f.annotations[i] == IR.LINE_LICM) {
-        ch = "~";
-      }
-
-      print("${ch}${lines[i]}");
     }
   }
 }
