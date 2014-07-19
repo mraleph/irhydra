@@ -33,14 +33,14 @@ final DEMOS = {
   "demo-2": _createV8DeoptDemo("soft"),
   "demo-3": _createV8DeoptDemo("lazy"),
   "demo-4": ["demos/dart/code.asm"],
-  "webrebels-2014-concat": _createWebRebelsDemo("concat"),
-  "webrebels-2014-concat-fixed": _createWebRebelsDemo("concat-fixed"),
-  "webrebels-2014-method-function": _createWebRebelsDemo("method-function"),
-  "webrebels-2014-method-function-hack": _createWebRebelsDemo("method-function-hack"),
-  "webrebels-2014-prototype": _createWebRebelsDemo("prototype"),
-  "webrebels-2014-prototype-node": _createWebRebelsDemo("prototype-node"),
-  "webrebels-2014-prototype-node-getter": _createWebRebelsDemo("prototype-node-getter"),
-  "webrebels-2014-prototype-tostring": _createWebRebelsDemo("prototype-tostring"),
+  "webrebels-2014-concat": _createWebRebelsDemo("1-concat"),
+  "webrebels-2014-concat-fixed": _createWebRebelsDemo("2-concat-fixed"),
+  "webrebels-2014-prototype-node": _createWebRebelsDemo("3-prototype-node"),
+  "webrebels-2014-prototype-node-getter": _createWebRebelsDemo("4-prototype-node-getter"),
+  "webrebels-2014-prototype": _createWebRebelsDemo("5-prototype"),
+  "webrebels-2014-prototype-tostring": _createWebRebelsDemo("6-prototype-tostring"),
+  "webrebels-2014-method-function": _createWebRebelsDemo("7-method-function"),
+  "webrebels-2014-method-function-hack": _createWebRebelsDemo("8-method-function-hack"),
 };
 
 timeAndReport(action, report) {

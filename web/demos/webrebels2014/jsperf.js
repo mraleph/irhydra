@@ -1,3 +1,8 @@
+//
+// Benchmark.js wrapper that limits amounts of samples to minimize the size
+// of produced hydrogen.cfg/code.asm dumps.
+//
+
 load("../lodash.js");
 load("../benchmark.js");
 
@@ -15,7 +20,7 @@ function measure(cases) {
     .on('cycle', function(event) {
       print(String(event.target));
     })
-    .on('complete', function() { 
+    .on('complete', function() {
       print('Fastest is ' + this.filter('fastest').pluck('name'));
     })
     .run({'async': false});

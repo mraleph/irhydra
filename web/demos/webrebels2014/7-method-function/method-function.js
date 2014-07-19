@@ -1,3 +1,12 @@
+//
+// Is it faster to call a function directly or call it as if it was a method
+// on an object?
+//
+// Somehow this benchmark shows Function many times slower.
+//
+// Learn the one wierd trick to speed it up in 7-method-function-hack
+//
+
 load("../jsperf.js");
 
 Benchmark.prototype.setup = function() {
@@ -13,7 +22,7 @@ Benchmark.prototype.setup = function() {
             len
         );
     }
-    
+
     var MK = function() { };
     MK.prototype.mk = mk;
     var mker = new MK;

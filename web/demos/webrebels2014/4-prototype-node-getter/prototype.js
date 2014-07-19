@@ -1,13 +1,27 @@
+//
+// Is it faster to load something from the prototype multiple times or cache it?
+//
+// Benchmarking on node.js v0.10.29 shows that caching is 8x faster for
+// data-properties.
+//
+// What if we replace data-property with a getter? How much slower will it get?
+//
+// Actually it gets 8x faster making doManyLookups and lookupAndCache cases
+// equally fast.
+//
+// (What kind of dark magic is this? Learn from data.tar.bz2)
+//
+
 if (typeof print === 'undefined') {
   print = console.log.bind(console);
 }
 
-var obj = 
+var obj =
   Object.create(
     Object.create(
       Object.create(
         Object.create(
-          Object.create({prop: 10})))));
+          Object.create({ get prop () { return 10 }})))));
 
 
 function doManyLookups() {
@@ -19,7 +33,7 @@ function doManyLookups() {
       }
     }
   }
-  print('In total: ' + counter.toString());
+  print('In total: ' + counter);
 }
 
 function lookupAndCache() {
@@ -29,7 +43,7 @@ function lookupAndCache() {
     for(var j = 0; j < 1000; j++)
       for(var k = 0; k < 1000; k++)
         counter += value;
-  print('In total: ' + counter.toString());
+  print('In total: ' + counter);
 }
 
 function measure(f) {
@@ -40,7 +54,6 @@ function measure(f) {
 }
 
 measure(doManyLookups);
-measure(doManyLookups);
 measure(lookupAndCache);
-measure(lookupAndCache);
+
 

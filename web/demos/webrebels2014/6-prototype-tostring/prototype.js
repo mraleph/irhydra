@@ -1,5 +1,17 @@
+//
+// Is it faster to load something from the prototype multiple times or cache it?
+//
+// What happens if we add toString() at the print statement... How does this
+// fix 3x slowdown that we observed on the second run of this benchmark?
+//
+// (hint: it makes representation inference go different way)
+//
 
-var obj = 
+if (typeof print === 'undefined') {
+  print = console.log.bind(console);
+}
+
+var obj =
   Object.create(
     Object.create(
       Object.create(
@@ -16,7 +28,7 @@ function doManyLookups() {
       }
     }
   }
-  print('In total: ' + counter);
+  print('In total: ' + counter.toString());
 }
 
 function lookupAndCache() {
@@ -26,7 +38,7 @@ function lookupAndCache() {
     for(var j = 0; j < 1000; j++)
       for(var k = 0; k < 1000; k++)
         counter += value;
-  print('In total: ' + counter);
+  print('In total: ' + counter.toString());
 }
 
 function measure(f) {
@@ -37,6 +49,7 @@ function measure(f) {
 }
 
 measure(doManyLookups);
+measure(doManyLookups);
 measure(lookupAndCache);
-
+measure(lookupAndCache);
 

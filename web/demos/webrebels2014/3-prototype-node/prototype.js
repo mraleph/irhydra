@@ -1,8 +1,15 @@
-if (typeof print === 'undefined') {
-  print = console.log.bind(console);
-}
+//
+// Is it faster to load something from the prototype multiple times or cache it?
+//
+// Benchmarking on node.js v0.10.29 shows that caching is 8x faster.
+//
+// Should we start caching properties in local variables now and expect 8x
+// speedup across the board?
+//
+// (Hint: the answer is no. We should learn how to benchmark things first)
+//
 
-var obj = 
+var obj =
   Object.create(
     Object.create(
       Object.create(

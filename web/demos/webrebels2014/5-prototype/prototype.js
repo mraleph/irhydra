@@ -1,13 +1,17 @@
-if (typeof print === 'undefined') {
-  print = console.log.bind(console);
-}
+//
+// Is it faster to load something from the prototype multiple times or cache it?
+//
+// What happens if we run the same benchmark several times on a newer V8?
+//
+// (the second run is 3x slower! huh?)
+//
 
-var obj = 
+var obj =
   Object.create(
     Object.create(
       Object.create(
         Object.create(
-          Object.create({ get prop () { return 10 }})))));
+          Object.create({prop: 10})))));
 
 
 function doManyLookups() {
@@ -40,6 +44,8 @@ function measure(f) {
 }
 
 measure(doManyLookups);
+measure(doManyLookups);
+measure(lookupAndCache);
 measure(lookupAndCache);
 
 

@@ -1,3 +1,24 @@
+//
+// Is it faster to call a function directly or call it as if it was a method
+// on an object?
+//
+// The benchmark used to show that Function is many times slower until we
+// added
+//
+//       "Speed" + "you" + "JS" + "with" +
+//       "this" + "one" + "weird" + "trick";
+//
+// in the setup.
+//
+// WAAAAAAT?
+//
+// Now they are equaly fast!
+//
+// (Hint: it was not optimized before, not it is --- both benchmarks now
+// measure the sound of silence because LICM completely moves the "meat"
+// out of benchmarking loops).
+//
+
 load("../jsperf.js");
 
 Benchmark.prototype.setup = function() {
@@ -16,7 +37,7 @@ Benchmark.prototype.setup = function() {
             len
         );
     }
-    
+
     var MK = function() { };
     MK.prototype.mk = mk;
     var mker = new MK;
