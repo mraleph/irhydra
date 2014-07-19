@@ -32,7 +32,7 @@ List<IR.Method> preparse(String str) {
   final tagRe = new RegExp(r"(begin|end)_(compilation|cfg)\n");
 
   // Matches line containing method name and optimization id.
-  final compilationRe = new RegExp(r'name "([^"]*)"\n\s+method "[^"]*:(\d+)"');
+  final compilationRe = new RegExp(r'name "([^"]*)"\n\s+method "[^"]*(:\d+)?"');
 
   // Matches line containing the name field.
   final nameRe = new RegExp(r'name "([^"]*)"');
@@ -53,8 +53,9 @@ List<IR.Method> preparse(String str) {
       // This is the compilation record for the method.
       // Extract the name from the record.
       final substr = str.substring(start, match.start);
-      parsing.match(substr, compilationRe, (name, optId) {
+      parsing.match(substr, compilationRe, (name, [optId]) {
         // Create the method and make it current.
+        if (optId != null) optId = optId.substring(1);
         method = new IR.Method(name_parser.parse(name),
                                optimizationId: optId);
         methods.add(method);

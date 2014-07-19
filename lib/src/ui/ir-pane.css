@@ -101,6 +101,7 @@
 a {
   color: #428bca;
   text-decoration: none;
+  cursor: pointer;
 }
 
 a:hover,
@@ -130,8 +131,8 @@ pre {
 }
 
 .hir-range,
-.hir-type, 
-.hir-changes, 
+.hir-type,
+.hir-changes,
 .lir-env,
 .lir-map {
   color: rgba(0, 0, 0, 0.25);

@@ -124,7 +124,7 @@ class IRPane extends PolymerElement {
       final target = e.target;
       if (target is AnchorElement) {
         final toHref = target.attributes['href'];
-        if (toHref.startsWith("#ir-")) {
+        if (toHref != null && toHref.startsWith("#ir-")) {
           var row = target;
           while (row != null && row is! TableRowElement) {
             row = row.parent;
