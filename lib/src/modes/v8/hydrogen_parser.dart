@@ -144,7 +144,7 @@ Map parse(IR.Method method, Function ir) {
 
 class CfgParser extends parsing.ParserBase {
   final builder = new IR.CfgBuilder();
-  var block;
+  IR.Block block;
 
   var lirOperands, hirOperands;
 
@@ -254,6 +254,11 @@ class CfgParser extends parsing.ParserBase {
     r"begin_block": {
       r'name "([^"]*)"': (name) {
         block = builder.block(name);
+      },
+
+      r'flags "dead"': () {
+        block.mark("dead");
+        block.mark("v8.dead");
       },
 
       r"successors(.*)$": (successors) {

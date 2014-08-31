@@ -105,7 +105,8 @@ display(pane, blocks, attachRef, {blockTicks}) {
     final color = edge.isFeedback ? "red" : "black";
 
     final path = _pathFromPoints(edge.points, color);
-    if (edge.source.data.marks.contains("dead")) {
+    if (edge.source.data.marks.contains("dead") ||
+        edge.target.data.marks.contains("v8.dead")) {
       deadGroup.nodes.add(path);
     } else {
       svg.nodes.add(path);
