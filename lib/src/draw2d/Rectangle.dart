@@ -69,7 +69,7 @@ class Rectangle {
   bool containsPoint(Point p) {
     return contains(p.x, p.y);
   }
-  
+
   /**
    * Returns whether the input object is equal to this Rectangle or not.
    * Rectangles are equivalent if their x, y, height, and width values are the
@@ -144,7 +144,7 @@ class Rectangle {
     if (p.y < y) result = result | PositionConstants.NORTH; else if (p.y >= (y + height)) result = result | PositionConstants.SOUTH;
     return result;
   }
- 
+
   /**
    * @see java.lang.Object#hashCode()
    */
@@ -237,7 +237,7 @@ class Rectangle {
    * @since 2.0
    */
   String toString() {
-    return "Rectangle(?)"; // TODO(vegorov)
+    return "Rectangle(${x}, ${y}, ${x + width}, ${y + height})";
   }
 
   /**

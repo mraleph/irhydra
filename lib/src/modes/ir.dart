@@ -214,6 +214,8 @@ class Block {
     assert(id >= 0);
   }
 
+  toString() => name;
+
   /** Creates an edge from this [Block] to the block [to]. */
   edge(Block to) {
     to.predecessors.add(this);

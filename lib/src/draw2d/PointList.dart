@@ -18,6 +18,8 @@ part of graph;
 class PointList {
   final List<Point> points = new List<Point>();
 
+  get iterator => points.iterator;
+
   Rectangle bounds;
 
   PointList();

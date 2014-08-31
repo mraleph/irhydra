@@ -104,7 +104,7 @@ display(pane, blocks, attachRef, {blockTicks}) {
   for (var edge in g.edges) {
     final color = edge.isFeedback ? "red" : "black";
 
-    final path = _pathFromPoints(edge.points, color);
+    final path = _pathFromPoints(g.size, edge.points, color);
     if (edge.source.data.marks.contains("dead") ||
         edge.target.data.marks.contains("v8.dead")) {
       deadGroup.nodes.add(path);
@@ -158,7 +158,12 @@ _layoutDirectedGraph(g) => new graph.DirectedGraphLayout().visit(g);
  *
  * The path is finished with an arrowhead.
  */
-_pathFromPoints(points, color) {
+_pathFromPoints(graph.Dimension size, points, color) {
+  for (var point in points) {
+    point.x = math.min(size.width, math.max(0, point.x));
+    point.y = math.min(size.height, math.max(0, point.y));
+  }
+
   var path = ["M", points[0].x, points[0].y];  // Start.
 
   for (var i = 1; i < points.length - 1; i++) {
