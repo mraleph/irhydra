@@ -122,6 +122,12 @@ class LoopId {
 
 // TODO(mraleph): we pass parser as [irInfo] make a real IRInfo class.
 annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
+  if (method.sources.isEmpty) {
+    // TODO(mraleph) should some fluffy status notification about this.
+    print("source_annotator.annotate failed: sources not available (code.asm not loaded?)");
+    return;  // Sources not loaded.
+  }
+
   final sources = method.sources.map((f) => f.source.toList()).toList();
 
   sourceId(IR.SourcePosition srcPos) => method.inlined[srcPos.inlineId].source.id;
