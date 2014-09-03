@@ -48,8 +48,8 @@ class RouteEdges extends GraphVisitor {
         neighbor = node.left;
         o = new Rectangle(neighbor.x, neighbor.y, neighbor.width, neighbor.height);
         padding = g.getPadding(neighbor);
-        o.width += padding.right + padding.left + edge.padding;
-        o.x -= (padding.left + edge.padding);
+        o.width += padding.right + edge.padding - 1;
+        o.x -= padding.left;
         o.unionPoint(o.getLocation().translate(P1));
         router.addObstacle(o);
       }
@@ -57,8 +57,8 @@ class RouteEdges extends GraphVisitor {
         neighbor = node.right;
         o = new Rectangle(neighbor.x, neighbor.y, neighbor.width, neighbor.height);
         padding = g.getPadding(neighbor);
-        o.width += padding.right + padding.left + edge.padding;
-        o.x -= (padding.left + edge.padding);
+        o.width += padding.right;
+        o.x -= padding.left + edge.padding - 1;
         o.unionPoint(o.getLocation().translate(P2));
         router.addObstacle(o);
       }
