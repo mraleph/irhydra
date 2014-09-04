@@ -66,6 +66,7 @@ class HydraElement extends PolymerElement {
   @observable var activeTab = "ir";
 
   @observable var showSource = false;
+  @observable var demangleNames = true;
 
   @observable var progressValue;
   @observable var progressUrl;
@@ -170,6 +171,10 @@ class HydraElement extends PolymerElement {
 
   toggleInterestingMode() {
     showSource = !showSource;
+  }
+
+  toggleNameDemangling() {
+    demangleNames = !demangleNames;
   }
 
   closeSplash() {
@@ -298,6 +303,7 @@ class HydraElement extends PolymerElement {
 
   reset() {
     mode = methods = null;
+    demangleNames = true;
   }
 
   methodsChanged() {
@@ -334,6 +340,9 @@ class HydraElement extends PolymerElement {
 
       mode = newMode;
     }
+
+    final re = new RegExp(r"\$\d+$");
+    demangleNames = !mode.methods.any((m) => re.hasMatch(m.name.full));
 
     methods = toObservable(mode.methods);
     closeSplash();

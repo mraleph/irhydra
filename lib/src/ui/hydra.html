@@ -29,6 +29,9 @@
       <template if="{{files != null}}">
         <button href="#" on-click="{{reloadCurrentFiles}}" title="Reload Current Files"><i class="fa fa-repeat"></i></button>
       </template>
+      <template if="{{methods != null && !methods.isEmpty}}">
+        <button on-click="{{toggleNameDemangling}}" title="Demangle method names" class="{{ {'unchecked': !demangleNames} }}"><i class="fa fa-dollar"></i></button>
+      </template>
       <spinner-element id="spinner"></spinner-element>
       <template if="{{ir != null}}">
         <switching-scope active="{{activeTab}}" class="pane-controls">
@@ -60,7 +63,7 @@
     <div class="pane">
       <template if="{{methods != null && !methods.isEmpty}}">
         <div class="sidebar">
-          <method-list methods="{{methods}}" selected="{{phase}}"></method-list>
+          <method-list methods="{{methods}}" selected="{{phase}}" demangleNames="{{demangleNames}}"></method-list>
         </div>
         <template if="{{ir == null}}">
           <div class="ir-placeholder">

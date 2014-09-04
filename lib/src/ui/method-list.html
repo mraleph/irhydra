@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <link rel="import" href="../../../../packages/polymer/polymer.html">
+<link rel="import" href="method-name.html">
 <polymer-element name="method-list">
   <template>
     <link rel="stylesheet" type="text/css" href="method-list.css">
@@ -9,25 +10,26 @@
           <template repeat="{{method in filteredMethods | enumerate }}">
             <li>
               <template if="{{method.value.phases.length != 1}}">
-                <h3 class="deopt-{{method.value.worstDeopt}}">
-                  <template if="{{method.value.name.source != null}}">
-                    <div><span class="method-name-source">{{method.value.name.source}}</span></div>
-                  </template>
-                  {{method.value.name.display}}
-                </h3>
+                <method-name method="{{method.value}}" demangle="{{demangleNames}}">
+                </method-name>
                 <ul class="phases">
                   <template repeat="{{phase in method.value.phases | enumerate}}">
-                    <li class="{{ { 'selected': phase.value == selected } }}"><a href="#phase-{{method.index}}-{{phase.index}}" on-click="{{selectPhase}}" data-phase="{{method.index}},{{phase.index}}">{{phase.value.name}}</a></li>
+                    <li class="{{ { 'selected': phase.value == selected } }}">
+                      <a href="#phase-{{method.index}}-{{phase.index}}" on-click="{{selectPhase}}" data-phase="{{method.index}},{{phase.index}}">
+                        {{phase.value.name}}
+                      </a>
+                    </li>
                   </template>
                 </ul>
               </template>
               <template if="{{method.value.phases.length == 1}}">
-                <h3 class="deopt-{{method.value.worstDeopt}} {{ { 'selected': method.value.phases.last == selected } }}">
-                  <template if="{{method.value.name.source != null}}">
-                    <div><span class="method-name-source">{{method.value.name.source}}</span></div>
-                  </template>
-                  <a href="#phase-{{method.index}}-0" on-click="{{selectPhase}}" data-phase="{{method.index}},0">{{method.value.name.display}}</a>
-                </h3>
+                <method-name method="{{method.value}}"
+                             demangle="{{demangleNames}}"
+                             targetHref="#phase-{{method.index}}-0"
+                             data-phase="{{method.index}},0"
+                             class="{{ { 'selected': method.value.phases.last == selected } }}"
+                             on-click="{{selectPhase}}">
+                </method-name>
               </template>
             </li>
           </template>

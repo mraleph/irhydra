@@ -10,6 +10,7 @@ class MethodList extends PolymerElement {
   @published var methods;
   @published var filter = "";
   @published var selected;
+  @published var demangleNames = true;
   @observable var filteredMethods;
   @observable var sortByDeopts = false;
 

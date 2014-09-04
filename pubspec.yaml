@@ -1,13 +1,13 @@
 name: irhydra
 dependencies:
+  archive: any
   browser: any
-  js: any
-  polymer: '>=0.12.0-dev'
-  sass: 0.3.1
   collection: any
   fixnum: any
-  archive: any
+  js: 0.2.2
   paper_elements: any
+  polymer: '>=0.12.0-dev'
+  sass: 0.3.1
 transformers:
 - sass
 - polymer:
