@@ -21,6 +21,9 @@ import 'package:irhydra/src/modes/ir.dart' as IR;
 canRecognize(text) =>
   text.contains("*** BEGIN CFG") || text.contains("*** BEGIN CODE");
 
+const PHASE_AFTER_OPTIMIZATIONS = "After Optimizations";
+const PHASE_CODE = "Code";
+
 /** Preparse given dump extracting information about compiled functions. */
 parse(str) {
   // Matches tags that start/end cfg and code dumps.
@@ -37,10 +40,18 @@ parse(str) {
 
   // Create a new function if needed.
   createFunction(name, {phaseName}) {
+    if (phaseName == "Code" &&
+        !functions.isEmpty &&
+        !functions.last.phases.isEmpty &&
+        functions.last.name.full == name &&
+        functions.last.phases.last.name == PHASE_AFTER_OPTIMIZATIONS) {
+      return functions.last;
+    }
+
     if (functions.isEmpty ||
         functions.last.name.full != name ||
         functions.last.phases.last.name == phaseName ||
-        functions.last.phases.last.name == "After Optimizations" ||
+        functions.last.phases.last.name == PHASE_AFTER_OPTIMIZATIONS ||
         functions.last.phases.last.code != null) {
       final function = new IR.Method(name_parser.parse(name));
       functions.add(function);
@@ -86,11 +97,11 @@ parse(str) {
       final name = codeNameRe.firstMatch(firstLine).group(1);
 
       // Create function to host the phase.
-      final function = createFunction(name, phaseName: "Code");
+      final function = createFunction(name, phaseName: PHASE_CODE);
       if (!function.phases.isEmpty) {
         function.phases.last.code = substr;
       } else {
-        function.phases.add(new IR.Phase(function, "Code", code: substr));
+        function.phases.add(new IR.Phase(function, PHASE_CODE, code: substr));
       }
     }
   }
