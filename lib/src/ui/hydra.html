@@ -3,6 +3,7 @@
 <link rel="import" href="../../../../packages/paper_elements/paper_toast.html">
 <link rel="import" href="../../../../packages/paper_elements/paper_progress.html">
 <link rel="import" href="../modes/v8/ui/descriptions.html">
+<link rel="import" href="compilation-timeline.html">
 <link rel="import" href="dropdown-element.html">
 <link rel="import" href="deopt-links.html">
 <link rel="import" href="graph-pane.html">
@@ -67,7 +68,13 @@
         </div>
         <template if="{{ir == null}}">
           <div class="ir-placeholder">
-            <span>select a method</span>
+            <div>select method</div>
+            <template if="{{timeline != null}}">
+              <compilation-timeline events="{{timeline}}">
+              </compilation-timeline>
+            </template>
+            <template if="{{timeline == null}}">
+            </template>
           </div>
         </template>
         <template if="{{ir != null}}">

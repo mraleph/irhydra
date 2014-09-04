@@ -72,6 +72,8 @@ class HydraElement extends PolymerElement {
   @observable var progressUrl;
   @observable var progressAction;
 
+  @observable var timeline;
+
 
   var blockRef;
 
@@ -340,6 +342,8 @@ class HydraElement extends PolymerElement {
 
       mode = newMode;
     }
+
+    timeline = mode.timeline;
 
     final re = new RegExp(r"\$\d+$");
     demangleNames = !mode.methods.any((m) => re.hasMatch(m.name.full));

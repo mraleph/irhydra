@@ -29,8 +29,8 @@ canRecognize(String text) =>
   text.contains(CODE_MARKER) || DEOPT_MARKER.hasMatch(text) || SOURCE_MARKER.hasMatch(text);
 
 /** Split [text] into separate optimized code dumps. */
-List<IR.Method> preparse(String text) =>
-    (new PreParser(text)..parse()).methods;
+List<IR.Method> preparse(String text, timeline) =>
+    (new PreParser(text, timeline)..parse()).methods;
 
 /** Parse given code dump. */
 Code parse(Iterable<String> lines) =>
@@ -39,6 +39,8 @@ Code parse(Iterable<String> lines) =>
 
 /** Class that recognizes code disassembly and deoptimization events */
 class PreParser extends parsing.ParserBase {
+  final timeline;
+
   final methods = <IR.Method>[];
 
   final optId = new Optional();
@@ -46,7 +48,7 @@ class PreParser extends parsing.ParserBase {
   IR.Method currentMethod;
   var timestamp = 0;
 
-  PreParser(text) : super(text.split('\n'));
+  PreParser(text, this.timeline) : super(text.split('\n'));
 
   enterMethod(name, optimizationId) {
     if (currentMethod != null && currentMethod.optimizationId == optimizationId) {
@@ -55,6 +57,7 @@ class PreParser extends parsing.ParserBase {
     currentMethod = new IR.Method(name_parser.parse(name),
                                   optimizationId: optimizationId);
     methods.add(currentMethod);
+    timeline.add(currentMethod);
   }
 
   leaveMethod() { currentMethod = null; }
@@ -62,6 +65,7 @@ class PreParser extends parsing.ParserBase {
   attachDeopt(IR.Deopt deopt) {
     for (var currentMethod in methods.reversed) {
       if (currentMethod.optimizationId == deopt.optimizationId) {
+        timeline.add(deopt);
         currentMethod.addDeopt(deopt);
         break;
       }

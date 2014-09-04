@@ -222,6 +222,8 @@ button.unchecked {
   font-weight: 200;
   background: #ECF0F1;
   color: #BDC3C7;
+  overflow-x: auto;
+  flex-flow: column;
 }
 
 .fa {
