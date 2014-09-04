@@ -265,6 +265,11 @@ class HydraElement extends PolymerElement {
           instr = deopt.lir;
         }
       }
+    } else {
+      try {
+        description = toHtml((querySelector('[dependent-code-descriptions]') as TemplateElement).content
+            .querySelector("[data-reason='${deopt.reason}']").clone(true));
+      } catch (e) { }
     }
 
     final connector = (deopt.reason == null) ? "at" : "due to";
@@ -282,7 +287,6 @@ class HydraElement extends PolymerElement {
     }
 
     if (description != null) {
-      contents.add("<br/>");
       contents.add(description);
     }
 

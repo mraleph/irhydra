@@ -1,0 +1,46 @@
+
+<template dependent-code-descriptions>
+  <p data-reason="weak-ic">
+    Garbage collector forced deoptimization of this code because it contained a weak reference to a map (hidden class) that died during this GC cycle.
+  </p>
+
+  <p data-reason="weak-code">
+    Garbage collector forced deoptimization of this code because it contained a weak reference to a map (hidden class) that died during this GC cycle.
+  </p>
+
+  <p data-reason="transition">
+    This optimized code depended on a transition between maps (hidden classes) that was replaced by a new version.
+  </p>
+
+  <p data-reason="prototype-check">
+    This optimized code was generated in the assumption that certain prototype never changes hidden class.
+    It was deoptimized because that prototype transitioned to a new hidden class.
+  </p>
+
+  <p data-reason="elements-cant-be-added">
+    This optimized code was generated in the assumption that certain object has no elements (indexed properties <code>"0"</code>, <code>"1"</code>, ...).
+    It was deoptimized because elements were added to that object.
+  </p>
+
+  <p data-reason="property-cell-changed">
+    This optimized code was generated in the assumption that certain global variable stays contant. It was deoptimized because value of that variable changed.
+  </p>
+
+  <p data-reason="field-type">
+    This optimized code was generated in the assumption that certain properties have specific type in all instances of the given hidden class.
+    It was deoptimized because this assumption was violated.
+  </p>
+
+  <p data-reason="initial-map-changed">
+    This optimized code was generated in the assumption that initial map associated with the given constructor stays the same.
+    This assumption was violated.
+  </p>
+
+  <p data-reason="allocation-site-tenuring-changed">
+    This optimized code embeds tenuring decisions that were invalidated by allocation site profiling.
+  </p>
+
+  <p data-reason="allocation-site-transition-changed">
+    This optimized code embeds elements transition decisions that were invalidated by allocation site profiling.
+  </p>
+</template>
