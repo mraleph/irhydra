@@ -249,11 +249,14 @@ class HydraElement extends PolymerElement {
     final contents = [];
 
     var instr = deopt.hir;
-    var description = mode.descriptions.lookup("hir", deopt.hir.op);
-    if (description == null) {
-      description = mode.descriptions.lookup("lir", deopt.lir.op);
-      if (description != null) {
-        instr = deopt.lir;
+    var description;
+    if (deopt.hir != null) {
+      description = mode.descriptions.lookup("hir", deopt.hir.op);
+      if (description == null && deopt.lir != null) {
+        description = mode.descriptions.lookup("lir", deopt.lir.op);
+        if (description != null) {
+          instr = deopt.lir;
+        }
       }
     }
 
@@ -262,10 +265,15 @@ class HydraElement extends PolymerElement {
 
     if (deopt.reason != null) {
       contents.add("<p><strong>${deopt.reason}</strong></p>");
-      contents.add("<h4>at</h4>");
     }
 
-    contents.add(irpane.rangeContentAsHtmlFull(instr.id));
+    if (instr != null) {
+      if (deopt.reason != null) {
+        contents.add("<h4>at</h4>");
+      }
+      contents.add(irpane.rangeContentAsHtmlFull(instr.id));
+    }
+
     if (description != null) {
       contents.add("<br/>");
       contents.add(description);

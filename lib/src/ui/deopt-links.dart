@@ -28,8 +28,14 @@ class DeoptLinksElement extends PolymerElement {
 
   deoptsChanged() {
     deoptInfo = deopts.map((deopt) {
-      return new _DeoptInfo(deopt.hir.id != null ? deopt.hir.id : deopt.lir.id,
-                            deopt.type);
+      var targetId = null;
+      if (deopt.hir != null) {
+        targetId = deopt.hir.id;
+      } else if (deopt.lir != null) {
+        targetId = deopt.lir.id;
+      }
+
+      return new _DeoptInfo(targetId, deopt.type);
     }).toList();
   }
 

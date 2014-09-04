@@ -87,6 +87,10 @@ Map parse(IR.Method method, Function ir) {
   final parser = new CfgParser(ir())..parse();
 
   for (var deopt in method.deopts) {
+    if (deopt.id == null) {
+      continue;
+    }
+
     final lirId = parser.bailouts[deopt.id];
     deopt.lir = parser.id2lir[lirId];
 

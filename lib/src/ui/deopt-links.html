@@ -58,7 +58,12 @@
     </style>
     <template repeat="{{deopt in deoptInfo | enumerate}}">
       <div class="x-deopt-link x-deopt-link-{{deopt.value.type}}" >
-        <a href="#deopt-ir-{{deopt.value.id}}" on-click="{{jumpToDeoptAction}}" on-mouseenter="{{enterDeoptAction}}" on-mouseleave="{{leaveDeoptAction}}" data-target="{{deopt.index}}">deopt @{{deopt.value.id}}</a>
+        <template if="{{deopt.value.id != null}}">
+          <a href="#deopt-ir-{{deopt.value.id}}" on-click="{{jumpToDeoptAction}}" on-mouseenter="{{enterDeoptAction}}" on-mouseleave="{{leaveDeoptAction}}" data-target="{{deopt.index}}">deopt @{{deopt.value.id}}</a>
+        </template>
+        <template if="{{deopt.value.id == null}}">
+          <a href="#" on-mouseenter="{{enterDeoptAction}}" on-mouseleave="{{leaveDeoptAction}}" data-target="{{deopt.index}}">deopt</a>
+        </template>
       </div>
     </template>
   </template>
