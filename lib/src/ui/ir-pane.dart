@@ -23,6 +23,7 @@ import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/modes/code.dart' as code;
 import 'package:irhydra/src/task.dart';
 import 'package:irhydra/src/xref.dart' as xref;
+import 'package:irhydra/src/ui/graph.dart' as graph;
 
 import 'package:js/js.dart' as js;
 
@@ -67,6 +68,7 @@ class IRPane extends PolymerElement {
 
   @published var codeMode;
   @published var ir;
+  @published var showSource = false;
 
   /** Lines currently added to the component */
   final List<IRPaneLine> _lines = <IRPaneLine>[];
@@ -91,8 +93,8 @@ class IRPane extends PolymerElement {
     _renderTask = new Task(render, frozen: true);
   }
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
     _table = $['rows'];
 
     final info = new xref.XRef((x) => x, xref.POPOVER);
@@ -118,11 +120,41 @@ class IRPane extends PolymerElement {
       info.hide();
     });
 
+    _table.onClick.listen((e) {
+      final target = e.target;
+      if (target is AnchorElement) {
+        final toHref = target.attributes['href'];
+        if (toHref != null && toHref.startsWith("#ir-")) {
+          var row = target;
+          while (row != null && row is! TableRowElement) {
+            row = row.parent;
+          }
+
+          var toId = toHref.substring("#ir-".length);
+          var fromId = row.children.first.children.first.children.first.attributes['id'].substring("ir-".length);
+          var fromHref = "#ir-${fromId}";
+
+
+          scrollToRow(toId);
+
+          final history = document.window.history;
+          final location = document.window.location;
+          if (!location.href.endsWith(fromHref)) {
+            history.pushState(fromId, fromHref, fromHref);
+          }
+          history.pushState(toId, toHref, toHref);
+
+          e.preventDefault();
+        }
+      }
+    });
+
     _renderTask.unfreeze();
   }
 
   irChanged() => _renderTask.schedule();
   codeModeChanged() => _renderTask.schedule();
+  showSourceChanged() => _renderTask.schedule();
 
   render() {
     final stopwatch = new Stopwatch()..start();
@@ -130,6 +162,12 @@ class IRPane extends PolymerElement {
 
     if (ir == null) {
       return;
+    }
+
+    if (showSource) {
+      _table.classes.add("view-source");
+    } else {
+      _table.classes.remove("view-source");
     }
 
     formatOpcode(ctx, opcode) {
@@ -146,10 +184,10 @@ class IRPane extends PolymerElement {
       new SpanElement()..append(formatOpcode(ctx, opcode))
                        ..appendText(" ")
                        ..append(new SpanElement()..nodes.addAll(operands.map(ctx.format)));
-    
+
     addEx(ctx, id, opcode, operands) {
       if (opcode == null) {
-        return;
+        return null;
       }
 
       if (ir.method.srcMapping != null) {
@@ -167,17 +205,23 @@ class IRPane extends PolymerElement {
                 ..append(span('src-range-point', rangeMiddle))
                 ..appendText(rangeEnd)
                 ..append(span('src-range-transparent', end)))));
-          add("", el);
+          add("", el).row.classes.add("source-line");
         }
       }
 
-      if (id == null) {
-        id = "";
+      var gutter;
+      if (id is IR.MultiId) {
+        id = gutter = id.ids;
+      } else if (id == null) {
+        gutter = "";
+      } else {
+        gutter = id;
       }
 
-      var ln = add(id, format(ctx, opcode, operands));
+      var ln = add(gutter, format(ctx, opcode, operands), id: id);
       ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
       ln.text.parentNode.classes.add("${ctx.ns}-line");
+      return ln;
     }
 
     /** Output a [Branch] instruction. */
@@ -211,10 +255,21 @@ class IRPane extends PolymerElement {
       ir.code.prologue.forEach(codeRenderer.display);
     }
 
+    final nesting = graph.computeLoopNesting(ir.blocks);
+
+    final maxNesting = nesting.fold(0, math.max);
+
+    hotness(block) => math.max(1, 5 - maxNesting + nesting[block.id]);
+
     for (var block in ir.blocks.values) {
-      // Block name.
+      // currentRowClass = graph.selectBorder(block, nesting[block.id]);
+      if (nesting[block.id] > 0) {
+        currentRowClass = "loop-${nesting[block.id]} loop-hotness-${hotness(block)}";
+      } else {
+        currentRowClass = null;
+      }
       add(" ", " ");
-      add(span('boldy', block.name), " ", id: block.name);
+      final blockHeader = add(span('boldy', block.name), " ", id: block.name);
 
       for (var ctx in contexts) {
         final blockIr = ctx.ir(block);
@@ -223,7 +278,12 @@ class IRPane extends PolymerElement {
         var branch = blockIr.last;
         for (var index = 0; index < blockIr.length - 1; index++) {
           final instr = blockIr[index];
-          addEx(ctx, instr.id, instr.op, instr.args);
+          // if (showSource && !ir.method.interesting.containsKey(instr.id)) continue;
+          final ln = addEx(ctx, instr.id, instr.op, instr.args);
+          if (ln != null &&
+              ir.method.interesting != null &&
+              !ir.method.interesting.containsKey(instr.id))
+            ln.row.classes.add("not-interesting");
           emitInlineCode(ctx, instr);
         }
 
@@ -263,9 +323,12 @@ class IRPane extends PolymerElement {
   }
 
   _createDeoptMarkersAtId(deopt, id) {
-    final marker = _createDeoptMarkerFor(deopt);
-    marker.attributes["id"] = "deopt-ir-${id}";
-    line(id).text.append(marker);
+    final l = line(id);
+    if (l != null) {
+      final marker = _createDeoptMarkerFor(deopt);
+      marker.attributes["id"] = "deopt-ir-${id}";
+      l.text.append(marker);
+    }
   }
 
   /** Create marker for [deopt] at the line corresponding to [deopt.lirId]. */
@@ -300,6 +363,8 @@ class IRPane extends PolymerElement {
     return (range != null) ? _lines[range.start] : null;
   }
 
+  var currentRowClass;
+
   /**
    * Append a new line with the given [gutter] and [text] content.
    *
@@ -311,23 +376,36 @@ class IRPane extends PolymerElement {
    *
    * Return newly created [IRPaneLine].
    */
-  IRPaneLine add(gutter, text, {String id, String klass}) {
-    if (gutter is String && (id == null)) {
-      id = gutter;
-    }
+  IRPaneLine add(gutter, text, {id, String klass}) {
+    assert(gutter is List == id is List);
 
     // Wrap raw strings in Text element.
-    gutter = _wrapElement(gutter);
     text = _wrapElement(text);
 
     // First column content: gutter.
-    gutter = new Element.html("<pre/>")..append(
-        new AnchorElement()
-          ..id = href(id)
-          ..nodes.add(gutter)
-          ..onClick.listen((event) {
-            if (id != null) showRefsTo(id);
-          }));
+    wrapSingleId(text, id) =>
+      new Element.html("<pre/>")..append(
+          (id != null) ? (new AnchorElement()
+            ..id = href(id)
+            ..nodes.add(_wrapElement(text))
+            ..onClick.listen((event) {
+              if (id != null) showRefsTo(id);
+            })) : _wrapElement(text));
+
+    if (gutter is String || gutter is Element) {
+      gutter = wrapSingleId(gutter, id);
+    } else if (gutter is List<String>) {
+      if (id is List<String> && (id.length == gutter.length)) {
+        gutter = new Element.tag("span")..nodes.addAll(
+          new List.generate(gutter.length, (idx) =>
+            wrapSingleId(gutter[idx], id[idx]))
+        );
+      } else {
+        gutter = wrapSingleId(gutter.join(', '), null);
+      }
+    } else {
+      throw "gutter must be either String or List<String>: ${gutter}";
+    }
 
 
     // Second column content: text.
@@ -336,8 +414,11 @@ class IRPane extends PolymerElement {
     final row = new TableRowElement()
       ..nodes.addAll([
         new TableCellElement()..nodes.add(gutter),
-        new TableCellElement()..nodes.add(text)
+        new TableCellElement()
+          ..nodes.add(text)
       ]);
+
+    if (currentRowClass != null) row.classes.add(currentRowClass);
 
     if (klass != null) {
       row.classes.add(klass);
@@ -346,9 +427,14 @@ class IRPane extends PolymerElement {
     // Append the row.
     _table.nodes.add(row);
 
-    final line = new IRPaneLine(gutter, text);
+    final line = new IRPaneLine(gutter, text, row);
     _lines.add(line);
-    if (id != null) _ranges[id] = new _Range(_lines.length - 1);
+
+    if (id is String) {
+      _ranges[id] = new _Range(_lines.length - 1);
+    } else if (id is List) {
+      for (var i in id) _ranges[i] = new _Range(_lines.length - 1);
+    }
 
     return line;
   }
@@ -454,12 +540,35 @@ class IRPane extends PolymerElement {
       _refsPanel = null;
     }
   }
+
+  scrollToRow(id) {
+    final l = line(id);
+    if (l != null) {
+      l.row.scrollIntoView();
+    }
+
+    var range;
+    if (_ranges[id] == null) {
+      range = js.context.jQuery(l.row);
+    } else {
+      final r = _ranges[id];
+      range = js.context.jQuery(js.array(_table.nodes.sublist(r.start, r.start + r.length)));
+    }
+
+    range.children().effect("highlight", js.map({}), 1500);
+
+    // final anchor = irpane.shadowRoot.querySelector("#${to}");
+    // if (anchor != null) {
+    //  anchor.scrollIntoView();
+    // }
+  }
+
 }
 
 /** Single [IRPane] line */
 class IRPaneLine {
-  final gutter, text;
-  IRPaneLine(Element this.gutter, Element this.text);
+  final gutter, text, row;
+  IRPaneLine(Element this.gutter, Element this.text, Element this.row);
 }
 
 /** Range information associated with identifier on the [IRPane] */

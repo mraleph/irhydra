@@ -9,6 +9,8 @@ import 'package:polymer/polymer.dart';
 class MethodList extends PolymerElement {
   @published var methods;
   @published var filter = "";
+  @published var selected;
+  @published var demangleNames = true;
   @observable var filteredMethods;
   @observable var sortByDeopts = false;
 
@@ -20,8 +22,8 @@ class MethodList extends PolymerElement {
 
   MethodList.created() : super.created();
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
 
     shadowRoot.querySelectorAll('[data-title]').forEach((node){
       js.context.jQuery(node).tooltip(js.map({
@@ -32,9 +34,7 @@ class MethodList extends PolymerElement {
 
   selectPhase(a, b, c) {
     final phaseId = c.attributes['data-phase'].split(',').map(int.parse).toList();
-    final method = filteredMethods[phaseId[0]];
-    final phase = method.phases[phaseId[1]];
-    fire("selected", detail: [method, phase]);
+    selected = filteredMethods[phaseId[0]].phases[phaseId[1]];
   }
 
   sortByDeoptsChanged() => _recomputeList(force: true);

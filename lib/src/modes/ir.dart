@@ -16,6 +16,8 @@
 library ir;
 
 import 'dart:math' show min;
+import 'package:observe/observe.dart';
+import 'package:collection/equality.dart' show ListEquality;
 
 // Prevent tree shaking of this library.
 @MirrorsUsed(targets: const['*'])
@@ -52,6 +54,8 @@ class Name {
  * Usually a single named step in the compilation pipeline.
  */
 class Phase {
+  final Method method;
+
   /** Phase's name */
   final String name;
 
@@ -61,7 +65,7 @@ class Phase {
   /** Native code artifact produced by the phase. */
   var code;
 
-  Phase(this.name, {this.ir, this.code});
+  Phase(this.method, this.name, {this.ir, this.code});
 }
 
 /**
@@ -90,16 +94,11 @@ class Deopt {
 
   Deopt(this.timestamp, this.id, this.raw, { this.type: "eager", this.optimizationId, this.reason});
 
-  static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2 };
+  static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2, "none": 3 };
   static final _types = _typesOrdering.keys.toList();
 
-  static worstType(deopts) {
-    if (deopts.isEmpty) {
-      return "none";
-    }
-
-    return _types[deopts.map((deopt) => _typesOrdering[deopt.type]).reduce(min)];
-  }
+  static worst(type, deopt) =>
+    _types[min(_typesOrdering[type], _typesOrdering[deopt.type])];
 }
 
 class FunctionSource {
@@ -120,7 +119,7 @@ class SourcePosition {
     inlineId == other.inlineId && position == other.position;
 
   get hashCode =>
-    other.inlineId.hashCode + other.position.hashCode;
+    inlineId.hashCode + position.hashCode;
 
   toString() => "<${inlineId}:${position}>";
 }
@@ -154,7 +153,7 @@ class InlinedFunction {
  *
  * A unit of granularity for the compilation pipeline.
  */
-class Method {
+class Method extends Observable {
   /** Unique optimization identifier for this method. */
   final optimizationId;
 
@@ -162,23 +161,27 @@ class Method {
   final Name name;
 
   /** List of [Phase] artifacts associated with this method. */
-  final List<Phase> phases = <Phase>[];
+  final List<Phase> phases = new ObservableList<Phase>();
 
   /** List of [Deopt] artifacts associated with this method. */
-  final List<Deopt> deopts = <Deopt>[];
+  @observable final List<Deopt> deopts = new ObservableList<Deopt>();
 
   /** List of function sources associated with this method. */
   final List<FunctionSource> sources = <FunctionSource>[];
 
   final List<InlinedFunction> inlined = <InlinedFunction>[];
 
-  get hasDeopts => deopts.length > 0;
-  get hasSinglePhase => phases.length == 1;
-  get worstDeopt => Deopt.worstType(deopts);
+  @observable var worstDeopt = 'none';
 
   var srcMapping;
+  var interesting;
 
   Method(this.name, {this.optimizationId});
+
+  addDeopt(deopt) {
+    worstDeopt = Deopt.worst(worstDeopt, deopt);
+    deopts.add(deopt);
+  }
 }
 
 class ParsedIr {
@@ -211,6 +214,8 @@ class Block {
     assert(id >= 0);
   }
 
+  toString() => name;
+
   /** Creates an edge from this [Block] to the block [to]. */
   edge(Block to) {
     to.predecessors.add(this);
@@ -225,10 +230,20 @@ class Block {
   }
 }
 
+class MultiId {
+  final List<String> ids;
+
+  MultiId(this.ids);
+
+  operator == (other) {
+    return (other is MultiId) && const ListEquality().equals(ids, other.ids);
+  }
+}
+
 /** IR instruction. */
 class Instruction {
   /** Unique identifier (e.g. SSA name). */
-  final String id;
+  final id;
 
   /** Opcode */
   final String op;

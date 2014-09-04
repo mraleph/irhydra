@@ -1,5 +1,10 @@
 <!DOCTYPE html>
+<link rel="import" href="../../../../packages/polymer/polymer.html">
+<link rel="import" href="../../../../packages/paper_elements/paper_toast.html">
+<link rel="import" href="../../../../packages/paper_elements/paper_progress.html">
+<link rel="import" href="../modes/v8/ui/dependent-code-deopt-reasons.html">
 <link rel="import" href="../modes/v8/ui/descriptions.html">
+<link rel="import" href="compilation-timeline.html">
 <link rel="import" href="dropdown-element.html">
 <link rel="import" href="deopt-links.html">
 <link rel="import" href="graph-pane.html">
@@ -13,249 +18,40 @@
 
 <polymer-element name="hydra-app">
   <template>
-    <style>
-      @host {
-         *, :scope, scrollable-table {
-           position: fixed;
-           left: 0px;
-           right: 0px;
-           top: 0px;
-           bottom: 0px;
-           display: -webkit-flex;
-           display: flex;
-           -webkit-flex-flow: column;
-           flex-flow: column;
-         }
-      }
+    <link rel="stylesheet" type="text/css" href="hydra.css">
 
-      .header {
-        height: 40px;
-        padding: 0px;
-        background: #2C3E50;
-      }
-
-      button {
-        background: #2C3E50;
-        border: 0px;
-        color: white;
-        width: 40px;
-        height: 40px;
-        font-size: 16pt;
-      }
-
-      button:hover {
-        background: #34495E;
-      }
-
-      button:disabled {
-        color: #95A5A6;
-      }
-
-      button:disabled:hover {
-        background: #2C3E50;
-      }
-
-      .pane {
-        display: -webkit-flex;
-        display: flex;
-        -webkit-flex-flow: row;
-        flex-flow: row;
-        position: relative;
-        -webkit-flex: 1 1;
-        flex: 1 1;
-      }
-
-      .sidebar {
-        min-width: 250px;
-        max-width: 250px;
-        background: #2C3E50;
-        display: -webkit-flex;
-        display: flex;
-        -webkit-flex-flow: column;
-        flex-flow: column;
-      }
-
-      .pane > * {
-        -webkit-flex: 1 1;
-        flex: 1 1;
-      }
-
-      .sidebar > * {
-        display: -webkit-flex;
-        display: flex;
-        -webkit-flex-flow: column;
-        flex-flow: column;
-        -webkit-flex: 1 1;
-        flex: 1 1;
-      }
-
-      .pane-controls {
-        position: absolute;
-        left: 250px;
-        top: 0px;
-        height: 40px;
-        padding-left: 0;
-        margin-bottom: 0;
-        margin-top: 0;
-        list-style: none;
-        background-color: #2C3E50;
-      }
-
-      .pane-controls:before,
-      .pane-controls:after {
-        display: table;
-        content: " ";
-      }
-
-      .pane-controls:after {
-        clear: both;
-      }
-
-      .pane-controls > div {
-        position: relative;
-        display: block;
-        text-align: center;
-        min-width: 4em;
-        float: left;
-        margin-bottom: -1px;
-      }
-
-      .pane-controls > :not(.tab-header) {
-        display: none !important;
-      }
-
-      .pane-controls > :not(.tab-header).active {
-        display: block !important;
-      }
-
-      /* @polyfill .pane-controls > div > a, .pane-controls > div > dropdown-element .ui-dropdown-selected */
-      .pane-controls > div > a,
-      .pane-controls > div > dropdown-element ^ .ui-dropdown-selected {
-        font-family: 'Lato';
-        letter-spacing: 0.05em;
-        position: relative;
-        display: block;
-        padding: 10px 8px;
-        color: #ffffff;
-        margin-right: 2px;
-        line-height: 1.428571429;
-        border: 0px solid transparent;
-        text-decoration: none;
-      }
-
-      .pane-controls > div > a:hover {
-        color: #1ABC9C;
-        text-decoration: none;
-      }
-
-      .pane-controls > div.active > a,
-      .pane-controls > div.active > a:hover,
-      .pane-controls > div.active > a:focus {
-        color: #ffffff;
-        cursor: default;
-        background-color: #16A085;
-        border: 0px solid #16A085;
-        border-bottom-color: transparent;
-      }
-
-
-      /* @polyfill .pane-controls .ui-dropdown-options > a */
-      .pane-controls dropdown-element > a {
-        display: block;
-        padding: 3px 20px;
-        clear: both;
-        font-weight: normal;
-        line-height: 1.428571429;
-        color: #fff;
-        white-space: nowrap;
-        z-index: 9999;
-        text-decoration: none;
-      }
-
-      /* @polyfill .pane-controls .ui-dropdown-options > a:hover, .pane-controls .ui-dropdown-options > a:focus */
-      .pane-controls dropdown-element > a:hover,
-      .pane-controls dropdown-element > a:focus {
-        color: #fff;
-        text-decoration: none;
-        background-color: #34495E;
-       }
-
-      /* @polyfill .pane-controls .ui-dropdown-options */
-      .pane-controls > div > dropdown-element ^ .ui-dropdown-options {
-        background-color: #2C3E50;
-      }
-
-      .panes > div {
-        display: none;
-      }
-
-      .panes > div.active {
-        display: block;
-      }
-
-      .pane > switching-scope {
-        display: -webkit-flex;
-        display: flex;
-        overflow: auto;
-      }
-
-      .panes, .panes > div {
-        -webkit-flex: 1 1;
-        flex: 1 1;
-      }
-
-      .ir-placeholder {
-        display: -webkit-flex;
-        display: flex;
-        -webkit-justify-content: center;
-        justify-content: center;
-        -webkit-align-items: center;
-        align-items: center;
-        text-align: center;
-        font-size: 3em;
-        font-family: Lato;
-        font-weight: 200;
-        background: #ECF0F1;
-        color: #BDC3C7;
-      }
-
-      .fa {
-        display: inline-block;
-        font-family: FontAwesome;
-        font-style: normal;
-        font-weight: normal;
-        line-height: 1;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-
-      .fa-folder-open:before {
-        content: "\f07c";
-      }
-    </style>
+    <paper-toast text="{{progressAction}} {{progressUrl}}" duration="3600000">
+      <template if="{{progressValue != null}}">
+        <paper-progress value="{{progressValue}}"></paper-progress>
+      </template>
+    </paper-toast>
 
     <div class="header">
       <open-file-button on-opened="{{openCompilation}}" data-title="Load Compilation Artifacts"><i class="fa fa-folder-open"></i></open-file-button>
       <template if="{{files != null}}">
         <button href="#" on-click="{{reloadCurrentFiles}}" title="Reload Current Files"><i class="fa fa-repeat"></i></button>
       </template>
+      <template if="{{methods != null && !methods.isEmpty}}">
+        <button on-click="{{toggleNameDemangling}}" title="Demangle method names" class="{{ {'unchecked': !demangleNames} }}"><i class="fa fa-dollar"></i></button>
+      </template>
       <spinner-element id="spinner"></spinner-element>
       <template if="{{ir != null}}">
         <switching-scope active="{{activeTab}}" class="pane-controls">
           <div when-ir class="tab-header"><a href="#ir">IR</a></div>
-          <div when-graph class="tab-header"><a href="#graph">Graph</a></div>
+          <div when-graph class="tab-header"><a href="#graph">GRAPH</a></div>
           <template if="{{!sourcePath.isEmpty}}">
-            <div when-source class="tab-header"><a href="#source">Source</a></div>
+            <div when-source class="tab-header"><a href="#source">SOURCE</a></div>
           </template>
           <div when-ir>
+            <button on-click="{{toggleInterestingMode}}" title="Splice source into IR" class="{{ {'unchecked': !showSource} }}"><i class="fa fa-eye"></i></button>
             <dropdown-element selected="{{codeMode}}">
-              <a href="#" data-value="split">Split Disassembly</a>
-              <a href="#" data-value="inline">Inline Disassembly</a>
-              <a href="#" data-value="none">Hide Disassembly</a>
+              <a data-value="split">Split Disassembly</a>
+              <a data-value="inline">Inline Disassembly</a>
+              <a data-value="none">Hide Disassembly</a>
             </dropdown-element>
           </div>
           <div when-ir when-source>
-            <deopt-links deopts="{{method.deopts}}" on-deopt-click="{{navigateToDeoptAction}}" on-deopt-enter="{{enterDeoptAction}}" on-deopt-leave="{{leaveDeoptAction}}">
+            <deopt-links deopts="{{phase.method.deopts}}" on-deopt-click="{{navigateToDeoptAction}}" on-deopt-enter="{{enterDeoptAction}}" on-deopt-leave="{{leaveDeoptAction}}">
             </deopt-links>
           </div>
           <div when-source>
@@ -269,17 +65,23 @@
     <div class="pane">
       <template if="{{methods != null && !methods.isEmpty}}">
         <div class="sidebar">
-          <method-list methods="{{methods}}" on-selected="{{displayPhase}}"></method-list>
+          <method-list methods="{{methods}}" selected="{{phase}}" demangleNames="{{demangleNames}}"></method-list>
         </div>
         <template if="{{ir == null}}">
           <div class="ir-placeholder">
-            <span>select a method</span>
+            <div>select method</div>
+            <template if="{{timeline != null}}">
+              <compilation-timeline events="{{timeline}}">
+              </compilation-timeline>
+            </template>
+            <template if="{{timeline == null}}">
+            </template>
           </div>
         </template>
         <template if="{{ir != null}}">
           <switching-scope active="{{activeTab}}" class="panes">
             <div when-ir>
-              <ir-pane id="ir-pane" ir="{{ir}}" codeMode="{{codeMode}}"></ir-pane>
+              <ir-pane id="ir-pane" ir="{{ir}}" codeMode="{{codeMode}}" showSource="{{showSource}}"></ir-pane>
             </div>
             <div when-graph>
               <graph-pane ir="{{ir}}" on-block-mouse-over="{{showBlockAction}}" on-block-mouse-out="{{hideBlockAction}}">
@@ -294,5 +96,5 @@
       </template>
     </div>
   </template>
-  <script type="application/dart;component=1" src="hydra.dart"></script>
+  <script type="application/dart" src="hydra.dart"></script>
 </polymer-element>

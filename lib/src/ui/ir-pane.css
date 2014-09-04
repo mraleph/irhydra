@@ -1,5 +1,6 @@
 .irpane {
   font-family: monospace;
+  font-size: 14pt;
 }
 
 .irpane > tr > td:first-child,
@@ -100,6 +101,7 @@
 a {
   color: #428bca;
   text-decoration: none;
+  cursor: pointer;
 }
 
 a:hover,
@@ -129,8 +131,8 @@ pre {
 }
 
 .hir-range,
-.hir-type, 
-.hir-changes, 
+.hir-type,
+.hir-changes,
 .lir-env,
 .lir-map {
   color: rgba(0, 0, 0, 0.25);
@@ -196,4 +198,59 @@ pre {
 .deopt-marker-soft:hover {
   background-color: #9B59B6;
 }
+
+.block-header td {
+  padding-top: 0.5em !important;
+}
+
+.irpane.view-source tr.not-interesting {
+  display: none;
+}
+
+.irpane:not(.view-source) tr.source-line {
+  display: none;
+}
+
+/*
+.irpane > tr.loop-1 > td:last-child {
+  padding-left: 10px;
+}
+
+.irpane > tr.loop-2 > td:last-child {
+  padding-left: 15px;
+}
+
+.irpane > tr.loop-3 > td:last-child {
+  padding-left: 20px;
+}
+
+.irpane > tr.loop-4 > td:last-child {
+  padding-left: 25px;
+}
+
+.irpane > tr.loop-5 > td:last-child {
+  padding-left: 30px;
+}*/
+
+
+.irpane.view-source > tr.loop-hotness-1 > td:last-child > pre {
+  border-left: 8px #fee5d9 solid;
+}
+
+.irpane.view-source > tr.loop-hotness-2 > td:last-child > pre {
+  border-left: 8px #fcae91 solid;
+}
+
+.irpane.view-source > tr.loop-hotness-3 > td:last-child > pre {
+  border-left: 8px #fb6a4a solid;
+}
+
+.irpane.view-source > tr.loop-hotness-4 > td:last-child > pre {
+  border-left: 8px #de2d26 solid;
+}
+
+.irpane.view-source > tr.loop-hotness-5 > td:last-child > pre {
+  border-left: 8px #a50f15 solid;
+}
+
 

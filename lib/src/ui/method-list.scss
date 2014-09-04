@@ -1,0 +1,109 @@
+@import 'ui';
+
+.method-list {
+  display: -webkit-flex;
+  display: flex;
+
+  -webkit-flex-flow: column;
+  flex-flow: column;
+
+  -webkit-flex-direction: column;
+  flex-direction: column;
+
+  min-height: 0px;
+  flex: 1 1;
+
+  color: $toolbar-color;
+  font-family: RobotoDraft;
+}
+
+.method-list-methods {
+  flex: 1 1;
+  -webkit-flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0px;
+}
+
+.method-list-footer {
+  min-height: 50px;
+  height: 50px;
+  max-height: 50px;
+  padding-left: 5px;
+}
+
+.method-list-methods::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.method-list-methods::-webkit-scrollbar-track,
+.method-list-methods::-webkit-scrollbar-corner {
+  background: inherit;
+}
+
+.method-list-methods::-webkit-scrollbar-thumb {
+  background: #BDC3C7;
+  border-radius: 5px;
+}
+
+.nav {
+  list-style: none;
+  position: relative;
+  display: block;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.nav > li > h3 {
+  white-space: nowrap;
+}
+
+.phases {
+  list-style: none;
+  padding-left: 0;
+}
+
+.phases > li > a {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  padding: 2px 15px;
+}
+
+.phases > li.selected > a,
+.phases > li > a:hover,
+.phases > li > a:focus {
+  text-decoration: none;
+  background-color: $toolbar-background-hover;
+}
+
+.toggle {
+  text-align: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  -webkit-appearance: none;
+  -ms-appearance: none;
+  -o-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.toggle:hover {
+  background: $toolbar-background-hover;
+}
+
+.toggle:after {
+  content: '\f071';
+  font-size: 16pt;
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 40px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.toggle:checked:after {
+  color: red;
+}

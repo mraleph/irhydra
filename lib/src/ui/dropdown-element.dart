@@ -33,8 +33,8 @@ class DropdownElement extends PolymerElement {
     renderTask = new Task(render, frozen: true, type: MICROTASK);
   }
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
     js.context.jQuery.fn.dropdown.install(shadowRoot);
 
     _texts = new Map.fromIterable(
@@ -53,14 +53,15 @@ class DropdownElement extends PolymerElement {
     if (attrs.containsKey('data-value')) {
       selected = attrs['data-value'];
     }
+    event.preventDefault();
   }
 
   render() {
     valueText = _texts[selected];
   }
 
-  leftView() {
+  detached() {
     js.context.jQuery.fn.dropdown.remove(shadowRoot);
-    super.leftView();
+    super.detached();
   }
 }

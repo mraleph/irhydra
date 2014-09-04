@@ -1,40 +1,13 @@
 <!DOCTYPE html>
-
+<link rel="import" href="../../../../packages/polymer/polymer.html">
 <polymer-element name="open-file-button">
   <template>
-    <style scoped>
-      input[type=file] {
-        visibility: hidden;
-        width: 0px;
-        height: 0px;
-        margin: 0px;
-        padding: 0px;
-      }
+    <link rel="stylesheet" type="text/css" href="open-file-button.css">
 
-      span.hidden {
-        position: absolute;
-        width: 0px;
-        height: 0px;
-        overflow: hidden;
-      }
-
-      button {
-        background: #2C3E50;
-        border: 0px;
-        color: white;
-        width: 40px;
-        height: 40px;
-        font-size: 16pt;
-      }
-
-      button:hover {
-        background: #34495E;
-      }
-    </style>
     <span class="hidden">
       <input id="file-input" type="file" multiple="multiple" on-change="{{changed}}">
     </span>
     <button on-click="{{clicked}}"><content></content></button>
   </template>
-  <script type="application/dart;component=1" src="open-file-button.dart"></script>
+  <script type="application/dart" src="open-file-button.dart"></script>
 </polymer-element>

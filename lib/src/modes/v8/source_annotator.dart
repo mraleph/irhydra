@@ -26,13 +26,15 @@ class _Range {
 
   contains(srcPos) =>
     start <= srcPos.position && srcPos.position < end;
+
+  toString() => "($start, $end)";
 }
 
 class RangedLine {
   final str;
   final range;
   final column;
-  
+
   RangedLine(this.str, this.range, this.column);
 }
 
@@ -40,12 +42,16 @@ class _AST {
   static const PREFIX = "(function ";
   static const SUFFIX = ")";
 
+  static const GLOBAL_PREFIX = "(function () {";
+  static const GLOBAL_SUFFIX = "})";
+
   static final VISIT_SKIP = js.context.estraverse.VisitorOption.Skip;
   static final VISIT_BREAK = js.context.estraverse.VisitorOption.Break;
 
   final body;
+  final int prefixLength;
 
-  _AST.withBody(this.body);
+  _AST.withBody(this.body, this.prefixLength);
 
   traverse({onEnter, onLeave}) =>
     js.context.estraverse.traverse(body, js.map({
@@ -55,7 +61,15 @@ class _AST {
 
 
   // Helper function that accomondates for prefix length in ranges returned by Esprima.
-  rangeOf(n) => new _Range(n.range[0] - PREFIX.length, n.range[1] - PREFIX.length);
+  rangeOf(n) => new _Range(n.range[0] - prefixLength, n.range[1] - prefixLength);
+
+  static tryParse(prefix, body, suffix) {
+    try {
+      return js.context.esprima.parse(prefix + body + suffix, js.map({'range': true}));
+    } catch (e) {
+      return null;
+    }
+  }
 
   factory _AST(lines) {
     // Source is dumped in the form (args) { body }. We prepend SUFFIX and PREFIX
@@ -63,22 +77,57 @@ class _AST {
     // Sometime V8 also includes trailing comma into the source dump. Strip it.
     lines = lines.join('\n');
     lines = lines.substring(0, lines.lastIndexOf('}') + 1);
-    var ast = null;
-    try {
-      ast = js.context.esprima.parse(PREFIX + lines + SUFFIX, js.map({'range': true}));
-    } catch (e) {
-      // Failed to parse the source. Most probably hit V8's %-syntax.
-      return null;
+    var ast = null, prefix = null;
+
+    prefix = PREFIX;
+    ast = tryParse(PREFIX, lines, SUFFIX);
+    if (ast == null) {
+      prefix = GLOBAL_PREFIX;
+      ast = tryParse(GLOBAL_PREFIX, lines, GLOBAL_SUFFIX);
+      if (ast == null) {
+        return null;
+      }
     }
+
     final body = ast.body[0].expression.body;
 
-    return new _AST.withBody(body);
+    return new _AST.withBody(body, prefix.length);
   }
 
 }
 
+class LoopId {
+  final inlineId;
+  final loopId;
+
+  final parent;
+
+  toString() => "(${inlineId}, ${loopId})";
+
+  LoopId(this.inlineId, this.loopId, this.parent);
+
+  isOutsideOf(other) {
+    while (other.inlineId != 0 && inlineId != other.inlineId) {
+      other = other.parent();
+    }
+
+
+    if (this.inlineId == other.inlineId) {
+      return this.loopId < other.loopId;
+    }
+
+    return false;
+  }
+}
+
 // TODO(mraleph): we pass parser as [irInfo] make a real IRInfo class.
 annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
+  if (method.sources.isEmpty) {
+    // TODO(mraleph) should some fluffy status notification about this.
+    print("source_annotator.annotate failed: sources not available (code.asm not loaded?)");
+    return;  // Sources not loaded.
+  }
+
   final sources = method.sources.map((f) => f.source.toList()).toList();
 
   sourceId(IR.SourcePosition srcPos) => method.inlined[srcPos.inlineId].source.id;
@@ -89,7 +138,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     if (ast == null) {
       return [];
     }
-    
+
     final loops = [];
     ast.traverse(onEnter: (node, parent) {
       switch (node.type) {
@@ -107,7 +156,10 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
 
         case 'WhileStatement':
         case 'DoWhileStatement':
-          loops.add(ast.rangeOf(node));
+          final range = ast.rangeOf(node);
+          // TODO(vegorov): this is a serious hack just to workaround the
+          // fact of how V8 assigns positions for while loop.
+          loops.add(new _Range(range.start + 1, range.end));
           break;
       }
     });
@@ -125,7 +177,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     if (ast == null) {
       return null;
     }
-    
+
     var range = null;
     ast.traverse(
       onEnter: (node, parent) {
@@ -148,10 +200,12 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     return range;
   }
 
+  final _loopOfCache = new List.filled(method.inlined.length, null);
+
   /// Return the innermost loop covering given source position.
   loopOf(IR.SourcePosition srcPos) {
-    if (srcPos == null) {  // First couple of blocks in the grap don't have positions attached.
-      return -1;
+    if (srcPos == null) {  // First couple of blocks in the graph don't have positions attached.
+      return new LoopId(0, -1, null);
     }
 
     final ls = loops[sourceId(srcPos)];
@@ -160,10 +214,16 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     for (var i = ls.length - 1; i >= 0; i--) {
       final range = ls[i];
       if (range.contains(srcPos)) {
-        return i;
+        return new LoopId(srcPos.inlineId, i, () => loopOf(method.inlined[srcPos.inlineId].position));
       }
     }
-    return -1;
+
+    if (_loopOfCache[srcPos.inlineId] != null) {
+      return _loopOfCache[srcPos.inlineId];
+    }
+
+    final f = method.inlined[srcPos.inlineId];
+    return _loopOfCache[srcPos.inlineId] = loopOf(f.position);
   }
 
   /// Return line number for the given source position.
@@ -193,7 +253,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
   lineStr(IR.SourcePosition srcPos) {
     final lines = sources[sourceId(srcPos)];
     final n = lineNum(srcPos);
-    return n < lines.length ? lines[n] : null; 
+    return n < lines.length ? lines[n] : null;
   }
 
   rangeStr(srcPos) {
@@ -202,19 +262,22 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
 
     final range = rangeOf(srcPos);
     if (range == null) {
-      return line;
+      return new RangedLine(line, new _Range(0, line.length), columnNum(srcPos));
     }
 
     final startLn = lineNum(new IR.SourcePosition(srcPos.inlineId, range.start));
     final endLn = lineNum(new IR.SourcePosition(srcPos.inlineId, range.end));
 
-    var chRange = null;
-    if (startLn == lineNo && (endLn == lineNo || endLn == lineNo + 1)) {
-      final startCh = columnNum(new IR.SourcePosition(srcPos.inlineId, range.start));
-      final endCh = columnNum(new IR.SourcePosition(srcPos.inlineId, range.end));
-      chRange = new _Range(startCh, endCh);
-    }
-    
+    final startCh = startLn == lineNo ?
+        columnNum(new IR.SourcePosition(srcPos.inlineId, range.start)) :
+        0;
+
+    final endCh = endLn == lineNo ?
+        columnNum(new IR.SourcePosition(srcPos.inlineId, range.end)) :
+        line.length;
+
+    final chRange = new _Range(startCh, endCh);
+
     return new RangedLine(line, chRange, columnNum(srcPos));
   }
 
@@ -223,15 +286,16 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
       f.annotations = new List.filled(sources[f.source.id].length, IR.LINE_DEAD)).toList();
 
   final mapping = method.srcMapping = {};
+  final interesting = method.interesting = {};
 
   for (var block in blocks.values) {
     if (block.lir != null) {
-      final blockLoop = loopOf(irInfo.hir2pos[block.hir.firstWhere((instr) => instr.op == "BlockEntry").id]);
-
       var previous = null;
       for (var instr in block.lir.where(_isInterestingOp)) {
         final hirId = irInfo.lir2hir[instr.id];
         if (hirId == null) continue;
+
+        interesting[hirId] = true;
 
         final srcPos = irInfo.hir2pos[hirId];
         if (srcPos == null || previous == srcPos) continue;
@@ -239,15 +303,23 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
         mapping[hirId] = rangeStr(srcPos);
         previous = srcPos;
       }
-    }
 
+      for (var instr in block.hir) {
+        if (instr.op == "Phi") interesting[instr.id] = true;
+      }
+    }
   }
+
+  if (method.srcMapping.isEmpty) method.srcMapping = null;
+  if (method.interesting.isEmpty || method.srcMapping == null) method.interesting = null;
 
 
   // Process IR and mark lines according to IR instructions that were generated from them.
   for (var block in blocks.values) {
     if (block.lir != null) {
-      final blockLoop = loopOf(irInfo.hir2pos[block.hir.firstWhere((instr) => instr.op == "BlockEntry").id]);
+      final blockEntry = block.hir.firstWhere((instr) => instr.op == "BlockEntry").id;
+      final blockPos = irInfo.hir2pos[blockEntry];
+      final blockLoop = loopOf(blockPos);
 
       // When processing LIR skip all artificial instructions (gap moves,
       // labels, gotos and stack-checks). Even if they have position falling
@@ -262,13 +334,24 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
         // Before marking the line alive check if instruction was hoisted by
         // LICM from its loop.
         final instrLoop = loopOf(srcPos);
-        if (instrLoop != null && blockLoop < instrLoop) {
+        if (instrLoop != null && blockLoop.isOutsideOf(instrLoop)) {
           // Instruction was hoisted from its loop. Mark the line as LICMed.
           annotations[srcPos.inlineId][lineNum(srcPos)] |= IR.LINE_LICM;
         } else {
           annotations[srcPos.inlineId][lineNum(srcPos)] |= IR.LINE_LIVE;
         }
       }
+    }
+  }
+
+  var worklist = []..addAll(method.inlined);
+  while (!worklist.isEmpty) {
+    final f = worklist.removeLast();
+    if (f.position != null && f.annotations.contains(IR.LINE_LIVE)) {
+      annotations[f.position.inlineId][lineNum(f.position)] |= IR.LINE_LIVE;
+
+      final outer = method.inlined[f.position.inlineId];
+      if (!worklist.contains(outer)) worklist.add(outer);
     }
   }
 }
@@ -281,6 +364,9 @@ _isInterestingOp(instr) {
     case "label":  // Branch target.
     case "goto":   // Unconditional branch.
     case "stack-check":  // Interrupt check.
+    case "lazy-bailout":  // Post call lazy deoptimization point.
+    case "constant-t":
+    case "constant-d":
       return false;
     default:
       return true;

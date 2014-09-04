@@ -5,7 +5,7 @@
 #ir-pane {
   background: white;
 }
-  
+
 #graph-pane {
   margin-bottom: 500px;
 }
@@ -32,7 +32,7 @@
   padding: 0;
   background: transparent;
   font-family: monospace;
-  font-size: inherit;
+  font-size: 12pt;
   word-wrap: normal;
   color: inherit;
 }
@@ -67,7 +67,7 @@ h4.deopt-header-soft > .first-word {
 }
 
 .welcome-message {
-  font-family: 'Lato';
+  font-family: 'RobotoDraft';
   margin: 0 auto;
   width: 600px;
   font-size: 16px;

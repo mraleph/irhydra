@@ -2,6 +2,7 @@ library hydra;
 
 import 'dart:html';
 import 'dart:async' as async;
+import 'dart:typed_data' show ByteBuffer, Uint8List;
 
 import 'package:irhydra/src/html_utils.dart' show toHtml;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
@@ -10,6 +11,8 @@ import 'package:irhydra/src/ui/spinner-element.dart';
 import 'package:irhydra/src/xref.dart' show XRef, POPOVER;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
+
+import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
 
 final MODES = [
   () => new v8.Mode(),
@@ -21,20 +24,37 @@ _createV8DeoptDemo(type) => [
   "demos/v8/deopt-${type}/code.asm"
 ];
 
+_createWebRebelsDemo(name) => [
+  "demos/webrebels2014/${name}/data.tar.bz2"
+];
+
 final DEMOS = {
   "demo-1": _createV8DeoptDemo("eager"),
   "demo-2": _createV8DeoptDemo("soft"),
   "demo-3": _createV8DeoptDemo("lazy"),
   "demo-4": ["demos/dart/code.asm"],
+  "webrebels-2014-concat": _createWebRebelsDemo("1-concat"),
+  "webrebels-2014-concat-fixed": _createWebRebelsDemo("2-concat-fixed"),
+  "webrebels-2014-prototype-node": _createWebRebelsDemo("3-prototype-node"),
+  "webrebels-2014-prototype-node-getter": _createWebRebelsDemo("4-prototype-node-getter"),
+  "webrebels-2014-prototype": _createWebRebelsDemo("5-prototype"),
+  "webrebels-2014-prototype-tostring": _createWebRebelsDemo("6-prototype-tostring"),
+  "webrebels-2014-method-function": _createWebRebelsDemo("7-method-function"),
+  "webrebels-2014-method-function-hack": _createWebRebelsDemo("8-method-function-hack"),
 };
 
+timeAndReport(action, report) {
+  final stopwatch = new Stopwatch()..start();
+  final result = action();
+  print(report(stopwatch.elapsedMilliseconds));
+  return result;
+}
 
 @CustomTag('hydra-app')
 class HydraElement extends PolymerElement {
   @observable var mode;
   @observable var files;
   @observable var phase;
-  @observable var method;
   @observable var methods;
 
   @observable var ir;
@@ -45,21 +65,75 @@ class HydraElement extends PolymerElement {
 
   @observable var activeTab = "ir";
 
+  @observable var showSource = false;
+  @observable var demangleNames = true;
+
+  @observable var progressValue;
+  @observable var progressUrl;
+  @observable var progressAction;
+
+  @observable var timeline;
+
+
   var blockRef;
 
   get currentFileNames => files.map((file) => file.name).join(', ');
 
   HydraElement.created() : super.created();
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
 
     window.onHashChange.listen((e) {
       final from = Uri.parse(e.oldUrl).fragment;
       final to = Uri.parse(e.newUrl).fragment;
 
       if (DEMOS.containsKey(to)) {
-        _wait(DEMOS[to].map((path) => HttpRequest.getString(path).then(loadData)));
+        _wait(DEMOS[to].map((path) {
+          if (path.endsWith(".tar.bz2")) {
+            unpack(data) {
+              if (data is ByteBuffer) {
+                data = new Uint8List.view(data);
+              }
+
+              final tar = timeAndReport(() => js.context.BUNZIP2(data),
+                  (ms) => "Unpacking ${path} (${data.length} bytes) in JS took ${ms} ms (${data.length / ms} bytes/ms)");
+
+              return new TarDecoder().decodeBytes(tar).files;
+            }
+
+            loadFiles(files) {
+              for (var file in files)
+                loadData(new String.fromCharCodes(file.content));
+            }
+
+            progress(evt) {
+              if (evt.lengthComputable) {
+                progressValue = (evt.loaded * 100 / evt.total).floor();
+              }
+            }
+
+            done(x) {
+              shadowRoot.querySelector("paper-toast").dismiss();
+              progressUrl = progressValue = progressAction = null;
+            }
+
+            progressAction = "Downloading";
+            progressUrl = path;
+            shadowRoot.querySelector("paper-toast").show();
+            return HttpRequest.request(path, responseType: "arraybuffer", onProgress: progress)
+              .then((rq) {
+                progressAction = "Unpacking";
+                shadowRoot.querySelector("paper-toast").show();
+                return new async.Future.delayed(const Duration(milliseconds: 100), () => rq.response);
+              })
+              .then(unpack)
+              .then(loadFiles)
+              .then(done, onError: done);
+          } else {
+            return HttpRequest.getString(path).then(loadData);
+          }
+        }));
         return;
       }
 
@@ -72,42 +146,55 @@ class HydraElement extends PolymerElement {
         activeTab = "ir";
 
         new async.Timer(const Duration(milliseconds: 50), () {
-          final anchor = irpane.shadowRoot.querySelector("#${to}");
-          if (anchor != null) {
-            anchor.scrollIntoView();
-          }
+          irpane.scrollToRow(to.substring("ir-".length));
         });
       }
     });
 
+    window.onPopState.listen((e) {
+      if (e.state is String) {
+        if (activeTab != "ir")
+          activeTab = "ir";
+
+        new async.Timer(const Duration(milliseconds: 50), () {
+          irpane.scrollToRow(e.state);
+        });
+      }
+    });
+
+    document.onKeyPress
+            .where((e) => e.path.length < 4 && e.keyCode == KeyCode.S)
+            .listen((e) {
+              showSource = !showSource;
+            });
+
     document.dispatchEvent(new CustomEvent("HydraReady"));
+  }
+
+  toggleInterestingMode() {
+    showSource = !showSource;
+  }
+
+  toggleNameDemangling() {
+    demangleNames = !demangleNames;
   }
 
   closeSplash() {
     js.context.DESTROY_SPLASH();
-
-    try {
-      for (var style in document.querySelectorAll("body /deep/ style")) {
-        style.text = style.text.replaceAll(" ^ ", "::shadow ")
-                               .replaceAll(" ^^ ", " /deep/ ");
-      }
-    } catch (e) {
-      // Ignore.
-    }
   }
 
-  displayPhase(a, phaseAndMethod, b) {
+  phaseChanged() {
     closeSplash();
-
-    activeTab = "ir";
-    method = phaseAndMethod[0];
-    phase = phaseAndMethod[1];
-    ir = mode.toIr(phaseAndMethod[0], phase);
-    blockRef = new XRef((id) => irpane.rangeContentAsHtmlFull(id));
-
-    sourcePath.clear();
-    if (!method.sources.isEmpty) {
-      sourcePath.add(method.inlined.first);
+    if (phase != null) {
+      activeTab = "ir";
+      ir = mode.toIr(phase.method, phase);
+      blockRef = new XRef((id) => irpane.rangeContentAsHtmlFull(id));
+      sourcePath.clear();
+      if (!phase.method.sources.isEmpty) {
+        sourcePath.add(phase.method.inlined.first);
+      }
+    } else {
+      ir = null;
     }
   }
 
@@ -149,14 +236,14 @@ class HydraElement extends PolymerElement {
   }
 
   navigateToDeoptAction(event, deopt, target) {
-    if (method.inlined.isEmpty)
+    if (phase.method.inlined.isEmpty)
       return;
 
     buildStack(position) {
       if (position == null) {
         return [];
       } else {
-        final f = method.inlined[position.inlineId];
+        final f = phase.method.inlined[position.inlineId];
         return buildStack(f.position)..add(f);
       }
     }
@@ -169,12 +256,20 @@ class HydraElement extends PolymerElement {
     final contents = [];
 
     var instr = deopt.hir;
-    var description = mode.descriptions.lookup("hir", deopt.hir.op);
-    if (description == null) {
-      description = mode.descriptions.lookup("lir", deopt.lir.op);
-      if (description != null) {
-        instr = deopt.lir;
+    var description;
+    if (deopt.hir != null) {
+      description = mode.descriptions.lookup("hir", deopt.hir.op);
+      if (description == null && deopt.lir != null) {
+        description = mode.descriptions.lookup("lir", deopt.lir.op);
+        if (description != null) {
+          instr = deopt.lir;
+        }
       }
+    } else {
+      try {
+        description = toHtml((querySelector('[dependent-code-descriptions]') as TemplateElement).content
+            .querySelector("[data-reason='${deopt.reason}']").clone(true));
+      } catch (e) { }
     }
 
     final connector = (deopt.reason == null) ? "at" : "due to";
@@ -182,12 +277,16 @@ class HydraElement extends PolymerElement {
 
     if (deopt.reason != null) {
       contents.add("<p><strong>${deopt.reason}</strong></p>");
-      contents.add("<h4>at</h4>");
     }
 
-    contents.add(irpane.rangeContentAsHtmlFull(instr.id));
+    if (instr != null) {
+      if (deopt.reason != null) {
+        contents.add("<h4>at</h4>");
+      }
+      contents.add(irpane.rangeContentAsHtmlFull(instr.id));
+    }
+
     if (description != null) {
-      contents.add("<br/>");
       contents.add(description);
     }
 
@@ -210,10 +309,11 @@ class HydraElement extends PolymerElement {
 
   reset() {
     mode = methods = null;
+    demangleNames = true;
   }
 
   methodsChanged() {
-    codeMode = "split";
+    codeMode = "none";
     activeTab = "ir";
     phase = ir = null;
   }
@@ -246,6 +346,11 @@ class HydraElement extends PolymerElement {
 
       mode = newMode;
     }
+
+    timeline = mode.timeline;
+
+    final re = new RegExp(r"\$\d+$");
+    demangleNames = !mode.methods.any((m) => re.hasMatch(m.name.full));
 
     methods = toObservable(mode.methods);
     closeSplash();

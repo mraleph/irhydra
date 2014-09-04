@@ -33,7 +33,9 @@ import 'package:irhydra/src/modes/v8/hydrogen_parser.dart' as hydrogen_parser;
  *     `--trace-deopt --code-comments --print-opt-code` are set.
  */
 class Mode extends BaseMode {
-  final irs = const [const HIRDescriptor(), const LIRDescriptor()];
+  final irs = const [const HIRDescriptor() //,
+                     /* const LIRDescriptor() */
+                     ];
 
   /** [true] if code dump file is already loaded. */
   var codeLoaded = false;
@@ -61,7 +63,8 @@ class Mode extends BaseMode {
       return true;
     } else if (code_parser.canRecognize(text) && !codeLoaded) {
       // This is an stdout dump containing native code and deopts.
-      _merge(methods, code_parser.preparse(text));
+      timeline = [];
+      _merge(methods, code_parser.preparse(text, timeline));
       codeLoaded = true;
       return true;
     } else {
@@ -134,8 +137,10 @@ class Mode extends BaseMode {
         methodIr.phases.last.code = methodCode.phases.last.code;
       }
       methodIr.sources.addAll(methodCode.sources);
-      methodIr.deopts.addAll(methodCode.deopts);
       methodIr.inlined.addAll(methodCode.inlined);
+
+      methodIr.deopts.addAll(methodCode.deopts);
+      methodIr.worstDeopt = methodCode.worstDeopt;
     }
 
     // First try to merge based on optimization IDs.

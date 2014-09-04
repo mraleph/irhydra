@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<link rel="import" href="../../../../packages/polymer/polymer.html">
+<polymer-element name="method-name">
+  <template>
+    <link rel="stylesheet" type="text/css" href="method-name.css">
+    <h3 class="deopt-{{method.worstDeopt}}">
+      <template if="{{source != null}}">
+        <div><span class="source">{{source}}</span></div>
+      </template>
+      <template if="{{targetHref != null}}">
+        <a href="{{targetHref}}">
+          {{name}}
+        </a>
+      </template>
+      <template if="{{targetHref == null}}">
+        {{name}}
+      </template>
+    </h3>
+  </template>
+  <script  type="application/dart" src="method-name.dart"></script>
+</polymer-element>

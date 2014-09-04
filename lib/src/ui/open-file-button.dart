@@ -7,8 +7,8 @@ import 'package:js/js.dart' as js;
 class OpenFileButton extends PolymerElement {
   OpenFileButton.created() : super.created();
 
-  enteredView() {
-    super.enteredView();
+  attached() {
+    super.attached();
 
     if (attributes['data-title'] != null) {
       final btn = shadowRoot.querySelector("button");

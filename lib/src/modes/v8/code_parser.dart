@@ -29,8 +29,8 @@ canRecognize(String text) =>
   text.contains(CODE_MARKER) || DEOPT_MARKER.hasMatch(text) || SOURCE_MARKER.hasMatch(text);
 
 /** Split [text] into separate optimized code dumps. */
-List<IR.Method> preparse(String text) =>
-    (new PreParser(text)..parse()).methods;
+List<IR.Method> preparse(String text, timeline) =>
+    (new PreParser(text, timeline)..parse()).methods;
 
 /** Parse given code dump. */
 Code parse(Iterable<String> lines) =>
@@ -39,6 +39,8 @@ Code parse(Iterable<String> lines) =>
 
 /** Class that recognizes code disassembly and deoptimization events */
 class PreParser extends parsing.ParserBase {
+  final timeline;
+
   final methods = <IR.Method>[];
 
   final optId = new Optional();
@@ -46,7 +48,7 @@ class PreParser extends parsing.ParserBase {
   IR.Method currentMethod;
   var timestamp = 0;
 
-  PreParser(text) : super(text.split('\n'));
+  PreParser(text, this.timeline) : super(text.split('\n'));
 
   enterMethod(name, optimizationId) {
     if (currentMethod != null && currentMethod.optimizationId == optimizationId) {
@@ -55,9 +57,22 @@ class PreParser extends parsing.ParserBase {
     currentMethod = new IR.Method(name_parser.parse(name),
                                   optimizationId: optimizationId);
     methods.add(currentMethod);
+    timeline.add(currentMethod);
   }
 
   leaveMethod() { currentMethod = null; }
+
+  attachDeopt(IR.Deopt deopt) {
+    for (var currentMethod in methods.reversed) {
+      if (currentMethod.optimizationId == deopt.optimizationId) {
+        timeline.add(deopt);
+        currentMethod.addDeopt(deopt);
+        break;
+      }
+    }
+
+    // TODO(vegorov): add warning about lost deopts.
+  }
 
   get patterns => {
     // Start of the dump.
@@ -77,7 +92,7 @@ class PreParser extends parsing.ParserBase {
             enterMethod("", optId.take());
           }
 
-          currentMethod.phases.add(new IR.Phase("Z_Code generation", code: subrange()));
+          currentMethod.phases.add(new IR.Phase(currentMethod, "Z_Code generation", code: subrange()));
           leaveMethod();
           // Leave this (instructions) and outer (code) states.
           leave(nstates: 2);
@@ -92,7 +107,22 @@ class PreParser extends parsing.ParserBase {
         r"^\-\-\- END \-\-\-$": () {
           final id = int.parse(funcId);
           assert(currentMethod.sources.length == id);
-          currentMethod.sources.add(new IR.FunctionSource(id, name, subrange()));
+
+          var lines = subrange();
+
+          try {
+          if (lines.length == 1) {
+            final String line = lines.first;
+            if (line.contains(r"\x0a")) {
+              lines = line.replaceAllMapped(new RegExp(r"\\x([a-f0-9][a-f0-9])"), (m) => new String.fromCharCode(int.parse(m.group(1), radix: 16)))
+                  .split('\n');
+            }
+          }
+          } catch (e) {
+            print(e);
+          }
+
+          currentMethod.sources.add(new IR.FunctionSource(id, name, lines));
 
           if (currentMethod.sources.length == 1) {
             assert(currentMethod.inlined.isEmpty);
@@ -131,25 +161,19 @@ class PreParser extends parsing.ParserBase {
         r"^\s+;;; deoptimize: (.*)$": (val) { reason = val; },
 
         r"^\[deoptimizing \(\w+\): end": () {
-          final deopt =
-              new IR.Deopt(timestamp++,
-                           int.parse(bailoutId),
-                           subrange(inclusive: true),
-                           reason: reason,
-                           type: type,
-                           optimizationId: optId);
-
-          for (var currentMethod in methods.reversed) {
-            if (currentMethod.optimizationId == optId) {
-              currentMethod.deopts.add(deopt);
-              break;
-            }
-          }
-
-          // TODO(vegorov): add warning about lost deopts.
+          attachDeopt(new IR.Deopt(timestamp++,
+                                   int.parse(bailoutId),
+                                   subrange(inclusive: true),
+                                   reason: reason,
+                                   type: type,
+                                   optimizationId: optId));
           leave();
         }
       });
+    },
+
+    r"^\[marking dependent code 0x[a-f0-9]+ \(opt #(\d+)\) for deoptimization, reason: ([-\w]+)\]": (optId, reason) {
+      attachDeopt(new IR.Deopt(timestamp++, null, [currentLine], reason: reason, type: "lazy", optimizationId: optId));
     },
   };
 }

@@ -21,7 +21,7 @@ import 'package:irhydra/src/modes/ir.dart' as IR;
 final uriNameRe = new RegExp(r"^file://.*/([^/]+)$");
 
 /** Removes private (_x) name mangling used by VM. */
-final demangleRe = new RegExp(r"@0x[0-9a-f]+\.?$");
+final demangleRe = new RegExp(r"@(0x)?[0-9a-f]+\.?$");
 
 /** Convert Dart VM's fully qualified function name into [IR.Name]. */
 IR.Name parse(String full) {
@@ -73,6 +73,7 @@ List<String> _splitName(String name) {
   }
 
   // Split out the accessor part from the end of the name.
+  name = name.replaceAll(demangleRe, "");
   final accessorMatch = accessorRe.firstMatch(name);
   if (accessorMatch != null) {
     name = name.substring(0, accessorMatch.start);

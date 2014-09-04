@@ -1,0 +1,253 @@
+@import 'ui';
+
+:host {
+  position: fixed;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-flow: column;
+  flex-flow: column;
+}
+
+paper-toast, paper-toast /deep/ div {
+  z-index: 1000 !important;
+}
+
+paper-toast > paper-progress {
+  position: absolute;
+  left: 5%;
+  right: 24px;
+  bottom: 5px;
+  width: 90%;
+}
+
+.header {
+  height: 40px;
+  padding: 0px;
+  background: $toolbar-background;
+  box-shadow: $toolbar-box-shadow;
+  z-index: 1000;
+}
+
+button {
+  background: $toolbar-background;
+  color: $toolbar-color;
+  font-size: 16pt;
+  border: 0px;
+  width: 40px;
+  height: 40px;
+}
+
+button:hover {
+  background: $toolbar-background-hover;
+}
+
+button:disabled {
+  color: #95A5A6;
+}
+
+button:disabled:hover {
+  background: $toolbar-background;
+}
+
+button.unchecked {
+  color: #95A5A6;
+}
+
+.pane {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-flow: row;
+  flex-flow: row;
+  position: relative;
+  -webkit-flex: 1 1;
+  flex: 1 1;
+}
+
+.sidebar {
+  min-width: 250px;
+  max-width: 250px;
+  background: $toolbar-background;
+  border-right: $toolbar-border;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-flow: column;
+  flex-flow: column;
+}
+
+.pane > * {
+  -webkit-flex: 1 1;
+  flex: 1 1;
+}
+
+.sidebar > * {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-flow: column;
+  flex-flow: column;
+  -webkit-flex: 1 1;
+  flex: 1 1;
+}
+
+.pane-controls {
+  position: absolute;
+  left: 250px;
+  top: 0px;
+  height: 40px;
+  padding-left: 0;
+  margin-bottom: 0;
+  margin-top: 0;
+  list-style: none;
+  background-color: $toolbar-background;
+}
+
+.pane-controls:before,
+.pane-controls:after {
+  display: table;
+  content: " ";
+}
+
+.pane-controls:after {
+  clear: both;
+}
+
+.pane-controls > div {
+  position: relative;
+  display: block;
+  text-align: center;
+  min-width: 4em;
+  float: left;
+  margin-bottom: -1px;
+}
+
+.pane-controls > :not(.tab-header) {
+  display: none !important;
+}
+
+.pane-controls > :not(.tab-header).active {
+  display: block !important;
+}
+
+/* @polyfill .pane-controls > div > a, .pane-controls > div > dropdown-element .ui-dropdown-selected */
+.pane-controls > div > a,
+.pane-controls > div > dropdown-element::shadow .ui-dropdown-selected {
+  cursor: pointer;
+  color: $tabs-header-color;
+  font-family: 'RobotoDraft';
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  position: relative;
+  display: block;
+  padding: 10px 8px;
+  margin-right: 2px;
+  line-height: 1.428571429;
+  border: 0px solid transparent;
+  text-decoration: none;
+}
+
+.pane-controls > div > a:hover {
+  color: $tabs-header-color-hover;
+  background: $toolbar-background-hover;
+  text-decoration: none;
+}
+
+.pane-controls > div.active > a,
+.pane-controls > div.active > a:hover,
+.pane-controls > div.active > a:focus {
+  color: $tabs-header-color-active;
+  background-color: $toolbar-background-hover;
+  border-bottom-color: transparent;
+}
+
+
+/* @polyfill .pane-controls .ui-dropdown-options > a */
+.pane-controls dropdown-element > a {
+  cursor: pointer;
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.428571429;
+  color: $toolbar-color;
+  white-space: nowrap;
+  z-index: 9999;
+  text-decoration: none;
+}
+
+/* @polyfill .pane-controls .ui-dropdown-options > a:hover, .pane-controls .ui-dropdown-options > a:focus */
+.pane-controls dropdown-element > a:hover,
+.pane-controls dropdown-element > a:focus {
+  background-color: $toolbar-background-hover;
+  color: $toolbar-color;
+  text-decoration: none;
+ }
+
+/* @polyfill .pane-controls .ui-dropdown-options */
+.pane-controls > div > dropdown-element::shadow .ui-dropdown-options {
+  background-color: $toolbar-background;
+}
+
+.panes > div {
+  display: none;
+}
+
+.panes > div.active {
+  display: block;
+}
+
+.pane > switching-scope {
+  display: -webkit-flex;
+  display: flex;
+  overflow: auto;
+}
+
+.panes, .panes > div {
+  -webkit-flex: 1 1;
+  flex: 1 1;
+}
+
+.ir-placeholder {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-align-items: center;
+  align-items: center;
+  text-align: center;
+  font-size: 3em;
+  font-family: RobotoDraft;
+  font-weight: 200;
+  background: #ECF0F1;
+  color: #BDC3C7;
+  overflow-x: auto;
+  flex-flow: column;
+}
+
+.fa {
+  display: inline-block;
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.fa-folder-open:before {
+  content: "\f07c";
+}
+
+.fa-repeat:before {
+  content: "\f01e";
+}
+
+.fa-eye:before {
+  content:"\f06e";
+}
+
+.fa-dollar:before {
+  content: "\f155";
+}

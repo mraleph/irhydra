@@ -42,7 +42,7 @@ display(pane, blocks, attachRef, {blockTicks}) {
 
   // Compute loop nesting depth for each block. It will be used to
   // select appropriate fill color from the Brewer's palette.
-  final loopNesting = _computeLoopNesting(blocks);
+  final loopNesting = computeLoopNesting(blocks);
 
   var hotness = loopNesting;
   if (blockTicks != null) {
@@ -82,7 +82,7 @@ display(pane, blocks, attachRef, {blockTicks}) {
                              width: node.width,
                              height: node.height,
                              r: 0,
-                             fill: _selectFill(block, hotness[block.id]),
+                             fill: selectFill(block, hotness[block.id]),
                              stroke: _selectStroke(block));
 
     final label = _createLabel(x: node.x + (node.width ~/ 2),
@@ -104,8 +104,9 @@ display(pane, blocks, attachRef, {blockTicks}) {
   for (var edge in g.edges) {
     final color = edge.isFeedback ? "red" : "black";
 
-    final path = _pathFromPoints(edge.points, color);
-    if (edge.source.data.marks.contains("dead")) {
+    final path = _pathFromPoints(g.size, edge.points, color);
+    if (edge.source.data.marks.contains("dead") ||
+        edge.target.data.marks.contains("v8.dead")) {
       deadGroup.nodes.add(path);
     } else {
       svg.nodes.add(path);
@@ -157,7 +158,12 @@ _layoutDirectedGraph(g) => new graph.DirectedGraphLayout().visit(g);
  *
  * The path is finished with an arrowhead.
  */
-_pathFromPoints(points, color) {
+_pathFromPoints(graph.Dimension size, points, color) {
+  for (var point in points) {
+    point.x = math.min(size.width, math.max(0, point.x));
+    point.y = math.min(size.height, math.max(0, point.y));
+  }
+
   var path = ["M", points[0].x, points[0].y];  // Start.
 
   for (var i = 1; i < points.length - 1; i++) {
@@ -248,7 +254,7 @@ _createPath(path, color) {
 }
 
 /** Compute loop nesting depth for every block */
-List<int> _computeLoopNesting(blocks) {
+List<int> computeLoopNesting(blocks) {
   final loopNesting = new List.filled(blocks.length, 0);
 
   final worklist = [];
@@ -313,8 +319,19 @@ final BREWER_PALETTE = [
   "#EF3B2C", "#CB181D", "#A50F15", "#67000D"
 ];
 
-_selectFill(block, hotness) {
+selectFill(block, hotness) {
   if (block.marks.contains("deoptimizes") || block.marks.contains("dead")) {
+    return "white";
+  } else {
+    final idx = math.min(hotness, BREWER_PALETTE.length) - 1;
+    return (hotness == 0) ? "white" : BREWER_PALETTE[idx];
+  }
+}
+
+selectBorder(block, hotness) {
+  if (block.marks.contains("deoptimizes")) {
+    return "#8E44AD";
+  } else if (block.marks.contains("dead")) {
     return "white";
   } else {
     final idx = math.min(hotness, BREWER_PALETTE.length) - 1;

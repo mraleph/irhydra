@@ -38,6 +38,8 @@ abstract class BaseMode {
   /** Currently loaded methods. */
   var methods;
 
+  var timeline;
+
   /** Parses textual artifact into the list of [IR.Method] */
   bool load(String text);
 }

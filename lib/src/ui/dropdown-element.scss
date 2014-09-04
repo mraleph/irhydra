@@ -1,0 +1,48 @@
+@import 'ui';
+
+.ui-dropdown {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.ui-dropdown-options {
+  display: none;
+}
+
+.open > .ui-dropdown-options {
+  display: block;
+}
+
+.ui-dropdown-selected:active,
+.ui-dropdown-selected:focus {
+  outline: 0;
+}
+
+.ui-dropdown-caret {
+  display: inline-block;
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ui-dropdown-caret:before {
+  content: "\f0d7";
+}
+
+.ui-dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  float: left;
+  min-width: 160px;
+  padding: 5px 0;
+  margin: 2px 0 0;
+  font-size: 14px;
+  background-clip: padding-box;
+  display: none;
+  box-shadow: $toolbar-box-shadow;
+}

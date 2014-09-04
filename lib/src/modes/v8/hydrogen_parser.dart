@@ -32,7 +32,7 @@ List<IR.Method> preparse(String str) {
   final tagRe = new RegExp(r"(begin|end)_(compilation|cfg)\n");
 
   // Matches line containing method name and optimization id.
-  final compilationRe = new RegExp(r'name "([^"]*)"\n\s+method "[^"]*:(\d+)"');
+  final compilationRe = new RegExp(r'name "([^"]*)"\n\s+method "[^"]*(:\d+)?"');
 
   // Matches line containing the name field.
   final nameRe = new RegExp(r'name "([^"]*)"');
@@ -53,8 +53,9 @@ List<IR.Method> preparse(String str) {
       // This is the compilation record for the method.
       // Extract the name from the record.
       final substr = str.substring(start, match.start);
-      parsing.match(substr, compilationRe, (name, optId) {
+      parsing.match(substr, compilationRe, (name, [optId]) {
         // Create the method and make it current.
+        if (optId != null) optId = optId.substring(1);
         method = new IR.Method(name_parser.parse(name),
                                optimizationId: optId);
         methods.add(method);
@@ -69,7 +70,7 @@ List<IR.Method> preparse(String str) {
       final firstLine = str.substring(start, str.indexOf("\n", start));
       final name = nameRe.firstMatch(firstLine).group(1);
 
-      method.phases.add(new IR.Phase(name, ir: substr));
+      method.phases.add(new IR.Phase(method, name, ir: substr));
     }
   }
 
@@ -86,6 +87,10 @@ Map parse(IR.Method method, Function ir) {
   final parser = new CfgParser(ir())..parse();
 
   for (var deopt in method.deopts) {
+    if (deopt.id == null) {
+      continue;
+    }
+
     final lirId = parser.bailouts[deopt.id];
     deopt.lir = parser.id2lir[lirId];
 
@@ -143,7 +148,7 @@ Map parse(IR.Method method, Function ir) {
 
 class CfgParser extends parsing.ParserBase {
   final builder = new IR.CfgBuilder();
-  var block;
+  IR.Block block;
 
   var lirOperands, hirOperands;
 
@@ -253,6 +258,11 @@ class CfgParser extends parsing.ParserBase {
     r"begin_block": {
       r'name "([^"]*)"': (name) {
         block = builder.block(name);
+      },
+
+      r'flags "dead"': () {
+        block.mark("dead");
+        block.mark("v8.dead");
       },
 
       r"successors(.*)$": (successors) {
