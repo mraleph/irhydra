@@ -6161,7 +6161,7 @@ button.close {
   color: #ffffff;
   text-align: center;
   text-decoration: none;
-  background-color: white; /* #000000 */
+  background-color: #000000;
   border-radius: 4px;
 }
 
