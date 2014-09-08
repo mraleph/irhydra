@@ -114,7 +114,7 @@ class PreParser extends parsing.ParserBase {
           if (lines.length == 1) {
             final String line = lines.first;
             if (line.contains(r"\x0a")) {
-              lines = line.replaceAllMapped(new RegExp(r"\\x([a-f0-9][a-f0-9])"), (m) => new String.fromCharCode(int.parse(m.group(1), radix: 16)))
+              lines = line.replaceAllMapped(new RegExp(r"\\(x[a-f0-9][a-f0-9]|u[a-f0-9][a-f0-9][a-f0-9][a-f0-9])"), (m) => new String.fromCharCode(int.parse(m.group(1).substring(1), radix: 16)))
                   .split('\n');
             }
           }
