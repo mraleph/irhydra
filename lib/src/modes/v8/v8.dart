@@ -33,8 +33,8 @@ import 'package:irhydra/src/modes/v8/hydrogen_parser.dart' as hydrogen_parser;
  *     `--trace-deopt --code-comments --print-opt-code` are set.
  */
 class Mode extends BaseMode {
-  final irs = const [const HIRDescriptor() //,
-                     /* const LIRDescriptor() */
+  final irs = const [const HIRDescriptor(), //,
+                      const LIRDescriptor()
                      ];
 
   /** [true] if code dump file is already loaded. */

@@ -55,7 +55,8 @@ class Mode extends BaseMode {
       assert(previous.op == null);
       for (var instr in block.hir.skip(1)) {
         // TODO(mraleph) previously we used deoptid to improve matching quality.
-        final marker = instr.id != null ? "${instr.id} <- ${instr.op}" : "${instr.op}";
+        final marker = instr.id != null ? "${instr.id} <- ${instr.op}"
+                                         : "${instr.op}";
         codeCollector.collectUntil(marker);
 
         if (!codeCollector.isEmpty) {

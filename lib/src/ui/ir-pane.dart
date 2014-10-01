@@ -23,6 +23,7 @@ import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/modes/code.dart' as code;
 import 'package:irhydra/src/task.dart';
 import 'package:irhydra/src/xref.dart' as xref;
+import 'package:irhydra/src/ui/brewer.dart' as brewer;
 import 'package:irhydra/src/ui/graph.dart' as graph;
 
 import 'package:js/js.dart' as js;
@@ -156,6 +157,8 @@ class IRPane extends PolymerElement {
   codeModeChanged() => _renderTask.schedule();
   showSourceChanged() => _renderTask.schedule();
 
+  var xgutter = [];
+
   render() {
     final stopwatch = new Stopwatch()..start();
     clear();
@@ -164,10 +167,16 @@ class IRPane extends PolymerElement {
       return;
     }
 
+    xgutter.clear();
+
     if (showSource) {
       _table.classes.add("view-source");
     } else {
       _table.classes.remove("view-source");
+    }
+
+    if (ir.profile != null) {
+      xgutter.add("ticks");
     }
 
     formatOpcode(ctx, opcode) {
@@ -185,10 +194,15 @@ class IRPane extends PolymerElement {
                        ..appendText(" ")
                        ..append(new SpanElement()..nodes.addAll(operands.map(ctx.format)));
 
-    addEx(ctx, id, opcode, operands) {
-      if (opcode == null) {
+    addEx(ctx, instr) {
+      // id, opcode, operands
+      if (instr.op == null) {
         return null;
       }
+
+      var id = instr.id;
+      var opcode = instr.op;
+      var operands = instr.args;
 
       if (ir.method.srcMapping != null) {
         var srcLine = ir.method.srcMapping[id];
@@ -218,7 +232,20 @@ class IRPane extends PolymerElement {
         gutter = id;
       }
 
-      var ln = add(gutter, format(ctx, opcode, operands), id: id);
+      final line = format(ctx, opcode, operands);
+
+      var fields = null;
+
+      if (ir.profile != null && ir.profile.hirTicks.containsKey(instr)) {
+        final ticks = ir.profile.hirTicks[instr];
+        fields = {
+          "ticks": new Element.tag("b")
+            ..appendText("${ticks.toStringAsFixed(2)}")
+            ..style.color = "${brewer.colorFor(ticks, 0, ir.profile.maxHirTicks)}"
+        };
+      }
+
+      var ln = add(gutter, line, id: id, fields: fields);
       ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
       ln.text.parentNode.classes.add("${ctx.ns}-line");
       return ln;
@@ -279,7 +306,7 @@ class IRPane extends PolymerElement {
         for (var index = 0; index < blockIr.length - 1; index++) {
           final instr = blockIr[index];
           // if (showSource && !ir.method.interesting.containsKey(instr.id)) continue;
-          final ln = addEx(ctx, instr.id, instr.op, instr.args);
+          final ln = addEx(ctx, instr);
           if (ln != null &&
               ir.method.interesting != null &&
               !ir.method.interesting.containsKey(instr.id))
@@ -290,7 +317,7 @@ class IRPane extends PolymerElement {
         if (branch is IR.Branch) {
           addBranch(ctx, branch);
         } else {
-          addEx(ctx, branch.id, branch.op, branch.args);
+          addEx(ctx, branch);
         }
         emitInlineCode(ctx, branch);
       }
@@ -376,7 +403,7 @@ class IRPane extends PolymerElement {
    *
    * Return newly created [IRPaneLine].
    */
-  IRPaneLine add(gutter, text, {id, String klass}) {
+  IRPaneLine add(gutter, text, {id, String klass, Map fields}) {
     assert(gutter is List == id is List);
 
     // Wrap raw strings in Text element.
@@ -411,7 +438,16 @@ class IRPane extends PolymerElement {
     // Second column content: text.
     text = new Element.html("<pre/>")..nodes.add(text);
 
+    final xfields = xgutter.map((name) {
+      final cell = new TableCellElement();
+      if (fields != null && fields.containsKey(name)) {
+        cell.nodes.add(fields[name]);
+      }
+      return cell;
+    }).toList();
+
     final row = new TableRowElement()
+      ..nodes.addAll(xfields)
       ..nodes.addAll([
         new TableCellElement()..nodes.add(gutter),
         new TableCellElement()

@@ -49,6 +49,8 @@ class Code {
   /** Return instructions emitted after the very last block */
   Iterable get epilogue => blocks.isEmpty ? const [] :
       code.getRange(blocks.values.last.end, code.length);
+
+  get last => code.lastWhere((x) => x is Instruction || x is Jump);
 }
 
 /** Instruction range. */
@@ -109,6 +111,7 @@ class Comment {
 class CodeCollector {
   /** Instructions for the current code region (block, prologue or epilogue). */
   final List instructions;
+  var lastMarker = -1;
   var currentPos = 0;
 
   var _collected = [];
@@ -141,7 +144,7 @@ class CodeCollector {
       _collected.add(instructions[i]);
     }
 
-    currentPos = nextPos;
+    currentPos = lastMarker = nextPos;
   }
 
   /**
@@ -186,7 +189,7 @@ class CodeCollector {
 
   /** Find next occurence of the given marker in comments. */
   _nextMarker(marker) {
-    for (var i = currentPos; i < instructions.length; i++) {
+    for (var i = lastMarker + 1; i < instructions.length; i++) {
       if (_atMarker(instructions[i], marker)) {
         return i;
       }

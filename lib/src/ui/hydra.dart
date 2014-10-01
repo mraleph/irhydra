@@ -5,10 +5,11 @@ import 'dart:async' as async;
 import 'dart:typed_data' show ByteBuffer, Uint8List;
 
 import 'package:irhydra/src/html_utils.dart' show toHtml;
+import 'package:irhydra/src/xref.dart' show XRef, POPOVER;
+import "package:irhydra/src/modes/perf.dart" as perf;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
 import 'package:irhydra/src/ui/spinner-element.dart';
-import 'package:irhydra/src/xref.dart' show XRef, POPOVER;
 import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
@@ -74,6 +75,7 @@ class HydraElement extends PolymerElement {
 
   @observable var timeline;
 
+  var profile;
 
   var blockRef;
 
@@ -188,6 +190,11 @@ class HydraElement extends PolymerElement {
     if (phase != null) {
       activeTab = "ir";
       ir = mode.toIr(phase.method, phase);
+
+      if (profile != null) {
+        profile.attachTo(ir);
+      }
+
       blockRef = new XRef((id) => irpane.rangeContentAsHtmlFull(id));
       sourcePath.clear();
       if (!phase.method.sources.isEmpty) {
@@ -310,12 +317,19 @@ class HydraElement extends PolymerElement {
   reset() {
     mode = methods = null;
     demangleNames = true;
+    profile = null;
   }
 
   methodsChanged() {
     codeMode = "none";
     activeTab = "ir";
     phase = ir = null;
+  }
+
+  loadProfile(e, selectedFiles, target) {
+    _wait(selectedFiles.map((file) => readAsText(file).then((text) {
+      profile = perf.parse(text);
+    })));
   }
 
   /** Load given file. */

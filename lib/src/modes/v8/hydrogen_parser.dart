@@ -102,6 +102,21 @@ Map parse(IR.Method method, Function ir) {
 
   final blocks = parser.builder.blocks;
 
+  for (var block in blocks.values) {
+    if (block.lir != null && block.hir != null) {
+      for (var lirIns in block.lir) {
+        final hirId = parser.lir2hir[lirIns.id];
+        if (hirId != null) {
+          final hirIns = parser.id2hir[hirId];
+          if (hirIns.code == null) {
+            hirIns.code = [];
+          }
+          hirIns.code.add(lirIns);
+        }
+      }
+    }
+  }
+
   isDead(block) =>
     block.predecessors.every((pred) => pred.marks.contains("dead") ||
                                        pred.marks.contains("deoptimizes"));

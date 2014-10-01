@@ -3,8 +3,8 @@
   font-size: 14pt;
 }
 
-.irpane > tr > td:first-child,
-.irpane > tbody > tr > td:first-child {
+.irpane > tr > td:not(:last-child),
+.irpane > tbody > tr > td:not(:last-child) {
   background-color: #F7F7F7;
   border-right: 1px solid #EEE;
   min-width: 4em;

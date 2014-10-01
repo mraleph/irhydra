@@ -185,11 +185,14 @@ class Method extends Observable {
 }
 
 class ParsedIr {
-  final method;
+  final Method method;
   final mode;
   final Map<String, Block> blocks;
   final code;
   final deopts;
+
+  // Attached profiling information (e.g. from perf annotate tool).
+  var profile;
 
   ParsedIr(this.method, this.mode, this.blocks, this.code, this.deopts);
 }

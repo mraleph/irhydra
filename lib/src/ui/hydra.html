@@ -31,6 +31,7 @@
       <template if="{{files != null}}">
         <button href="#" on-click="{{reloadCurrentFiles}}" title="Reload Current Files"><i class="fa fa-repeat"></i></button>
       </template>
+      <open-file-button on-opened="{{loadProfile}}" data-title="Load perf annotate output"><i class="fa fa-clock-o"></i></open-file-button>
       <template if="{{methods != null && !methods.isEmpty}}">
         <button on-click="{{toggleNameDemangling}}" title="Demangle method names" class="{{ {'unchecked': !demangleNames} }}"><i class="fa fa-dollar"></i></button>
       </template>
