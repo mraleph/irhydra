@@ -105,7 +105,18 @@ class IRParser extends parsing.ParserBase {
     },
 
     // Instruction.
-    r"^(\w+):\d+(\(.*\))": (op, args) {
+    r"^(\w+)(?::\d+)?(\(.*\))": (op, args) {
+      currentBlock.hir.add(new IR.Instruction(null, op, parseOperands(args)));
+    },
+
+    // Special support for ParallelMove.
+    r"^(ParallelMove) (.*)": (op, args) {
+      args = args.replaceAll(new RegExp(r"(\S+) <- \1,?"), "")
+                 .trim();
+      if (args.isEmpty) {
+        return;
+      }
+
       currentBlock.hir.add(new IR.Instruction(null, op, parseOperands(args)));
     },
   };
