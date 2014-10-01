@@ -40,6 +40,8 @@ class FormattingContext {
 
   ir(block) => _irDesc.from(block);
 
+  codeOf(instr) => _irDesc.codeOf(instr);
+
   formatOperand(tag, text) => span("${ns}-${tag}", text);
 
   format(operand) {
@@ -272,8 +274,10 @@ class IRPane extends PolymerElement {
     final lastCtx = contexts.last;
 
     emitInlineCode(ctx, instr) {
-      if (ctx == lastCtx && codeMode == 'inline' && instr.code != null) {
-        instr.code.skip(1).forEach(codeRenderer.display);
+      if (ctx == lastCtx &&
+          codeMode == 'inline' &&
+          instr.code != null) {
+        ctx.codeOf(instr).skip(1).forEach(codeRenderer.display);
       }
     }
 
@@ -325,7 +329,7 @@ class IRPane extends PolymerElement {
       if (codeMode == 'split') {
         for (var instr in lastCtx.ir(block)) {
           if (instr.code != null) {
-            instr.code.forEach(codeRenderer.display);
+            lastCtx.codeOf(instr).forEach(codeRenderer.display);
           }
         }
       }

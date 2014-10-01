@@ -23,6 +23,14 @@ import 'package:irhydra/src/modes/mode.dart';
 import 'package:irhydra/src/modes/v8/code_parser.dart' as code_parser;
 import 'package:irhydra/src/modes/v8/hydrogen_parser.dart' as hydrogen_parser;
 
+class _V8HIRDescriptor extends HIRDescriptor {
+  const _V8HIRDescriptor() : super();
+
+  codeOf(instr) =>
+    instr.code.expand((instr) => instr.code == null ? const []
+                                                     : instr.code);
+}
+
 /**
  * Mode for viewing of V8's compilation artifacts.
  *
@@ -33,9 +41,7 @@ import 'package:irhydra/src/modes/v8/hydrogen_parser.dart' as hydrogen_parser;
  *     `--trace-deopt --code-comments --print-opt-code` are set.
  */
 class Mode extends BaseMode {
-  final irs = const [const HIRDescriptor(), //,
-                      const LIRDescriptor()
-                     ];
+  final irs = const [const _V8HIRDescriptor()];
 
   /** [true] if code dump file is already loaded. */
   var codeLoaded = false;

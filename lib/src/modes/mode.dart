@@ -25,6 +25,8 @@ abstract class IRDescriptor {
 
   /** Fetch IR corresponding to this descriptor from the [block]. */
   Iterable<IR.Instruction> from(IR.Block block);
+
+  codeOf(instr) => instr.code;
 }
 
 /**
