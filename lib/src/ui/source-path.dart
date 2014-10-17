@@ -26,5 +26,6 @@ class SourcePathElement extends PolymerElement {
   switchAction(event, detail, target) {
     final index = int.parse(target.attributes["data-target"]);
     path.removeRange(index + 1, path.length);
+    event.preventDefault();
   }
 }
