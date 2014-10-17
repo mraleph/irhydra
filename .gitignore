@@ -20,3 +20,4 @@ build.sh
 serve.sh
 web/deps/jquery-ui-*/
 web/demos/webrebels/
+.pub

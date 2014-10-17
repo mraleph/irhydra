@@ -147,11 +147,15 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
           return _AST.VISIT_SKIP;
 
         case 'ForStatement':
-          // Strip range covering init-clause of the for-loop from the
-          // computed range of the loop. It is executed only once.
-          final loopRange = ast.rangeOf(node),
-                initRange = ast.rangeOf(node.init);
-          loops.add(new _Range(initRange.end, loopRange.end));
+          final loopRange = ast.rangeOf(node);
+          if (node.init != null) {
+            // Strip range covering init-clause of the for-loop from the
+            // computed range of the loop. It is executed only once.
+            final initRange = ast.rangeOf(node.init);
+            loops.add(new _Range(initRange.end, loopRange.end));            
+          } else {
+            loops.add(loopRange);            
+          }
           break;
 
         case 'WhileStatement':
