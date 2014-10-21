@@ -35,9 +35,7 @@ Requires Dart SDK and Dartium.
     # Get all dependencies
     $ pub get
     # Serve root
-    $ python -m SimpleHTTPServer
-    Serving HTTP on 0.0.0.0 port 8000
-    ...
+    $ pub serve
     $ DART_FLAGS="--checked" dart/chromium/chrome --enable-experimental-webkit-features --enable-devtools-experiments http://localhost:8000/web/index.html
     
 ### JavaScript Workflow
