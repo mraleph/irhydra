@@ -18,6 +18,11 @@ IRHydra is written in [Dart](http://dartlang.org) the easiest way to run it is t
 
 Detailed information about Dart development can be found in the [Dart: Up and Running](https://www.dartlang.org/docs/dart-up-and-running/).
 
+### Prerequisites
+
+* [Dart SDK](https://www.dartlang.org/tools/download.html)
+* [Sass](http://sass-lang.com/)
+
 ### Dart Editor Workflow 
 
 Launch Editor, open IRHydra folder via `File > Open Existing Folder`, right click `web/index.html` and select `Run in Dartium`.
