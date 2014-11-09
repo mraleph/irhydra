@@ -12,7 +12,7 @@
     </div>
     <div data-hir="Deoptimize" data-lir="deoptimize">
       <p>When executed this instruction always deoptimizes.</p>
-      <p>V8 generates then on control flow paths that were never executed before and thus contain no actionable type feedback that could be used to optimize the code.</p>
+      <p>V8 generates them on control flow paths that were never executed before and thus contain no actionable type feedback that could be used to optimize the code.</p>
       <p>For a function with a long running loop it is not uncommon to hit at OSR in the loop and then deoptimize on a <code>Deoptimize</code> emitted after the loop</p>
     </div>
     <div data-lir="lazy-bailout">
