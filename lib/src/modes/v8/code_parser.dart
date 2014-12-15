@@ -101,7 +101,7 @@ class PreParser extends parsing.ParserBase {
     },
 
     // Start of source dump.
-    r"^\-\-\- FUNCTION SOURCE \(([^)]*)\) id{(\d+),(\d+)} \-\-\-$": (name, optId, funcId) {
+    r"^\-\-\- FUNCTION SOURCE \((.*)\) id{(\d+),(\d+)} \-\-\-$": (name, optId, funcId) {
       enterMethod(name, optId);
       enter({
         r"^\-\-\- END \-\-\-$": () {
@@ -137,7 +137,7 @@ class PreParser extends parsing.ParserBase {
     },
 
     // Start of source dump.
-    r"^INLINE \(([^)]*)\) id{(\d+),(\d+)} AS (\d+) AT <(\?|\d+:\d+)>$": (name, optId, funcId, inlineId, pos) {
+    r"^INLINE \((.*)\) id{(\d+),(\d+)} AS (\d+) AT <(\?|\d+:\d+)>$": (name, optId, funcId, inlineId, pos) {
       inlineId = int.parse(inlineId);
       funcId = int.parse(funcId);
       assert(currentMethod.optimizationId == optId);
