@@ -12,10 +12,10 @@ class MethodList extends PolymerElement {
   @published var selected;
   @published var demangleNames = true;
   @observable var filteredMethods;
-  @observable var sortByDeopts = false;
+  @published var sortBy = "time";
 
   var _currentMethods;
-  var _sortedByDeopts = false;
+  var _sortedBy = "time";
   var _currentFilter;
 
   final delayed = new DelayedReaction(delay: const Duration(milliseconds: 200));
@@ -37,7 +37,7 @@ class MethodList extends PolymerElement {
     selected = filteredMethods[phaseId[0]].phases[phaseId[1]];
   }
 
-  sortByDeoptsChanged() => _recomputeList(force: true);
+  sortByChanged() => _recomputeList(force: true);
   methodsChanged() {
     if (methods != null) {
       _currentMethods = new List(methods.length);
@@ -47,7 +47,7 @@ class MethodList extends PolymerElement {
       _currentMethods = [];
     }
 
-    sortByDeopts = _sortedByDeopts = false;
+    sortBy = _sortedBy = "time";
     _recomputeList(force: true);
   }
 
@@ -69,16 +69,16 @@ class MethodList extends PolymerElement {
     }
     _currentFilter = filter;
 
-    if (_sortedByDeopts != sortByDeopts) {
+    if (_sortedBy != sortBy) {
       _currentMethods.sort(_createComparator());
-      _sortedByDeopts = sortByDeopts;
+      _sortedBy = sortBy;
     }
 
     filteredMethods = _currentMethods.where(_createFilter()).map((wrapper) => wrapper.method).toList();
   }
 
   _createComparator() {
-    if (sortByDeopts) {
+    if (sortBy == "deopts") {
       _computeReopts();
       return (a, b) {
         var result = b.method.deopts.length - a.method.deopts.length;
@@ -93,6 +93,16 @@ class MethodList extends PolymerElement {
               }
             }
           }
+        }
+        return result;
+      };
+    } else if (sortBy == "ticks") {
+      ticksOf(w) => w.method.perfProfile == null ? 0 : w.method.perfProfile.totalTicks;
+      
+      return (a, b) {
+        var result = ticksOf(b) - ticksOf(a);
+        if (result == 0) {
+          result = a.timestamp - b.timestamp; 
         }
         return result;
       };

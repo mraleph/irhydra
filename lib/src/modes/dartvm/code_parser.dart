@@ -17,9 +17,10 @@ library modes.dartvm.code_parser;
 
 import 'package:irhydra/src/modes/code.dart';
 import 'package:irhydra/src/parsing.dart' as parsing;
+import 'package:fixnum/fixnum.dart' as fixnum;
 
 /** Parse given disassembly dump. */
-parse(text) => text != null ?
+Code parse(text) => text != null ?
     (new CodeParser(text())..parse()).code : new Code.empty();
 
 class CodeParser extends parsing.ParserBase {
@@ -99,5 +100,27 @@ class CodeParser extends parsing.ParserBase {
       block.end = _code.length;
     }
     return new Code(start, _code, blocks);
+  }
+}
+
+lastOffset(String code) {
+  try {
+    var firstLineStart = code.indexOf("{"), firstLineSpace;
+    do {
+      firstLineStart = code.indexOf("\n", firstLineStart) + 1;
+      firstLineSpace = code.indexOf(" ", firstLineStart);
+    } while (firstLineStart == firstLineSpace);
+
+    final lastLineStart = code.lastIndexOf("\n", code.indexOf("\n}") - 1) + 1;
+    final lastLineSpace = code.indexOf(" ", lastLineStart);
+
+    final firstAddr = fixnum.Int64.parseHex(code.substring(firstLineStart + 2, firstLineSpace));
+    final lastAddr = fixnum.Int64.parseHex(code.substring(lastLineStart + 2, lastLineSpace));
+
+    final lastOffset = lastAddr - firstAddr;
+
+    return lastOffset.toInt();
+  } catch (e, stack) {
+    return 0;
   }
 }

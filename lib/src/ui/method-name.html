@@ -4,9 +4,14 @@
   <template>
     <link rel="stylesheet" type="text/css" href="method-name.css">
     <h3 class="deopt-{{method.worstDeopt}}">
-      <template if="{{source != null}}">
-        <div><span class="source">{{source}}</span></div>
-      </template>
+      <div>
+        <template if="{{source != null}}">
+          <span class="source">{{source}}</span>
+        </template>
+        <template if="{{method.perfProfile != null}}">
+          <span class="source">{{method.perfProfile.totalTicks}}</span>
+        </template>
+      </div>
       <template if="{{targetHref != null}}">
         <a href="{{targetHref}}">
           {{name}}

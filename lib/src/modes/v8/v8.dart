@@ -188,4 +188,6 @@ class Mode extends BaseMode {
 
     methods = ir;
   }
+
+  lastOffset(code) => code_parser.lastOffset(code);
 }

@@ -68,6 +68,7 @@ class HydraElement extends PolymerElement {
 
   @observable var showSource = false;
   @observable var demangleNames = true;
+  @observable var sortMethodsBy = "time";
 
   @observable var progressValue;
   @observable var progressUrl;
@@ -318,6 +319,7 @@ class HydraElement extends PolymerElement {
     mode = methods = null;
     demangleNames = true;
     profile = null;
+    sortMethodsBy = "time";
   }
 
   methodsChanged() {
@@ -326,10 +328,22 @@ class HydraElement extends PolymerElement {
     phase = ir = null;
   }
 
-  loadProfile(e, selectedFiles, target) {
-    _wait(selectedFiles.map((file) => readAsText(file).then((text) {
+  _loadProfile(text) {
+    try {
       profile = perf.parse(text);
-    })));
+    } catch (e, stack) {
+      print(e);
+      print(stack);
+    }
+
+    if (methods != null) {
+      profile.attachAll(mode, methods);
+      sortMethodsBy = "ticks";
+    }
+  }
+
+  loadProfile(e, selectedFiles, target) {
+    _wait(selectedFiles.map((file) => readAsText(file).then(_loadProfile)));
   }
 
   /** Load given file. */

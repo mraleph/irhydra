@@ -78,6 +78,8 @@ class Mode extends BaseMode {
     return new ir.ParsedIr(method, this, blocks, code, method.deopts);
   }
 
+  lastOffset(code) => code_parser.lastOffset(code());
+
   _attachCode(blocks, code) {
     for (var block in blocks.values) {
       final codeCollector = new CodeCollector(code.codeOf(block.name));

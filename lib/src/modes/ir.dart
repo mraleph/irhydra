@@ -85,7 +85,7 @@ class Deopt {
   var hir, lir, srcPos;
 
   /** Additional textual information about the deoptimization. */
-  final raw;
+  final Iterable<String> raw;
 
   final reason;
 
@@ -173,6 +173,8 @@ class Method extends Observable {
 
   @observable var worstDeopt = 'none';
 
+  @observable var perfProfile;
+
   var srcMapping;
   var interesting;
 
@@ -193,6 +195,8 @@ class ParsedIr {
 
   // Attached profiling information (e.g. from perf annotate tool).
   var profile;
+
+  get blockTicks => (profile != null) ? profile.blockTicks : null;
 
   ParsedIr(this.method, this.mode, this.blocks, this.code, this.deopts);
 }
@@ -241,6 +245,8 @@ class MultiId {
   operator == (other) {
     return (other is MultiId) && const ListEquality().equals(ids, other.ids);
   }
+
+  toString() => ids.join(', ');
 }
 
 /** IR instruction. */

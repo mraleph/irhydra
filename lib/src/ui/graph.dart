@@ -47,7 +47,7 @@ display(pane, blocks, attachRef, {blockTicks}) {
 
   var hotness = loopNesting;
   if (blockTicks != null) {
-    hotness = new List(blocks.length);
+    hotness = new List.filled(blocks.length, 0);
 
     final maxPercentage = blockTicks.values.fold(0.0, math.max);
     for (var block in blockTicks.keys) {

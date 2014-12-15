@@ -20,19 +20,21 @@ import 'dart:math' as math;
 import 'package:irhydra/src/modes/code.dart' as code;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/parsing.dart' as parsing;
+import 'package:fixnum/fixnum.dart' as fixnum;
 
 class MethodProfile {
   final name;
   final lastOffset;
   final Map<int, double> ticks;
+  final totalTicks;
 
-  MethodProfile(this.name, this.lastOffset, this.ticks);
+  MethodProfile(this.name, this.lastOffset, this.ticks, this.totalTicks);
 
   toString() => "${name}#${lastOffset}";
 }
 
 class IRProfile {
-  final Map<int, double> blockTicks;
+  final Map<String, double> blockTicks;
   final Map<IR.Instruction, double> hirTicks;
   final double maxHirTicks;
 
@@ -43,23 +45,47 @@ class IRProfile {
 class Profile {
   final items = <MethodProfile>[];
 
+  attachAll(mode, methods) {
+    print("Attaching profile to methods.");
+    print("  profile");
+    for (var p in items) {
+      print("   -- ${p.name} #${p.lastOffset}");
+    }
+
+    print("  methods");
+    for (var method in methods) {
+      if (method.phases.isEmpty || method.phases.last.code == null) continue;
+
+      final lastOffset = mode.lastOffset(method.phases.last.code);
+      final p = _lookup(method.name.full, lastOffset);
+      print("   -- ${method.name.full} ${lastOffset} -> ${p != null ? 'found' : 'not-found'}");
+
+      method.perfProfile = p;
+    }
+  }
+
+  _lookup(name, lastOffset) {
+    name = name.replaceAll(".dart", "")
+               .replaceAll(":", ".");
+    return items.firstWhere((p) {
+      return (name.contains(p.name) ||
+              name.contains(p.name.replaceAll(new RegExp(r"^[^_]*_"), ""))) &&
+          lastOffset == p.lastOffset;
+    }, orElse: () => null);
+  }
+
   attachTo(IR.ParsedIr ir) {
-    print("attachTo!");
     if (ir.code == null) {
       return;
     }
 
-    final profile = items.firstWhere((p) {
-      return ir.method.name.full.contains(p.name) &&
-          ir.code.last.offset == p.lastOffset;
-    }, orElse: () => null);
-
+    final profile = _lookup(ir.method.name.full, ir.code.last.offset);
     if (profile == null) {
       return;
     }
 
     final hirTicks = <IR.Instruction, double>{};
-    final blockTicks = <int, double>{};
+    final blockTicks = <String, double>{};
 
     costOf(instr) {
       if (instr is IR.Instruction) {
@@ -76,7 +102,8 @@ class Profile {
       }
     }
 
-    for (IR.Block block in ir.blocks.values) {
+    for (var blockKey in ir.blocks.keys) {
+      var block = ir.blocks[blockKey];
       var currentBlockTicks = 0.0;
       for (var instr in block.hir) {
         final ticks = costOf(instr);
@@ -87,7 +114,7 @@ class Profile {
       }
 
       if (currentBlockTicks > 0.0) {
-        blockTicks[block.id] = currentBlockTicks;
+        blockTicks[blockKey] = currentBlockTicks;
       }
     }
 
@@ -106,10 +133,17 @@ class PerfParser extends parsing.ParserBase {
 
   PerfParser(String source) : super(source.split("\n"));
 
+  var _lastSum;
+
   get patterns => {
+    r"h\->sum: (\d+)": (total) {
+      _lastSum = int.parse(total);
+    },
+
     r"^\s+:\s+0+\s+<(\*?)([^>]+)>:": (opt, name) {
-      if (name.startsWith("LazyCompile:*")) {
-        final m = new RegExp(r"LazyCompile:\*(\S+)").firstMatch(name);
+      final lazyCompileRe = new RegExp(r"LazyCompile:\*(\S+)");
+      if (lazyCompileRe.hasMatch(name)) {
+        final m = lazyCompileRe.firstMatch(name);
         name = m.group(1);
         opt = "*";
       }
@@ -117,8 +151,6 @@ class PerfParser extends parsing.ParserBase {
       if (opt != "*") {
         return;  // For now we are interested only in optimized code.
       }
-
-      print(name);
 
       var lastOffset;
       final ticks = new Map<int, double>();
@@ -128,7 +160,7 @@ class PerfParser extends parsing.ParserBase {
         },
 
         r"": () {
-          profile.items.add(new MethodProfile(name, lastOffset, ticks));
+          profile.items.add(new MethodProfile(name, lastOffset, ticks, _lastSum));
           leave(backtrack: 1);
         }
       });

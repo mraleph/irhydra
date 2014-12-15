@@ -20,6 +20,7 @@ import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/modes/v8/name_parser.dart' as name_parser;
 import 'package:irhydra/src/parsing.dart' as parsing;
 
+import 'package:fixnum/fixnum.dart' as fixnum;
 /** Start of the optimized code dump. */
 final CODE_MARKER = "--- Optimized code ---";
 final DEOPT_MARKER = new RegExp(r"\[deoptimizing \(DEOPT \w+\): begin");
@@ -36,6 +37,11 @@ List<IR.Method> preparse(String text, timeline) =>
 Code parse(Iterable<String> lines) =>
     lines != null ? (new Parser(lines)..parse()).code : new Code.empty();
 
+lastOffset(Iterable<String> lines) {
+  var last = lines.last;
+  print(lines.last);
+  return int.parse(lines.last.split(new RegExp(r"\s+"))[1]);
+}
 
 /** Class that recognizes code disassembly and deoptimization events */
 class PreParser extends parsing.ParserBase {

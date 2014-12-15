@@ -69,7 +69,7 @@ class GraphPane extends PolymerElement {
         // TODO(mraleph): Shadow DOM polyfill seems to be interfering with links in SVG. Have to switch manually.
         (document.window.location as Location).hash = "ir-${blockId}";
       });
-    });
+    }, blockTicks: ir.blockTicks);
     print("GraphPane.render() took ${stopwatch.elapsedMilliseconds}");
   }
 }
