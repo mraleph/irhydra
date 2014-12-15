@@ -19,7 +19,7 @@ import 'package:irhydra/src/modes/dartvm/code_parser.dart' as code_parser;
 import 'package:irhydra/src/modes/dartvm/ir_parser.dart' as ir_parser;
 import 'package:irhydra/src/modes/dartvm/preparser.dart' as preparser;
 import 'package:irhydra/src/modes/ir.dart' as ir;
-import 'package:irhydra/src/modes/code.dart' show CodeCollector;
+import 'package:irhydra/src/modes/code.dart' show CodeCollector, Comment, Jump;
 import 'package:irhydra/src/modes/mode.dart';
 
 class _Descriptions {
@@ -44,6 +44,37 @@ class Mode extends BaseMode {
     final blocks = ir_parser.parse(phase.ir);
     final code = code_parser.parse(phase.code);
     _attachCode(blocks, code);
+
+
+    if (method.deopts.isNotEmpty) {
+      final jumps = new Map<int, ir.Instruction>();
+
+      for (var block in blocks.values) {
+        for (var hirOp in block.hir) {
+          if (hirOp.code == null) continue;
+          for (var asmOp in hirOp.code) {
+            if (asmOp is Jump) {
+              jumps[asmOp.target] = hirOp;
+            }
+          }
+        }
+      }
+
+
+      final deopts = new Map<int, ir.Deopt>.fromIterable(method.deopts, key: (deopt) => int.parse(deopt.id, radix: 16), value: (deopt) => deopt);
+
+      var previous = null;
+      code.epilogue.forEach((instr) {
+        if (instr is Comment) return;
+
+        final deopt = deopts[instr.offset + code.start];
+        if (deopt != null) {
+          deopt.hir = jumps[previous.offset];
+        }
+        previous = instr;
+      });
+    }
+
     return new ir.ParsedIr(method, this, blocks, code, method.deopts);
   }
 

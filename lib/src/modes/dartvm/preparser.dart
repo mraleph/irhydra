@@ -34,6 +34,8 @@ parse(str) {
 
   // Matches name of the function printed in a code dump.
   final codeNameRe = new RegExp(r"'(.*)' {$");
+  
+  final deoptRe = new RegExp(r"Deoptimizing \(([^)]+)\) at pc 0x([a-f0-9]+) '.*' \(count \d+\)\n");
 
   // List of all functions and the last one.
   final functions = <IR.Method>[];
@@ -102,6 +104,36 @@ parse(str) {
         function.phases.last.code = substr;
       } else {
         function.phases.add(new IR.Phase(function, PHASE_CODE, code: substr));
+      }
+    }
+  }
+  
+  final processed = new Set<IR.Deopt>();
+  final deopts = <IR.Deopt>[];
+  for (var match in deoptRe.allMatches(str)) {
+    deopts.add(new IR.Deopt(deopts.length, match.group(2), [match.group(1)]));
+  }
+  
+  if (deopts.isNotEmpty) {
+    final deoptInfoRe = new RegExp("DeoptInfo: {([^}]*)}", multiLine: true);
+    
+    for (var method in functions) {
+      if (method.phases.isEmpty || method.phases.last.code == null) {
+        continue;  
+      }
+      
+      final match = deoptInfoRe.firstMatch(method.phases.last.code());
+      if (match == null) {
+        continue;
+      }
+      
+      final deoptPoints = match.group(1);
+      for (var deopt in deopts) {
+        if (!processed.contains(deopt) &&
+            deoptPoints.contains(deopt.id)) {
+          method.addDeopt(deopt);
+          processed.add(deopt);
+        }
       }
     }
   }
