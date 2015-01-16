@@ -6,6 +6,25 @@
     <style type='text/css' scoped>
       div[data-hir], div[data-lir] { display: none; };
     </style>
+    <div data-hir="changes-all">
+      <p>This instruction has side effects <b>unknown</b> to the compiler. </p>
+      <p>It can change hidden classes of objects, kind of array backing stores, etc.</p>
+      <p>Such instructions should be avoided inside hot loops because they inhibit optimizations.</p>
+    </div>
+    <div data-hir="UnknownOSRValue">
+      <p>An implementation detail of the <em>On Stack Replacement</em> mechanism</p>
+      <p><em>On Stack Replacement</em> (OSR) is a process when an unoptimized code for a running function is replaced by an optimized code while the function is running (is on the stack). OSR is used to optimize functions with long running loops while these loops are still running.</p>
+      <p>In this case function is entered through a special block known as an <em>OSR entry point</em> instead of the normal entry (<code>B0</code>). <code>UnknownOSRValue</code> instructions evaluate to the values that were in the corresponding places in the environment (a set of local and parameter values) during execution of the unoptimized code - allowing optimized code to continue from the place where unoptimized code was.</p>
+      <p>Block containing these instructions is never executed if the function entered through normal entry.</p>
+      <p>OSR entry block inhibits LICM, so if OSR occured in one of the inner loops instead of the outermost one it might negatively impact code quality.</p>
+    </div>
+    <div data-hir="OsrEntry">
+      <p>An implementation detail of the <em>On Stack Replacement</em> mechanism</p>
+      <p><em>On Stack Replacement</em> (OSR) is a process when an unoptimized code for a running function is replaced by an optimized code while the function is running (is on the stack). OSR is used to optimize functions with long running loops while these loops are still running.</p>
+      <p>In this case function is entered through a special block known as an <em>OSR entry point</em> instead of the normal entry (<code>B0</code>). <code>UnknownOSRValue</code> instructions evaluate to the values that were in the corresponding places in the environment (a set of local and parameter values) during execution of the unoptimized code - allowing optimized code to continue from the place where unoptimized code was.</p>
+      <p>Block containing these instructions is never executed if the function entered through normal entry.</p>
+      <p>OSR entry block inhibits LICM, so if OSR occured in one of the inner loops instead of the outermost one it might negatively impact code quality.</p>
+    </div>
     <div data-hir="CheckMaps" data-lir="check-maps">
       <p>Checks whether value's hidden class matches expected value and deoptimizes if this is not the case.</p>
       <p>Deoptimization at <code>CheckMaps</code> usually indicates that the code is polymorphic.</p>

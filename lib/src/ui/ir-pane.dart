@@ -103,23 +103,23 @@ class IRPane extends PolymerElement {
     final info = new xref.XRef((x) => x, xref.POPOVER);
     _table.onMouseOver.listen((e) {
       final target = e.target;
-      if (!target.attributes.containsKey('data-opcode')) {
-        return;
+
+      var desc = null;
+
+      if (target.classes.contains('hir-changes-all')) {
+        desc = ir.mode.descriptions.lookup("hir", "changes-all");
+      } else if (target.attributes.containsKey('data-opcode')) {
+        final ns = target.attributes['data-ns'];
+        final opcode = target.attributes['data-opcode'];
+        desc = ir.mode.descriptions.lookup(ns, opcode);
       }
 
-      final ns = target.attributes['data-ns'];
-      final opcode = target.attributes['data-opcode'];
-      final desc = ir.mode.descriptions.lookup(ns, opcode);
       if (desc != null) {
         info.show(target, desc);
       }
     });
 
     _table.onMouseOut.listen((e) {
-      final target = e.target;
-      if (!target.attributes.containsKey('data-opcode')) {
-        return;
-      }
       info.hide();
     });
 

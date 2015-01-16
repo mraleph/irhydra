@@ -140,6 +140,7 @@ pre {
 
 .hir-changes-all {
   color: red;
+  cursor: help;
 }
 
 .lir-env,
