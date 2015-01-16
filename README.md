@@ -10,11 +10,11 @@ See [this](http://mrale.ph/blog/2013/02/17/release-the-irhydra.html) and [this](
 
 [IRHydra](http://mrale.ph/irhydra/1/)
 
-[IRHydra<sup>2</sup>](http://mrale.ph/irhydra/2/), requires V8 &ge;	2.24.39.
+[IRHydra<sup>2</sup>](http://mrale.ph/irhydra/2/), requires V8 &ge;	3.24.39.
 
 ## Running Locally
 
-IRHydra is written in [Dart](http://dartlang.org) the easiest way to run it is to [download](https://www.dartlang.org/tools/download.html) full Dart bundle and use Dart Editor. 
+IRHydra is written in [Dart](http://dartlang.org) the easiest way to run it is to [download](https://www.dartlang.org/tools/download.html) full Dart bundle and use Dart Editor.
 
 Detailed information about Dart development can be found in the [Dart: Up and Running](https://www.dartlang.org/docs/dart-up-and-running/).
 
@@ -23,7 +23,7 @@ Detailed information about Dart development can be found in the [Dart: Up and Ru
 * [Dart SDK](https://www.dartlang.org/tools/download.html)
 * [Sass](http://sass-lang.com/)
 
-### Dart Editor Workflow 
+### Dart Editor Workflow
 
 Launch Editor, open IRHydra folder via `File > Open Existing Folder`, right click `web/index.html` and select `Run in Dartium`.
 
@@ -37,7 +37,7 @@ Requires Dart SDK and Dartium.
     # Serve root
     $ pub serve
     $ DART_FLAGS="--checked" dart/chromium/chrome --enable-experimental-webkit-features --enable-devtools-experiments http://localhost:8000/web/index.html
-    
+
 ### JavaScript Workflow
 
 Requires Dart SDK.
@@ -49,7 +49,7 @@ Requires Dart SDK.
     # It will be recompiled when needed.
     $ pub serve
 
-or  
-  
-    # Build IRHydra for deployment. Result is in build/ 
+or
+
+    # Build IRHydra for deployment. Result is in build/
     $ pub build
