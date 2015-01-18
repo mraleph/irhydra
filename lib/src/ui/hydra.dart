@@ -206,6 +206,7 @@ class HydraElement extends PolymerElement {
     }
   }
 
+  get graphpane => shadowRoot.querySelector("graph-pane");
   get irpane => shadowRoot.querySelector("#ir-pane");
   get sourcePane => shadowRoot.querySelector("#source-pane");
 
@@ -243,6 +244,8 @@ class HydraElement extends PolymerElement {
     blockRef.hide();
   }
 
+  showLegend() => graphpane.showLegend();
+  
   navigateToDeoptAction(event, deopt, target) {
     if (phase.method.inlined.isEmpty)
       return;

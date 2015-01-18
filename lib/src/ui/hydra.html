@@ -43,6 +43,9 @@
           <template if="{{!sourcePath.isEmpty}}">
             <div when-source class="tab-header"><a href="#source">SOURCE</a></div>
           </template>
+          <div when-graph>
+            <button on-click="{{showLegend}}" title="Show Legend"><i class="fa fa-question-circle"></i></button>
+          </div>
           <div when-ir>
             <button on-click="{{toggleInterestingMode}}" title="Splice source into IR" class="{{ {'unchecked': !showSource} }}"><i class="fa fa-eye"></i></button>
             <dropdown-element selected="{{codeMode}}">

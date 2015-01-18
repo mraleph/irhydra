@@ -55,6 +55,10 @@ class GraphPane extends PolymerElement {
   irChanged() => _renderTask.schedule();
 
   clear() => $["graph"].nodes.clear();
+  
+  showLegend() {
+    $["legend"].open();
+  }
 
   render() {
     if (ir == null) {

@@ -1,14 +1,143 @@
 <!DOCTYPE html>
 <link rel="import" href="../../../../packages/polymer/polymer.html">
+<link rel="import" href="../../../../packages/core_elements/core_overlay.html">
 <polymer-element name="graph-pane">
   <template>
     <style>
       #graph {
         margin: 0px auto;
       }
+            
+      #legend > div {
+        background: white;
+        padding: 2em;
+        border: #eee 1px solid;
+        max-width: 500px;
+      }
+      
+      rect.deopt {
+        stroke: #8E44AD;
+        stroke-width: 4px;
+        fill: white;
+      }
+      
+      rect.changes-all {
+        stroke: red;
+        stroke-dasharray: 10, 5;
+        stroke-width: 3px;
+        fill: white;
+      }
+      rect.normal {
+        stroke: black;
+        fill: white;
+      }
+      rect.dead, text.dead {
+        fill-opacity: 0.4;
+        stroke-opacity: 0.4;
+      }
+      rect.ht0 {
+        stroke: black;
+        fill: none;
+      }      
+      rect.ht1 { fill: #FCBBA1; }
+      rect.ht2 { fill: #FC9272; }
+      rect.ht3 { fill: #FB6A4A; }
+      rect.ht4 { fill: #EF3B2C; }
+      rect.ht5 { fill: #CB181D; }
+      rect.ht6 { fill: #A50F15; }
+      rect.ht7 { fill: #67000D; }
+      
+      text.block-label {
+        fill: black;
+        stroke: black;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        font-family: Monaco, Menlo, Consolas, 'Courier New', monospace;
+      }
     </style>
     <div>
       <div id="graph"></div>
+      <core-overlay id="legend">
+        <div>
+          <p>This pane contains control flow graph of the method: vertices are blocks and edges are branches between them.</p>
+          <table>
+            <tr>
+              <td>
+                <svg width="40" height="40">
+                  <rect width="40" height="40" class="normal"/>
+                  <text x="20" y="20" class="block-label">B1</text>
+                </svg>
+              </td>
+              <td>
+                <p>CFG block with label <code>B1</code>. Hovering over a block shows IR it contains. Clicking jumps into its IR in the IR pane.</p>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <svg width="40" height="40">
+                  <path d="M0,10L40,10L30,13M30,7L40,10" style="stroke: black; fill: none;"></path>
+                  <path d="M0,30L40,30L30,33M30,27L40,30" style="stroke: red; fill: none;"></path>
+                </svg>
+              </td>
+              <td>
+                Control flow edge between blocks. Red color is used to mark loops' backedges.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <svg width="40" height="40">
+                  <rect width="40" height="40" class="deopt"/>
+                  <text x="20" y="20" class="block-label">B1</text>
+                </svg>
+              </td>
+              <td>
+                Block that contains an unconditional deoptimization instruction. Such blocks always deoptimize when executed. Usually inserted when building IR for the parts of function that were never executed and thus have no type feedback to speculate upon.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <svg width="40" height="40">
+                  <rect width="40" height="40" class="normal dead"/>
+                  <text x="20" y="20" class="block-label dead">B1</text>
+                </svg>
+              </td>
+              <td>
+                Block that was marked as unreachable. No code will be generated from it.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <svg width="40" height="40">
+                  <rect width="40" height="40" class="changes-all"/>
+                  <text x="20" y="20" class="block-label">B1</text>
+                </svg>
+              </td>
+              <td>
+                Block that contains an instruction that has unknown arbitrary side-effects (marked with <code>changes[*]</code>). 
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <svg width="75" height="40">
+                  <rect x="5"  y="0" width="5" height="40" class="ht1"/>
+                  <rect x="10" y="0" width="5" height="40" class="ht2"/>
+                  <rect x="15" y="0" width="5" height="40" class="ht3"/>
+                  <rect x="20" y="0" width="5" height="40" class="ht4"/>
+                  <rect x="25" y="0" width="5" height="40" class="ht5"/>
+                  <rect x="30" y="0" width="5" height="40" class="ht6"/>
+                  <rect x="35" y="0" width="5" height="40" class="ht7"/>
+                  <rect x="0"  y="0" width="40" height="40" class="ht0"/>
+                  
+                  <text x="20" y="20" class="block-label">B1</text>
+                </svg>
+              </td>
+              <td>
+                Fill color denotes hotness of the block: the more intense the hotter. If <code>perf annotate</code> profile is loaded the hotness is computed based on the number of ticks. Otherwise it is approximated from loop nesting - color is more intense inside nested loops.
+              </td>
+            </tr>
+          </table>
+        </div>
+      </core-overlay>
     </div>
   </template>
   <script type="application/dart" src='graph-pane.dart'></script>
