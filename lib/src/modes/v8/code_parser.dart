@@ -43,6 +43,12 @@ lastOffset(Iterable<String> lines) {
   return int.parse(lines.last.split(new RegExp(r"\s+"))[1]);
 }
 
+final ESCAPE_SEQUENCE = new RegExp(r"\\(x[a-f0-9][a-f0-9]|u[a-f0-9][a-f0-9][a-f0-9][a-f0-9])");
+
+unescape(str) =>
+  str.replaceAllMapped(ESCAPE_SEQUENCE, (m) =>
+      new String.fromCharCode(int.parse(m.group(1).substring(1), radix: 16)));
+
 /** Class that recognizes code disassembly and deoptimization events */
 class PreParser extends parsing.ParserBase {
   final timeline;
@@ -114,20 +120,7 @@ class PreParser extends parsing.ParserBase {
           final id = int.parse(funcId);
           assert(currentMethod.sources.length == id);
 
-          var lines = subrange();
-
-          try {
-          if (lines.length == 1) {
-            final String line = lines.first;
-            if (line.contains(r"\x0a")) {
-              lines = line.replaceAllMapped(new RegExp(r"\\(x[a-f0-9][a-f0-9]|u[a-f0-9][a-f0-9][a-f0-9][a-f0-9])"), (m) => new String.fromCharCode(int.parse(m.group(1).substring(1), radix: 16)))
-                  .split('\n');
-            }
-          }
-          } catch (e) {
-            print(e);
-          }
-
+          final lines = subrange().map(unescape).expand((l) => l.split('\n'));
           currentMethod.sources.add(new IR.FunctionSource(id, name, lines));
 
           if (currentMethod.sources.length == 1) {
