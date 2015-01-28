@@ -192,6 +192,14 @@ pre {
   background-color: #F1C40F;
 }
 
+.deopt-marker-debugger {
+  background-color: #827717;
+}
+
+.deopt-marker-debugger:hover {
+  background-color: #9E9D24;
+}
+
 .deopt-marker-soft {
   background-color: #8E44AD;
 }

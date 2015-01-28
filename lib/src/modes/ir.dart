@@ -94,7 +94,7 @@ class Deopt {
 
   Deopt(this.timestamp, this.id, this.raw, { this.type: "eager", this.optimizationId, this.reason});
 
-  static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2, "none": 3 };
+  static final _typesOrdering = const { "eager": 0, "lazy": 1, "soft": 2, "debugger": 3, "none": 4 };
   static final _types = _typesOrdering.keys.toList();
 
   static worst(type, deopt) =>
