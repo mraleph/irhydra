@@ -149,9 +149,11 @@ class HydraElement extends PolymerElement {
   attached() {
     super.attached();
 
-    if (!_loadDemo(Uri.parse(window.location.href).fragment)) {
-      window.location.hash = "";
-    }
+    new async.Timer(const Duration(milliseconds: 50), () {
+      if (!_loadDemo(Uri.parse(window.location.href).fragment)) {
+        window.location.hash = "";
+      }
+    });
 
     window.onHashChange.listen((e) {
       final from = Uri.parse(e.oldUrl).fragment;
