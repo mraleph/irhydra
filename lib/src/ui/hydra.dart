@@ -84,59 +84,80 @@ class HydraElement extends PolymerElement {
 
   HydraElement.created() : super.created();
 
+  _requestArtifact(path) {
+    if (path.endsWith(".tar.bz2")) {
+      unpack(data) {
+        if (data is ByteBuffer) {
+          data = new Uint8List.view(data);
+        }
+
+        final tar = timeAndReport(() => js.context.BUNZIP2(data),
+            (ms) => "Unpacking ${path} (${data.length} bytes) in JS took ${ms} ms (${data.length / ms} bytes/ms)");
+
+        return new TarDecoder().decodeBytes(tar).files;
+      }
+
+      loadFiles(files) {
+        for (var file in files)
+          loadData(new String.fromCharCodes(file.content));
+      }
+
+      progress(evt) {
+        if (evt.lengthComputable) {
+          progressValue = (evt.loaded * 100 / evt.total).floor();
+        }
+      }
+
+      done(x) {
+        shadowRoot.querySelector("paper-toast").dismiss();
+        progressUrl = progressValue = progressAction = null;
+      }
+
+      progressAction = "Downloading";
+      progressUrl = path;
+      shadowRoot.querySelector("paper-toast").show();
+      return HttpRequest.request(path, responseType: "arraybuffer", onProgress: progress)
+        .then((rq) {
+          progressAction = "Unpacking";
+          shadowRoot.querySelector("paper-toast").show();
+          return new async.Future.delayed(const Duration(milliseconds: 100), () => rq.response);
+        })
+        .then(unpack)
+        .then(loadFiles)
+        .then(done, onError: done);
+    } else {
+      return HttpRequest.getString(path).then(loadData);
+    }
+  }
+
+  static final DRIVE_REGEXP = new RegExp(r"^drive:([_\w.]+)$");
+  static const DRIVE_ROOT = 'http://googledrive.com/host/0B6XwArTFTLptOWZfVTlUWkdkMTg/';
+
+  _loadDemo(fragment) {
+    if (DEMOS.containsKey(fragment)) {
+      _wait(DEMOS[fragment].map(_requestArtifact));
+      return true;
+    }
+
+    final driveMatch = DRIVE_REGEXP.firstMatch(fragment);
+    if (driveMatch != null) {
+      _wait([_requestArtifact("${DRIVE_ROOT}${driveMatch.group(1)}")]);
+      return true;
+    }
+  }
+
   attached() {
     super.attached();
+
+    if (!_loadDemo(Uri.parse(window.location.href).fragment)) {
+      window.location.hash = "";
+    }
 
     window.onHashChange.listen((e) {
       final from = Uri.parse(e.oldUrl).fragment;
       final to = Uri.parse(e.newUrl).fragment;
 
-      if (DEMOS.containsKey(to)) {
-        _wait(DEMOS[to].map((path) {
-          if (path.endsWith(".tar.bz2")) {
-            unpack(data) {
-              if (data is ByteBuffer) {
-                data = new Uint8List.view(data);
-              }
-
-              final tar = timeAndReport(() => js.context.BUNZIP2(data),
-                  (ms) => "Unpacking ${path} (${data.length} bytes) in JS took ${ms} ms (${data.length / ms} bytes/ms)");
-
-              return new TarDecoder().decodeBytes(tar).files;
-            }
-
-            loadFiles(files) {
-              for (var file in files)
-                loadData(new String.fromCharCodes(file.content));
-            }
-
-            progress(evt) {
-              if (evt.lengthComputable) {
-                progressValue = (evt.loaded * 100 / evt.total).floor();
-              }
-            }
-
-            done(x) {
-              shadowRoot.querySelector("paper-toast").dismiss();
-              progressUrl = progressValue = progressAction = null;
-            }
-
-            progressAction = "Downloading";
-            progressUrl = path;
-            shadowRoot.querySelector("paper-toast").show();
-            return HttpRequest.request(path, responseType: "arraybuffer", onProgress: progress)
-              .then((rq) {
-                progressAction = "Unpacking";
-                shadowRoot.querySelector("paper-toast").show();
-                return new async.Future.delayed(const Duration(milliseconds: 100), () => rq.response);
-              })
-              .then(unpack)
-              .then(loadFiles)
-              .then(done, onError: done);
-          } else {
-            return HttpRequest.getString(path).then(loadData);
-          }
-        }));
+      if (_loadDemo(to)) {
         return;
       }
 
@@ -245,7 +266,7 @@ class HydraElement extends PolymerElement {
   }
 
   showLegend() => graphpane.showLegend();
-  
+
   navigateToDeoptAction(event, deopt, target) {
     if (phase.method.inlined.isEmpty)
       return;
