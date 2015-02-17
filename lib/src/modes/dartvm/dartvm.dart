@@ -40,7 +40,7 @@ class Mode extends BaseMode {
 
   final descriptions = new _Descriptions();
 
-  toIr(method, phase) {
+  toIr(method, phase, statusObject) {
     final blocks = ir_parser.parse(phase.ir);
     final code = code_parser.parse(phase.code);
     _attachCode(blocks, code);

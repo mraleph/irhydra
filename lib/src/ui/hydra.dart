@@ -62,6 +62,9 @@ class HydraElement extends PolymerElement {
 
   @observable var codeMode;
 
+  @observable var crlfDetected = false;
+  @observable var sourceAnnotatorFailed = false;
+
   @observable var sourcePath = toObservable([]);
 
   @observable var activeTab = "ir";
@@ -211,9 +214,10 @@ class HydraElement extends PolymerElement {
 
   phaseChanged() {
     closeSplash();
+    crlfDetected = false;
     if (phase != null) {
       activeTab = "ir";
-      ir = mode.toIr(phase.method, phase);
+      ir = mode.toIr(phase.method, phase, this);
 
       if (profile != null) {
         profile.attachTo(ir);
@@ -248,6 +252,7 @@ class HydraElement extends PolymerElement {
 
   _loadFiles() {
     closeSplash();
+    reset();
     _wait(files.map((file) => readAsText(file).then(loadData)));
   }
 
@@ -346,6 +351,7 @@ class HydraElement extends PolymerElement {
     demangleNames = true;
     profile = null;
     sortMethodsBy = "time";
+    crlfDetected = sourceAnnotatorFailed = false;
   }
 
   methodsChanged() {
@@ -383,6 +389,7 @@ class HydraElement extends PolymerElement {
   /** Load data from the given textual artifact if any mode can handle it. */
   loadData(text) {
     // Normalize line endings.
+    crlfDetected = crlfDetected || text.contains("\r\n");
     text = text.replaceAll(new RegExp(r"\r\n|\r"), "\n");
 
     if (mode == null || !mode.load(text)) {

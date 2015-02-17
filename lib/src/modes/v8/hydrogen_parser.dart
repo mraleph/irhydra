@@ -82,7 +82,7 @@ _deferSubstring(str, start, end) =>
   () => str.substring(start, end);
 
 /** Parse given phase IR stored in the deferred substring thunk. */
-Map parse(IR.Method method, Function ir) {
+Map parse(IR.Method method, Function ir, statusObject) {
   final stopwatch = new Stopwatch()..start();
   final parser = new CfgParser(ir())..parse();
 
@@ -155,7 +155,16 @@ Map parse(IR.Method method, Function ir) {
     }
   }
 
-  source_annotator.annotate(method, blocks, parser);
+  try {
+    source_annotator.annotate(method, blocks, parser);
+  } catch (e, stack) {
+    print("""ERROR: source_annotator.annotate failed.
+There is a mismatch between the source and source positions recorded.
+This can be caused by the presence of CRLF line endings.
+IRHydra assumes LF-only endings. Contact @mraleph for troubleshooting.
+""");
+    statusObject.sourceAnnotatorFailed = true;
+  }
 
   print("hydrogen_parser.parse took ${stopwatch.elapsedMilliseconds}");
   return blocks;

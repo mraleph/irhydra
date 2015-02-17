@@ -120,6 +120,7 @@ class LoopId {
   }
 }
 
+
 // TODO(mraleph): we pass parser as [irInfo] make a real IRInfo class.
 annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
   if (method.sources.isEmpty) {
@@ -152,9 +153,9 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
             // Strip range covering init-clause of the for-loop from the
             // computed range of the loop. It is executed only once.
             final initRange = ast.rangeOf(node.init);
-            loops.add(new _Range(initRange.end, loopRange.end));            
+            loops.add(new _Range(initRange.end, loopRange.end));
           } else {
-            loops.add(loopRange);            
+            loops.add(loopRange);
           }
           break;
 
@@ -285,12 +286,8 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     return new RangedLine(line, chRange, columnNum(srcPos));
   }
 
-  // Attach annotation arrays to all inlined functions.
-  final annotations = method.inlined.map((f) =>
-      f.annotations = new List.filled(sources[f.source.id].length, IR.LINE_DEAD)).toList();
-
-  final mapping = method.srcMapping = {};
-  final interesting = method.interesting = {};
+  final mapping = {};
+  final interesting = {};
 
   for (var block in blocks.values) {
     if (block.lir != null) {
@@ -314,9 +311,9 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     }
   }
 
-  if (method.srcMapping.isEmpty) method.srcMapping = null;
-  if (method.interesting.isEmpty || method.srcMapping == null) method.interesting = null;
-
+  // Attach annotation arrays to all inlined functions.
+  final annotations = method.inlined.map((f) =>
+      f.annotations = new List.filled(sources[f.source.id].length, IR.LINE_DEAD)).toList();
 
   // Process IR and mark lines according to IR instructions that were generated from them.
   for (var block in blocks.values) {
@@ -356,6 +353,14 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
 
       final outer = method.inlined[f.position.inlineId];
       if (!worklist.contains(outer)) worklist.add(outer);
+    }
+  }
+
+  // Commit mappings.
+  if (!mapping.isEmpty) {
+    method.srcMapping = mapping;
+    if (!interesting.isEmpty) {
+      method.interesting = interesting;
     }
   }
 }

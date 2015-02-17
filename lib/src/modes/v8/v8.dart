@@ -114,8 +114,8 @@ class Mode extends BaseMode {
     }
   }
 
-  toIr(method, phase) {
-    final blocks = hydrogen_parser.parse(method, phase.ir);
+  toIr(method, phase, statusObject) {
+    final blocks = hydrogen_parser.parse(method, phase.ir, statusObject);
     final code = code_parser.parse(phase.code);
     _attachCode(blocks, code);
     return new ir.ParsedIr(method, this, blocks, code, method.deopts);
