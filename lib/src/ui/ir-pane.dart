@@ -196,6 +196,19 @@ class IRPane extends PolymerElement {
                        ..appendText(" ")
                        ..append(new SpanElement()..nodes.addAll(operands.map(ctx.format)));
 
+    fieldsFor(instr) {
+      var fields = null;
+      if (ir.profile != null && ir.profile.hirTicks.containsKey(instr)) {
+        final ticks = ir.profile.hirTicks[instr];
+        fields = {
+          "ticks": new Element.tag("b")
+            ..appendText("${ticks.toStringAsFixed(2)}")
+            ..style.color = "${brewer.colorFor(ticks, 0, ir.profile.maxHirTicks)}"
+        };
+      }
+      return fields;
+    }
+
     addEx(ctx, instr) {
       // id, opcode, operands
       if (instr.op == null) {
@@ -236,18 +249,7 @@ class IRPane extends PolymerElement {
 
       final line = format(ctx, opcode, operands);
 
-      var fields = null;
-
-      if (ir.profile != null && ir.profile.hirTicks.containsKey(instr)) {
-        final ticks = ir.profile.hirTicks[instr];
-        fields = {
-          "ticks": new Element.tag("b")
-            ..appendText("${ticks.toStringAsFixed(2)}")
-            ..style.color = "${brewer.colorFor(ticks, 0, ir.profile.maxHirTicks)}"
-        };
-      }
-
-      var ln = add(gutter, line, id: id, fields: fields);
+      final ln = add(gutter, line, id: id, fields: fieldsFor(instr));
       ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
       ln.text.parentNode.classes.add("${ctx.ns}-line");
       return ln;
@@ -263,7 +265,7 @@ class IRPane extends PolymerElement {
                     ..append(makeBlockRef(instr.true_successor))
                     ..appendText(", ")
                     ..append(makeBlockRef(instr.false_successor))
-                    ..appendText(")"));
+                    ..appendText(")"), fields: fieldsFor(instr));
       ln.gutter.parentNode.classes.add("${ctx.ns}-gutter");
       ln.text.parentNode.classes.add("${ctx.ns}-line");
     }
