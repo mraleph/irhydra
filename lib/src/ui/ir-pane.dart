@@ -283,7 +283,6 @@ class IRPane extends PolymerElement {
       }
     }
 
-
     if (codeMode != 'none') {
       ir.code.prologue.forEach(codeRenderer.display);
     }

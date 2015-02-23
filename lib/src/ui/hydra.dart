@@ -147,6 +147,8 @@ class HydraElement extends PolymerElement {
       _wait([_requestArtifact("${DRIVE_ROOT}${driveMatch.group(1)}")]);
       return true;
     }
+
+    return false;
   }
 
   attached() {
@@ -252,7 +254,6 @@ class HydraElement extends PolymerElement {
 
   _loadFiles() {
     closeSplash();
-    reset();
     _wait(files.map((file) => readAsText(file).then(loadData)));
   }
 
