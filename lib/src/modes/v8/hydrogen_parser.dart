@@ -180,7 +180,7 @@ class CfgParser extends parsing.ParserBase {
     hirOperands = parsing.makeSplitter({
       r"0x[a-f0-9]+": (hirId, val) => new Constant(val),
       r"B\d+\b": (hirId, val) => new IR.BlockRef(val),
-      r"[a-zA-Z]\d+\b": (hirId, val) => new IR.ValRef(val),
+      r"[a-zA-Z]+\d+\b": (hirId, val) => new IR.ValRef(val),
       r"range:(-?\d+)_(-?\d+)(_m0)?": (hirId, low, high, m0) => new Range(low, high, m0 != null),
       r"changes\[[^\]]+\]": (hirId, val) {
         final changes = new Changes(val);
@@ -299,7 +299,7 @@ class CfgParser extends parsing.ParserBase {
       r"begin_locals": {  // Block phis.
         r"end_locals": () => leave(),
 
-        r"^\s+\-?\d+\s+(\w\d+)\s+(.*)$": (id, args) {
+        r"^\s+\-?\d+\s+(\w+\d+)\s+(.*)$": (id, args) {
           final raw = " 0 0 $id Phi $args <|@";
           block.hir.add(new IR.Instruction(id, "Phi", hirOperands(args, context: id)));
         }
@@ -330,7 +330,7 @@ class CfgParser extends parsing.ParserBase {
 }
 
 /** Single HIR instruction from the hydrogen.cfg. */
-final hirLineRe = new RegExp(r"^\s+\d+\s+\d+\s+(\w\d+)\s+([-\w]+)\s*(.*)<");
+final hirLineRe = new RegExp(r"^\s+\d+\s+\d+\s+(\w+\d+)\s+([-\w]+)\s*(.*)<");
 
 class Constant extends IR.Operand {
   final text;
