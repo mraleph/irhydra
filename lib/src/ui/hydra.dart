@@ -44,6 +44,22 @@ final DEMOS = {
   "webrebels-2014-method-function-hack": _createWebRebelsDemo("8-method-function-hack"),
 };
 
+class TextFile {
+  final file;
+  final action;
+
+  TextFile(this.file, this.action);
+
+  load() => _readAsText(file).then(action);
+
+  static _readAsText(file) {
+    final reader = new FileReader();
+    final result = reader.onLoad.first.then((_) => reader.result);
+    reader.readAsText(file);
+    return result;
+  }
+}
+
 timeAndReport(action, report) {
   final stopwatch = new Stopwatch()..start();
   final result = action();
@@ -82,8 +98,6 @@ class HydraElement extends PolymerElement {
   var profile;
 
   var blockRef;
-
-  get currentFileNames => files.map((file) => file.name).join(', ');
 
   HydraElement.created() : super.created();
 
@@ -138,13 +152,13 @@ class HydraElement extends PolymerElement {
 
   _loadDemo(fragment) {
     if (DEMOS.containsKey(fragment)) {
-      _wait(DEMOS[fragment].map(_requestArtifact));
+      _wait(DEMOS[fragment], _requestArtifact);
       return true;
     }
 
     final driveMatch = DRIVE_REGEXP.firstMatch(fragment);
     if (driveMatch != null) {
-      _wait([_requestArtifact("${DRIVE_ROOT}${driveMatch.group(1)}")]);
+      _wait(["${DRIVE_ROOT}${driveMatch.group(1)}"], _requestArtifact);
       return true;
     }
 
@@ -243,7 +257,9 @@ class HydraElement extends PolymerElement {
     if (selectedFiles.length > 1) {
       reset();
     }
-    files = selectedFiles;
+    files = selectedFiles
+      .map((file) => new TextFile(file, loadData))
+      .toList();
     _loadFiles();
   }
 
@@ -254,15 +270,14 @@ class HydraElement extends PolymerElement {
 
   _loadFiles() {
     closeSplash();
-    _wait(files.map((file) => readAsText(file).then(loadData)));
+    _wait(files, (file) => file.load());
   }
 
-  _wait(actions) {
+  _wait(data, action) {
     final SpinnerElement spinner = $["spinner"];
     spinner.start();
-    async.Future.wait(
-      actions
-    ).then((_) => spinner.stop(), onError: (_) => spinner.stop());
+    return async.Future.forEach(data, action)
+      .then((_) => spinner.stop(), onError: (_) => spinner.stop());
   }
 
   showBlockAction(event, detail, target) {
@@ -365,26 +380,27 @@ class HydraElement extends PolymerElement {
     try {
       profile = perf.parse(text);
     } catch (e, stack) {
-      print(e);
-      print(stack);
+      print("ERROR loading profile");
+      return;
     }
+    _attachProfile();
+  }
 
-    if (methods != null) {
+  _attachProfile() {
+    if (methods != null && profile != null) {
       profile.attachAll(mode, methods);
       sortMethodsBy = "ticks";
     }
   }
 
   loadProfile(e, selectedFiles, target) {
-    _wait(selectedFiles.map((file) => readAsText(file).then(_loadProfile)));
-  }
-
-  /** Load given file. */
-  readAsText(file) {
-    final reader = new FileReader();
-    final result = reader.onLoad.first.then((_) => reader.result);
-    reader.readAsText(file);
-    return result;
+    final profileFiles = selectedFiles
+      .map((file) => new TextFile(file, _loadProfile))
+      .toList();
+    files = []
+      ..addAll(files)
+      ..addAll(profileFiles);
+    _wait(profileFiles, (file) => file.load());
   }
 
   /** Load data from the given textual artifact if any mode can handle it. */
