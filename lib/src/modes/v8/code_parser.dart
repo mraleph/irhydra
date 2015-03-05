@@ -38,9 +38,10 @@ Code parse(Iterable<String> lines) =>
     lines != null ? (new Parser(lines)..parse()).code : new Code.empty();
 
 lastOffset(Iterable<String> lines) {
-  var last = lines.last;
-  print(lines.last);
-  return int.parse(lines.last.split(new RegExp(r"\s+"))[1]);
+  const NO_OFFSET = -1;
+  final last = lines.lastWhere((str) => str.startsWith("0x"), orElse: () => null);
+  return last == null ? NO_OFFSET
+      : int.parse(last.split(new RegExp(r"\s+"))[1], onError: (_) => NO_OFFSET);
 }
 
 final ESCAPE_SEQUENCE = new RegExp(r"\\(x[a-f0-9][a-f0-9]|u[a-f0-9][a-f0-9][a-f0-9][a-f0-9])");

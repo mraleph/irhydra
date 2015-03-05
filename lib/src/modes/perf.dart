@@ -62,6 +62,7 @@ class Profile {
 
       method.perfProfile = p;
     }
+    print(" // done");
   }
 
   _lookup(name, lastOffset) {

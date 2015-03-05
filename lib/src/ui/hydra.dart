@@ -388,8 +388,14 @@ class HydraElement extends PolymerElement {
 
   _attachProfile() {
     if (methods != null && profile != null) {
-      profile.attachAll(mode, methods);
-      sortMethodsBy = "ticks";
+      try {
+        profile.attachAll(mode, methods);
+        sortMethodsBy = "ticks";
+      } catch (e, stack) {
+        print("ERROR while attaching profile");
+        print(e);
+        print(stack);
+      }
     }
   }
 
