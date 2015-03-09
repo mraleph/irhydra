@@ -16,7 +16,7 @@ library dropdown_element;
 
 import 'dart:html' as html;
 import 'dart:js' as js;
-import 'package:irhydra/src/task.dart';
+import 'package:ui_utils/task.dart';
 import 'package:polymer/polymer.dart';
 
 @CustomTag('dropdown-element')

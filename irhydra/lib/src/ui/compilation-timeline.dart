@@ -18,9 +18,9 @@ import 'dart:html';
 import 'dart:svg';
 import 'package:polymer/polymer.dart';
 
-import 'package:irhydra/src/html_utils.dart' show toHtml;
+import 'package:ui_utils/html_utils.dart' show toHtml;
 import 'package:irhydra/src/modes/ir.dart' as ir;
-import 'package:irhydra/src/xref.dart' as xref;
+import 'package:ui_utils/xref.dart' as xref;
 
 @CustomTag('compilation-timeline')
 class CompilationTimeline extends PolymerElement {

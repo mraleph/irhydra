@@ -18,6 +18,7 @@ library ir;
 import 'dart:math' show min;
 import 'package:observe/observe.dart';
 import 'package:collection/equality.dart' show ListEquality;
+import 'package:ui_utils/graph.dart' as graph;
 
 // Prevent tree shaking of this library.
 @MirrorsUsed(targets: const['*'])
@@ -202,7 +203,7 @@ class ParsedIr {
 }
 
 /** Block in the control flow graph. */
-class Block {
+class Block implements graph.Block {
   /** Block's number in a sequence of blocks. */
   final int id;
 

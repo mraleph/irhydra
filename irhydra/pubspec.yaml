@@ -7,8 +7,8 @@ dependencies:
   paper_elements: any
   polymer: any
   sass: any
-  bootstrap:
-    path: ../bootstrap
+  ui_utils:
+    path: ../ui_utils
 transformers:
 - sass
 - polymer:

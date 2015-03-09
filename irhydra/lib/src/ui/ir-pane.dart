@@ -18,15 +18,15 @@ import 'dart:math' as math;
 import 'dart:html';
 import 'dart:js' as js;
 
-import 'package:bootstrap/bootstrap.dart' as bs;
+import 'package:ui_utils/bootstrap.dart' as bs;
 import 'package:irhydra/src/formatting.dart' as formatting;
-import 'package:irhydra/src/html_utils.dart' show toHtml, span;
+import 'package:ui_utils/html_utils.dart' show toHtml, span;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/modes/code.dart' as code;
-import 'package:irhydra/src/task.dart';
-import 'package:irhydra/src/xref.dart' as xref;
-import 'package:irhydra/src/ui/brewer.dart' as brewer;
-import 'package:irhydra/src/ui/graph.dart' as graph;
+import 'package:ui_utils/task.dart';
+import 'package:ui_utils/xref.dart' as xref;
+import 'package:ui_utils/brewer.dart' as brewer;
+import 'package:ui_utils/graph.dart' as graph;
 
 
 import 'package:polymer/polymer.dart';

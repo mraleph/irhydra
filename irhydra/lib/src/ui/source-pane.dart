@@ -16,7 +16,7 @@ library source_pane;
 
 import 'dart:html' as html;
 
-import 'package:bootstrap/bootstrap.dart' as bs;
+import 'package:ui_utils/bootstrap.dart' as bs;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/ui/util/code-mirror/code-mirror.dart' as code_mirror;
 import 'package:polymer/polymer.dart';

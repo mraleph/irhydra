@@ -15,7 +15,7 @@
 library code_mirror;
 
 import 'dart:js' as js;
-import 'package:irhydra/src/task.dart';
+import 'package:ui_utils/task.dart';
 import 'package:polymer/polymer.dart';
 import 'dart:html' as html;
 

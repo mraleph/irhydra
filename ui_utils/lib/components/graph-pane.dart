@@ -15,8 +15,8 @@
 library graph_pane;
 
 import 'dart:html';
-import 'package:irhydra/src/task.dart';
-import 'package:irhydra/src/ui/graph.dart' as graphview;
+import 'package:ui_utils/task.dart';
+import 'package:ui_utils/graph.dart' as graphview;
 import 'package:polymer/polymer.dart';
 
 class HoverDetail {
@@ -55,7 +55,7 @@ class GraphPane extends PolymerElement {
   irChanged() => _renderTask.schedule();
 
   clear() => $["graph"].nodes.clear();
-  
+
   showLegend() {
     $["legend"].open();
   }

@@ -3,8 +3,8 @@ library method_list;
 import 'dart:js' as js;
 import 'dart:math' show min;
 
-import 'package:bootstrap/bootstrap.dart' as bs;
-import 'package:irhydra/src/delayed_reaction.dart';
+import 'package:ui_utils/bootstrap.dart' as bs;
+import 'package:ui_utils/delayed_reaction.dart';
 import 'package:polymer/polymer.dart';
 
 @CustomTag('method-list')

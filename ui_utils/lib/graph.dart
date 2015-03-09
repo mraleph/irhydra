@@ -15,11 +15,12 @@
 /** Rendering control flow graph using SVG. */
 library graph;
 
+import 'dart:html' as html;
 import 'dart:math' as math;
 import 'dart:svg';
 
-import 'package:irhydra/src/draw2d/graph.dart' as graph;
-import 'package:irhydra/src/ui/brewer.dart' as brewer;
+import 'package:ui_utils/src/draw2d/graph.dart' as graph;
+import 'package:ui_utils/brewer.dart' as brewer;
 
 /** Size of the block in pixels when rendered */
 const BLOCK_SIZE = 40;
@@ -31,14 +32,32 @@ const BLOCK_MARGIN = 10;
 const LABEL_STYLE = "font-family: Monaco, Menlo, Consolas, "
                     "\"Courier New\", monospace;";
 
+abstract class Block {
+  int get id;
+
+  String get name;
+
+  Set<String> get marks;
+
+  Iterable<Block> get predecessors;
+
+  Iterable<Block> get successors;
+}
+
+typedef AttachRefCallback(html.Element el, String name);
+
 /**
  * Renders the given control flow graph [blocks] on the [pane].
  *
  * Attaching cross-references to individual blocks using [attachRef].
  */
-display(pane, blocks, attachRef, {blockTicks}) {
+display(html.Element pane,
+        Map<String, Block> blocks,
+        AttachRefCallback attachRef,
+        { Map<String, double> blockTicks,
+          bool invertBackedges: true }) {
   // Convert blocks into Draw2d DirectedGraph and layout it.
-  final g = _toDirectedGraph(blocks);
+  final g = _toDirectedGraph(blocks, invertBackedges: invertBackedges);
   _layoutDirectedGraph(g);
 
   // Compute loop nesting depth for each block. It will be used to
@@ -76,7 +95,7 @@ display(pane, blocks, attachRef, {blockTicks}) {
   // will be used to fill it.
 
   for (var node in g.nodes) {
-    final block = node.data;
+    final Block block = node.data;
 
     final rect = _createRect(x: node.x,
                              y: node.y,
@@ -120,7 +139,7 @@ display(pane, blocks, attachRef, {blockTicks}) {
 }
 
 /** Creates draw2d DirectedGraph from the map of blocks */
-_toDirectedGraph(blocks) {
+_toDirectedGraph(Map<String, Block> blocks, {invertBackedges: true}) {
   final g = new graph.DirectedGraph();
 
   // Create a node for each block.
@@ -142,7 +161,7 @@ _toDirectedGraph(blocks) {
       final edge = new graph.Edge(g.nodes[from], g.nodes[to]);
       g.edges.add(edge);
 
-      if (from > to) {
+      if (invertBackedges && from > to) {
         edge.invert();
         edge.isFeedback = true;
       }
@@ -255,7 +274,7 @@ _createPath(path, color) {
 }
 
 /** Compute loop nesting depth for every block */
-List<int> computeLoopNesting(blocks) {
+List<int> computeLoopNesting(Map<String, Block> blocks) {
   final loopNesting = new List.filled(blocks.length, 0);
 
   final worklist = [];

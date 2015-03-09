@@ -1,6 +1,6 @@
 library open_file_button;
 
-import 'package:bootstrap/bootstrap.dart' as bs;
+import 'package:ui_utils/bootstrap.dart' as bs;
 import 'package:polymer/polymer.dart';
 
 @CustomTag('open-file-button')

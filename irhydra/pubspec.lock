@@ -17,12 +17,6 @@ packages:
     description: barback
     source: hosted
     version: "0.13.0"
-  bootstrap:
-    description:
-      path: "../bootstrap"
-      relative: true
-    source: path
-    version: "0.0.1"
   browser:
     description: browser
     source: hosted
@@ -111,6 +105,12 @@ packages:
     description: template_binding
     source: hosted
     version: "0.12.1"
+  ui_utils:
+    description:
+      path: "../ui_utils"
+      relative: true
+    source: path
+    version: "0.0.1"
   utf:
     description: utf
     source: hosted

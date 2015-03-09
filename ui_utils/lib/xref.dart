@@ -17,8 +17,8 @@ library xref;
 
 import "dart:html";
 
-import "package:bootstrap/bootstrap.dart" as bs;
-import "package:irhydra/src/delayed_reaction.dart";
+import "package:ui_utils/bootstrap.dart" as bs;
+import "package:ui_utils/delayed_reaction.dart";
 
 
 /** Resolution callback mapping cross-referenced identifier to its data. */

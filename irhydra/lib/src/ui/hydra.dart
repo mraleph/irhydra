@@ -5,8 +5,8 @@ import 'dart:html';
 import 'dart:js' as js;
 import 'dart:typed_data' show ByteBuffer, Uint8List;
 
-import 'package:irhydra/src/html_utils.dart' show toHtml;
-import 'package:irhydra/src/xref.dart' show XRef, POPOVER;
+import 'package:ui_utils/html_utils.dart' show toHtml;
+import 'package:ui_utils/xref.dart' show XRef, POPOVER;
 import "package:irhydra/src/modes/perf.dart" as perf;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;

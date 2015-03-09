@@ -15,7 +15,7 @@
 library ui.util.switching_scope;
 
 import 'dart:html';
-import 'package:irhydra/src/task.dart';
+import 'package:ui_utils/task.dart';
 import 'package:polymer/polymer.dart';
 
 /**
