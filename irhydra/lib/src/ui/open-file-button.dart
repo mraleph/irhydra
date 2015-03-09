@@ -1,6 +1,6 @@
 library open_file_button;
 
-import 'dart:js' as js;
+import 'package:bootstrap/bootstrap.dart' as bs;
 import 'package:polymer/polymer.dart';
 
 @CustomTag('open-file-button')
@@ -12,19 +12,15 @@ class OpenFileButton extends PolymerElement {
 
     if (attributes['data-title'] != null) {
       final btn = shadowRoot.querySelector("button");
-      js.context.callMethod('jQuery', [btn]).callMethod('tooltip', [new js.JsObject.jsify({
+      final tooltip = bs.tooltip(btn, {
         "title": attributes['data-title'],
         "placement": "bottom",
         "container": "body",
         "trigger": "manual",
-      })]);
+      });
 
-      btn.onMouseEnter.listen((e) {
-        js.context.callMethod('jQuery', [btn]).callMethod('tooltip', ['show']);
-      });
-      btn.onMouseLeave.listen((e) {
-        js.context.callMethod('jQuery', [btn]).callMethod('tooltip', ['hide']);
-      });
+      btn.onMouseEnter.listen((e) => tooltip.show());
+      btn.onMouseLeave.listen((e) => tooltip.hide());
     }
   }
 

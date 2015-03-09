@@ -2,6 +2,8 @@ library method_list;
 
 import 'dart:js' as js;
 import 'dart:math' show min;
+
+import 'package:bootstrap/bootstrap.dart' as bs;
 import 'package:irhydra/src/delayed_reaction.dart';
 import 'package:polymer/polymer.dart';
 
@@ -26,9 +28,7 @@ class MethodList extends PolymerElement {
     super.attached();
 
     shadowRoot.querySelectorAll('[data-title]').forEach((node){
-      js.context.callMethod('jQuery', [node]).callMethod('tooltip', [new js.JsObject.jsify({
-        "container": "body",
-      })]);
+      bs.tooltip(node, { "container": "body" });
     });
   }
 

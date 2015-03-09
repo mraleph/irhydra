@@ -17,6 +17,12 @@ packages:
     description: barback
     source: hosted
     version: "0.13.0"
+  bootstrap:
+    description:
+      path: "../bootstrap"
+      relative: true
+    source: path
+    version: "0.0.1"
   browser:
     description: browser
     source: hosted

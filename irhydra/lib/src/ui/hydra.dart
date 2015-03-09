@@ -175,7 +175,6 @@ class HydraElement extends PolymerElement {
     });
 
     window.onHashChange.listen((e) {
-      final from = Uri.parse(e.oldUrl).fragment;
       final to = Uri.parse(e.newUrl).fragment;
 
       if (_loadDemo(to)) {
@@ -381,6 +380,8 @@ class HydraElement extends PolymerElement {
       profile = perf.parse(text);
     } catch (e, stack) {
       print("ERROR loading profile");
+      print("${e}");
+      print("${stack}");
       return;
     }
     _attachProfile();

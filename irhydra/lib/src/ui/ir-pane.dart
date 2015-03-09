@@ -18,6 +18,7 @@ import 'dart:math' as math;
 import 'dart:html';
 import 'dart:js' as js;
 
+import 'package:bootstrap/bootstrap.dart' as bs;
 import 'package:irhydra/src/formatting.dart' as formatting;
 import 'package:irhydra/src/html_utils.dart' show toHtml, span;
 import 'package:irhydra/src/modes/ir.dart' as IR;
@@ -373,13 +374,13 @@ class IRPane extends PolymerElement {
     final divElement = new PreElement()
         ..appendText(deopt.raw.join('\n'));
     final raw = toHtml(divElement);
-    js.context.callMethod('jQuery', [marker]).callMethod('popover', [new js.JsObject.jsify({
+    bs.popover(marker, {
       "title": "",
       "content": "${raw}",
       "placement": "bottom",
       "html": true,
       "container": 'body'
-    })]).callMethod('data', ['bs.popover']).callMethod('tip').callMethod('addClass', ['deopt']);
+    }).addTipClass('deopt');
 
     return marker;
   }

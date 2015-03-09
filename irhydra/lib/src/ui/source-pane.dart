@@ -15,8 +15,8 @@
 library source_pane;
 
 import 'dart:html' as html;
-import 'dart:js' as js;
 
+import 'package:bootstrap/bootstrap.dart' as bs;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/ui/util/code-mirror/code-mirror.dart' as code_mirror;
 import 'package:polymer/polymer.dart';
@@ -66,12 +66,12 @@ class SourcePaneElement extends PolymerElement {
       .where((f) => currentFunction.contains(f.position))
       .map((f) {
         final span = new html.Element.html('<span><i class="fa fa-chevron-circle-down inline-marker"></i></span>');
-        js.context.callMethod('jQuery', [span]).callMethod('tooltip', [new js.JsObject.jsify({
+        bs.tooltip(span, {
           "title": "View inlined function",
           "placement": "bottom",
           "container": 'body',
           "trigger": "hover click",
-        })]);
+        });
         span.onClick.listen((e) {
           path.add(f);
         });

@@ -16,8 +16,8 @@
 library xref;
 
 import "dart:html";
-import "dart:js" as js;
 
+import "package:bootstrap/bootstrap.dart" as bs;
 import "package:irhydra/src/delayed_reaction.dart";
 
 
@@ -106,20 +106,21 @@ class _Popover {
   const _Popover();
 
   show(target, content) {
-    final data = js.context.callMethod('jQuery', [target]).callMethod('popover', [new js.JsObject.jsify({
+    final data = bs.popover(target, {
       "title": '',
       "content": content,
       "trigger": "manual",
       "placement": "bottom",
       "html": true,
       "container": 'body'
-    })]).callMethod('data', ['bs.popover']);
-    data.callMethod('tip').callMethod('addClass', ['xref']);
-    data.callMethod('show');
+    });
+    data
+      ..addTipClass('xref')
+      ..show();
   }
 
   destroy(target) {
-    js.context.callMethod('jQuery', [target]).callMethod('popover', ['destroy']);
+    bs.popover(target).destroy();
   }
 }
 
@@ -129,18 +130,19 @@ class _Tooltip {
   const _Tooltip();
 
   show(target, content) {
-    final data = js.context.callMethod('jQuery', [target]).callMethod('tooltip', [new js.JsObject.jsify({
+    final data = bs.tooltip(target, {
       "title": content,
       "trigger": "manual",
       "placement": "bottom",
       "html": true,
       "container": 'body'
-    })]).callMethod('data', ['bs.tooltip']);
-    data.callMethod('tip').callMethod('addClass', ['xref']);
-    data.callMethod('show');
+    });
+    data
+      ..addTipClass('xref')
+      ..show();
   }
 
   destroy(target) {
-    js.context.callMethod('jQuery', [target]).callMethod('tooltip', ['destroy']);
+    bs.tooltip(target).destroy();
   }
 }

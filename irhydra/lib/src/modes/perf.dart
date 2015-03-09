@@ -20,7 +20,6 @@ import 'dart:math' as math;
 import 'package:irhydra/src/modes/code.dart' as code;
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/parsing.dart' as parsing;
-import 'package:fixnum/fixnum.dart' as fixnum;
 
 class MethodProfile {
   final name;

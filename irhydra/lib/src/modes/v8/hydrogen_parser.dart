@@ -157,7 +157,7 @@ Map parse(IR.Method method, Function ir, statusObject) {
 
   try {
     source_annotator.annotate(method, blocks, parser);
-  } catch (e, stack) {
+  } catch (e) {
     print("""ERROR: source_annotator.annotate failed.
 There is a mismatch between the source and source positions recorded.
 This can be caused by the presence of CRLF line endings.
@@ -300,7 +300,6 @@ class CfgParser extends parsing.ParserBase {
         r"end_locals": () => leave(),
 
         r"^\s+\-?\d+\s+(\w+\d+)\s+(.*)$": (id, args) {
-          final raw = " 0 0 $id Phi $args <|@";
           block.hir.add(new IR.Instruction(id, "Phi", hirOperands(args, context: id)));
         }
       },
