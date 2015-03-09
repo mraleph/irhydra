@@ -14,8 +14,8 @@
 
 library code_mirror;
 
+import 'dart:js' as js;
 import 'package:irhydra/src/task.dart';
-import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 import 'dart:html' as html;
 
@@ -44,7 +44,7 @@ class CodeMirrorElement extends PolymerElement {
     renderTask = new Task(render, frozen: true);
   }
 
-  var _instance;
+  js.JsObject _instance;
 
   @published var lines = [];
   var _lines;
@@ -64,8 +64,8 @@ class CodeMirrorElement extends PolymerElement {
 
   attached() {
     super.attached();
-    _instance = js.context.CodeMirror($["editor"], js.map({"readOnly": true}));
-    _instance.setSize(null, 600);
+    _instance = js.context.callMethod('CodeMirror', [$["editor"], new js.JsObject.jsify({"readOnly": true})]);
+    _instance.callMethod('setSize', [null, 600]);
     _refresher = (_) => _refresh();
 
     html.document.addEventListener("DisplayChanged", _refresher, false);
@@ -85,9 +85,9 @@ class CodeMirrorElement extends PolymerElement {
 
   _executePendingScroll({forceRefresh: false}) {
     if (forceRefresh) {
-      _instance.refresh();
+      _instance.callMethod('refresh');
     }
-    _instance.scrollIntoView(_toCMPosition(_pendingScroll));
+    _instance.callMethod('scrollIntoView', [_toCMPosition(_pendingScroll)]);
     _pendingScroll = null;
   }
 
@@ -97,20 +97,20 @@ class CodeMirrorElement extends PolymerElement {
       ch -= _lines[line].length + 1;
       line++;
     }
-    return js.map({"line": line, "ch": ch});
+    return new js.JsObject.jsify({"line": line, "ch": ch});
   }
 
   _toWidget(Widget w) =>
     new _Widget(_toCMPosition(w.position), w.element);
 
   render() {
-    _appliedLineClasses.forEach((handle) => _instance.removeLineClass(handle, "wrap"));
+    _appliedLineClasses.forEach((handle) => _instance.callMethod('removeLineClass', [handle, "wrap"]));
     _lines = lines.toList();
-    _instance.setValue(_lines.join('\n'));
+    _instance.callMethod('setValue', [_lines.join('\n')]);
     _widgets.forEach((w) => w.remove());
     _widgets = widgets.map(_toWidget).toList();
     _widgets.forEach((w) => w.insertInto(_instance));
-    _appliedLineClasses = lineClasses.map((line) => _instance.addLineClass(line.lineNum, "wrap", line.className)).toList();
+    _appliedLineClasses = lineClasses.map((line) => _instance.callMethod('addLineClass', [line.lineNum, "wrap", line.className])).toList();
 
     if (_pendingScroll != null && !_pendingScrollDelayed) {
       _executePendingScroll(forceRefresh: true);
@@ -118,7 +118,7 @@ class CodeMirrorElement extends PolymerElement {
   }
 
   _refresh() {
-    _instance.refresh();
+    _instance.callMethod('refresh');
     _widgets.forEach((w) => w.remove());
     _widgets.forEach((w) => w.insertInto(_instance));
     if (_pendingScroll != null) {
@@ -141,13 +141,13 @@ class _Widget {
 
   _Widget(this.position, this.element);
 
-  insertInto(cm) {
-    _bookmark = cm.setBookmark(position, js.map({"widget": element}));
+  insertInto(js.JsObject cm) {
+    _bookmark = cm.callMethod('setBookmark', [position, new js.JsObject.jsify({"widget": element})]);
   }
 
   remove() {
     if (_bookmark != null) {
-      _bookmark.clear();
+      _bookmark.callMethod('clear');
       _bookmark = null;
     }
   }

@@ -15,10 +15,10 @@
 library source_pane;
 
 import 'dart:html' as html;
+import 'dart:js' as js;
 
 import 'package:irhydra/src/modes/ir.dart' as IR;
 import 'package:irhydra/src/ui/util/code-mirror/code-mirror.dart' as code_mirror;
-import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
 @CustomTag('source-pane')
@@ -66,12 +66,12 @@ class SourcePaneElement extends PolymerElement {
       .where((f) => currentFunction.contains(f.position))
       .map((f) {
         final span = new html.Element.html('<span><i class="fa fa-chevron-circle-down inline-marker"></i></span>');
-        js.context.jQuery(span).tooltip(js.map({
+        js.context.callMethod('jQuery', [span]).callMethod('tooltip', [new js.JsObject.jsify({
           "title": "View inlined function",
           "placement": "bottom",
           "container": 'body',
           "trigger": "hover click",
-        }));
+        })]);
         span.onClick.listen((e) {
           path.add(f);
         });

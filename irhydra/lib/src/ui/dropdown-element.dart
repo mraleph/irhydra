@@ -15,8 +15,8 @@
 library dropdown_element;
 
 import 'dart:html' as html;
+import 'dart:js' as js;
 import 'package:irhydra/src/task.dart';
-import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
 @CustomTag('dropdown-element')
@@ -35,7 +35,7 @@ class DropdownElement extends PolymerElement {
 
   attached() {
     super.attached();
-    js.context.jQuery.fn.dropdown.install(shadowRoot);
+    js.context['jQuery']['fn']['dropdown'].callMethod('install', [shadowRoot]);
 
     _texts = new Map.fromIterable(
       (shadowRoot.querySelector("content") as html.ContentElement)
@@ -61,7 +61,7 @@ class DropdownElement extends PolymerElement {
   }
 
   detached() {
-    js.context.jQuery.fn.dropdown.remove(shadowRoot);
+    js.context['jQuery']['fn']['dropdown'].callMethod('remove', [shadowRoot]);
     super.detached();
   }
 }

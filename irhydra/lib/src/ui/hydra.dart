@@ -1,7 +1,8 @@
 library hydra;
 
-import 'dart:html';
 import 'dart:async' as async;
+import 'dart:html';
+import 'dart:js' as js;
 import 'dart:typed_data' show ByteBuffer, Uint8List;
 
 import 'package:irhydra/src/html_utils.dart' show toHtml;
@@ -10,7 +11,6 @@ import "package:irhydra/src/modes/perf.dart" as perf;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
 import 'package:irhydra/src/ui/spinner-element.dart';
-import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
 import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
@@ -108,7 +108,7 @@ class HydraElement extends PolymerElement {
           data = new Uint8List.view(data);
         }
 
-        final tar = timeAndReport(() => js.context.BUNZIP2(data),
+        final tar = timeAndReport(() => js.context.callMethod('BUNZIP2', [data]),
             (ms) => "Unpacking ${path} (${data.length} bytes) in JS took ${ms} ms (${data.length / ms} bytes/ms)");
 
         return new TarDecoder().decodeBytes(tar).files;
@@ -225,7 +225,7 @@ class HydraElement extends PolymerElement {
   }
 
   closeSplash() {
-    js.context.DESTROY_SPLASH();
+    js.context.callMethod('DESTROY_SPLASH');
   }
 
   phaseChanged() {

@@ -15,11 +15,11 @@
 /** Management of tooltips and popovers for cross-references. */
 library xref;
 
-import 'dart:html';
+import "dart:html";
+import "dart:js" as js;
 
 import "package:irhydra/src/delayed_reaction.dart";
 
-import 'package:js/js.dart' as js;
 
 /** Resolution callback mapping cross-referenced identifier to its data. */
 typedef String ResolutionCallback(String id);
@@ -106,20 +106,20 @@ class _Popover {
   const _Popover();
 
   show(target, content) {
-    final data = js.context.jQuery(target).popover(js.map({
+    final data = js.context.callMethod('jQuery', [target]).callMethod('popover', [new js.JsObject.jsify({
       "title": '',
       "content": content,
       "trigger": "manual",
       "placement": "bottom",
       "html": true,
       "container": 'body'
-    })).data('bs.popover');
-    data.tip().addClass('xref');
-    data.show();
+    })]).callMethod('data', ['bs.popover']);
+    data.callMethod('tip').callMethod('addClass', ['xref']);
+    data.callMethod('show');
   }
 
   destroy(target) {
-    js.context.jQuery(target).popover('destroy');
+    js.context.callMethod('jQuery', [target]).callMethod('popover', ['destroy']);
   }
 }
 
@@ -129,18 +129,18 @@ class _Tooltip {
   const _Tooltip();
 
   show(target, content) {
-    final data = js.context.jQuery(target).tooltip(js.map({
+    final data = js.context.callMethod('jQuery', [target]).callMethod('tooltip', [new js.JsObject.jsify({
       "title": content,
       "trigger": "manual",
       "placement": "bottom",
       "html": true,
       "container": 'body'
-    })).data('bs.tooltip');
-    data.tip().addClass('xref');
-    data.show();
+    })]).callMethod('data', ['bs.tooltip']);
+    data.callMethod('tip').callMethod('addClass', ['xref']);
+    data.callMethod('show');
   }
 
   destroy(target) {
-    js.context.jQuery(target).tooltip('destroy');
+    js.context.callMethod('jQuery', [target]).callMethod('tooltip', ['destroy']);
   }
 }

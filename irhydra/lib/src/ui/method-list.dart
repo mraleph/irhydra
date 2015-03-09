@@ -1,8 +1,8 @@
 library method_list;
 
+import 'dart:js' as js;
 import 'dart:math' show min;
 import 'package:irhydra/src/delayed_reaction.dart';
-import 'package:js/js.dart' as js;
 import 'package:polymer/polymer.dart';
 
 @CustomTag('method-list')
@@ -26,9 +26,9 @@ class MethodList extends PolymerElement {
     super.attached();
 
     shadowRoot.querySelectorAll('[data-title]').forEach((node){
-      js.context.jQuery(node).tooltip(js.map({
+      js.context.callMethod('jQuery', [node]).callMethod('tooltip', [new js.JsObject.jsify({
         "container": "body",
-      }));
+      })]);
     });
   }
 
@@ -98,11 +98,11 @@ class MethodList extends PolymerElement {
       };
     } else if (sortBy == "ticks") {
       ticksOf(w) => w.method.perfProfile == null ? 0 : w.method.perfProfile.totalTicks;
-      
+
       return (a, b) {
         var result = ticksOf(b) - ticksOf(a);
         if (result == 0) {
-          result = a.timestamp - b.timestamp; 
+          result = a.timestamp - b.timestamp;
         }
         return result;
       };

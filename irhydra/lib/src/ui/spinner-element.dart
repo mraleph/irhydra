@@ -14,7 +14,7 @@
 
 library spinner_element;
 
-import 'package:js/js.dart' as js;
+import 'dart:js' as js;
 import 'package:polymer/polymer.dart';
 
 /**
@@ -22,7 +22,7 @@ import 'package:polymer/polymer.dart';
  */
 @CustomTag('spinner-element')
 class SpinnerElement extends PolymerElement {
-  var _spinner;
+  js.JsObject _spinner;
 
   SpinnerElement.created() : super.created();
 
@@ -30,7 +30,7 @@ class SpinnerElement extends PolymerElement {
   start() {
     stop();  // Ensure that spinner is stopped.
 
-    final opts = js.map({
+    final opts = new js.JsObject.jsify({
       "lines": 13, // The number of lines to draw
       "length": 7, // The length of each line
       "width": 4, // The line thickness
@@ -47,13 +47,13 @@ class SpinnerElement extends PolymerElement {
       "top": '0px', // Top position relative to parent in px
       "left": '0px' // Left position relative to parent in px
     });
-    _spinner = new js.Proxy(js.context.Spinner, opts).spin(this);
+    _spinner = new js.JsObject(js.context['Spinner'], [opts]).callMethod('spin', [this]);
   }
 
   /** Stop spinner. */
   stop() {
     if (_spinner != null) {
-      _spinner.stop();
+      _spinner.callMethod('stop');
       _spinner = null;
     }
   }

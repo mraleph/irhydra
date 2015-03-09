@@ -15,8 +15,8 @@
 /** Anotates source with information derived from IR. */
 library modes.v8.source_annotator;
 
+import 'dart:js' as js;
 import 'package:irhydra/src/modes/ir.dart' as IR;
-import 'package:js/js.dart' as js;
 
 class _Range {
   final start;
@@ -38,6 +38,8 @@ class RangedLine {
   RangedLine(this.str, this.range, this.column);
 }
 
+typedef dynamic TraversalCallback(js.JsObject node, js.JsObject parent);
+
 class _AST {
   static const PREFIX = "(function ";
   static const SUFFIX = ")";
@@ -45,27 +47,27 @@ class _AST {
   static const GLOBAL_PREFIX = "(function () {";
   static const GLOBAL_SUFFIX = "})";
 
-  static final VISIT_SKIP = js.context.estraverse.VisitorOption.Skip;
-  static final VISIT_BREAK = js.context.estraverse.VisitorOption.Break;
+  static final VISIT_SKIP = js.context['estraverse']['VisitorOption']['Skip'];
+  static final VISIT_BREAK = js.context['estraverse']['VisitorOption']['Break'];
 
-  final body;
+  final js.JsObject body;
   final int prefixLength;
 
   _AST.withBody(this.body, this.prefixLength);
 
-  traverse({onEnter, onLeave}) =>
-    js.context.estraverse.traverse(body, js.map({
+  traverse({TraversalCallback onEnter, TraversalCallback onLeave}) =>
+    js.context['estraverse'].callMethod('traverse', [body, new js.JsObject.jsify({
       'enter': onEnter,
       'leave': onLeave
-    }));
+    })]);
 
 
   // Helper function that accomondates for prefix length in ranges returned by Esprima.
-  rangeOf(n) => new _Range(n.range[0] - prefixLength, n.range[1] - prefixLength);
+  rangeOf(n) => new _Range(n['range'][0] - prefixLength, n['range'][1] - prefixLength);
 
-  static tryParse(prefix, body, suffix) {
+  static js.JsObject tryParse(prefix, body, suffix) {
     try {
-      return js.context.esprima.parse(prefix + body + suffix, js.map({'range': true}));
+      return js.context['esprima'].callMethod('parse', [prefix + body + suffix, new js.JsObject.jsify({'range': true})]);
     } catch (e) {
       return null;
     }
@@ -77,7 +79,8 @@ class _AST {
     // Sometime V8 also includes trailing comma into the source dump. Strip it.
     lines = lines.join('\n');
     lines = lines.substring(0, lines.lastIndexOf('}') + 1);
-    var ast = null, prefix = null;
+    js.JsObject ast = null;
+    var prefix = null;
 
     prefix = PREFIX;
     ast = tryParse(PREFIX, lines, SUFFIX);
@@ -89,7 +92,7 @@ class _AST {
       }
     }
 
-    final body = ast.body[0].expression.body;
+    final body = ast['body'][0]['expression']['body'];
 
     return new _AST.withBody(body, prefix.length);
   }
@@ -135,24 +138,24 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
 
   /// Compute positions ranges corresponding to the for/while loops in the source.
   /// We will later use this information to detected instructions moved by LICM.
-  findLoops(ast) {
+  findLoops(_AST ast) {
     if (ast == null) {
       return [];
     }
 
     final loops = [];
     ast.traverse(onEnter: (node, parent) {
-      switch (node.type) {
+      switch (node['type']) {
         case 'FunctionExpression':
         case 'FunctionDeclaration':
           return _AST.VISIT_SKIP;
 
         case 'ForStatement':
           final loopRange = ast.rangeOf(node);
-          if (node.init != null) {
+          if (node['init'] != null) {
             // Strip range covering init-clause of the for-loop from the
             // computed range of the loop. It is executed only once.
-            final initRange = ast.rangeOf(node.init);
+            final initRange = ast.rangeOf(node['init']);
             loops.add(new _Range(initRange.end, loopRange.end));
           } else {
             loops.add(loopRange);
@@ -175,8 +178,6 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
 
   final loops = asts.map(findLoops).toList();
 
-  final ranges = new List.generate(asts.length, (_) => {});
-
   rangeOf(srcPos) {
     final ast = asts[sourceId(srcPos)];
     if (ast == null) {
@@ -186,7 +187,7 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
     var range = null;
     ast.traverse(
       onEnter: (node, parent) {
-        switch (node.type) {
+        switch (node['type']) {
           case 'FunctionExpression':
           case 'FunctionDeclaration':
             return _AST.VISIT_SKIP;

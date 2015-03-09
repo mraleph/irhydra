@@ -16,18 +16,17 @@
 library spinner;
 
 import "dart:html" as html;
-
-import "package:js/js.dart" as js;
+import "dart:js" as js;
 
 /** Current instance of spinner. */
-js.Proxy _spinner;
+js.JsObject _spinner;
 
 /** Start spinner. */
 start() {
   stop();  // Ensure that spinner is stopped.
 
   final target = html.document.querySelector(".navbar-inner > .container");
-  final opts = js.map({
+  final opts = new js.JsObject.jsify({
     "lines": 13, // The number of lines to draw
     "length": 7, // The length of each line
     "width": 4, // The line thickness
@@ -44,13 +43,13 @@ start() {
     "top": 'auto', // Top position relative to parent in px
     "left": 'auto' // Left position relative to parent in px
   });
-  _spinner = new js.Proxy(js.context.Spinner, opts).spin(target);
+  _spinner = new js.JsObject(js.context['Spinner'], [opts]).callMethod('spin', [target]);
 }
 
 /** Stop spinner. */
 stop() {
   if (_spinner != null) {
-    _spinner.stop();
+    _spinner.callMethod('stop');
     _spinner = null;
   }
 }

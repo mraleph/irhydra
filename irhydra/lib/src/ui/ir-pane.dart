@@ -16,6 +16,7 @@ library ir_pane;
 
 import 'dart:math' as math;
 import 'dart:html';
+import 'dart:js' as js;
 
 import 'package:irhydra/src/formatting.dart' as formatting;
 import 'package:irhydra/src/html_utils.dart' show toHtml, span;
@@ -26,7 +27,6 @@ import 'package:irhydra/src/xref.dart' as xref;
 import 'package:irhydra/src/ui/brewer.dart' as brewer;
 import 'package:irhydra/src/ui/graph.dart' as graph;
 
-import 'package:js/js.dart' as js;
 
 import 'package:polymer/polymer.dart';
 
@@ -227,13 +227,13 @@ class IRPane extends PolymerElement {
           var rangeMiddle = srcLine.str.substring(srcLine.column, srcLine.column + 1);
           var rangeEnd = srcLine.str.substring(srcLine.column + 1, srcLine.range.end);
           var end   = srcLine.str.substring(srcLine.range.end);
-          var el = new Element.html(js.context.prettyPrintOne(toHtml(
+          var el = new Element.html(js.context.callMethod('prettyPrintOne', [toHtml(
               new PreElement()
                 ..append(span('src-range-transparent', start))
                 ..appendText(rangeStart)
                 ..append(span('src-range-point', rangeMiddle))
                 ..appendText(rangeEnd)
-                ..append(span('src-range-transparent', end)))));
+                ..append(span('src-range-transparent', end)))]));
           add("", el).row.classes.add("source-line");
         }
       }
@@ -301,7 +301,7 @@ class IRPane extends PolymerElement {
         currentRowClass = null;
       }
       add(" ", " ");
-      final blockHeader = add(span('boldy', block.name), " ", id: block.name);
+      add(span('boldy', block.name), " ", id: block.name);
 
       for (var ctx in contexts) {
         final blockIr = ctx.ir(block);
@@ -373,13 +373,13 @@ class IRPane extends PolymerElement {
     final divElement = new PreElement()
         ..appendText(deopt.raw.join('\n'));
     final raw = toHtml(divElement);
-    js.context.jQuery(marker).popover(js.map({
+    js.context.callMethod('jQuery', [marker]).callMethod('popover', [new js.JsObject.jsify({
       "title": "",
       "content": "${raw}",
       "placement": "bottom",
       "html": true,
       "container": 'body'
-    })).data('bs.popover').tip().addClass('deopt');
+    })]).callMethod('data', ['bs.popover']).callMethod('tip').callMethod('addClass', ['deopt']);
 
     return marker;
   }
@@ -567,7 +567,7 @@ class IRPane extends PolymerElement {
     // Calculate middle baseline for _RefsPanel. It'll be centered at
     // referenced row.
     final gutter = line(id).gutter;
-    var baselineOffset = js.context.jQuery(gutter).offset().top +
+    var baselineOffset = js.context.callMethod('jQuery', [gutter]).callMethod('offset')['top'] +
       gutter.clientHeight ~/ 2;
 
     // Show the panel.
@@ -590,13 +590,13 @@ class IRPane extends PolymerElement {
 
     var range;
     if (_ranges[id] == null) {
-      range = js.context.jQuery(l.row);
+      range = js.context.callMethod('jQuery', [l.row]);
     } else {
       final r = _ranges[id];
-      range = js.context.jQuery(js.array(_table.nodes.sublist(r.start, r.start + r.length)));
+      range = js.context.callMethod('jQuery', [new js.JsArray.from(_table.nodes.sublist(r.start, r.start + r.length))]);
     }
 
-    range.children().effect("highlight", js.map({}), 1500);
+    range.callMethod('children').callMethod('effect', ["highlight", new js.JsObject.jsify({}), 1500]);
 
     // final anchor = irpane.shadowRoot.querySelector("#${to}");
     // if (anchor != null) {
@@ -680,10 +680,10 @@ class _RefsPanel {
     // Height of the panel.
     final height = root.getBoundingClientRect().height;
 
-    final window = js.context.jQuery(js.context.window);
+    final js.JsObject window = js.context.callMethod('jQuery', [js.context['window']]);
 
     // Offset within the page of the rightBorder.
-    final leftBorderOffset = js.context.jQuery(rightBorder).offset().left;
+    final leftBorderOffset = js.context.callMethod('jQuery', [rightBorder]).callMethod('offset')['left'];
 
     // Convert offsets with in a page to offsets within a window with respect
     // to window's scroll position.
@@ -691,15 +691,15 @@ class _RefsPanel {
     // Right offset of the panel is essentially right offset of border plus
     // padding. Panel stays glued to this position even if window is scrolled
     // horizontally.
-    final right = window.scrollLeft() + (window.width() - leftBorderOffset) +
+    final right = window.callMethod('scrollLeft') + (window.callMethod('width') - leftBorderOffset) +
         PADDING;
 
     // If possible table glues itself to the baseline but it also tries to
     // stay visible as window is scrolled vertically thus top offset must
     // never be smaller than PADDING and bottom offset must never be bigger
     // than window's height.
-    final baselineTop = baselineOffset - window.scrollTop() - (height ~/ 2);
-    final maxTop = window.height() - PADDING - height;
+    final baselineTop = baselineOffset - window.callMethod('scrollTop') - (height ~/ 2);
+    final maxTop = window.callMethod('height') - PADDING - height;
     final minTop = PADDING;
     final top = math.min(math.max(baselineTop, minTop), maxTop);
 
