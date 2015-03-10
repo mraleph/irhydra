@@ -29,8 +29,12 @@ class Rank extends NodeList {
     total = 0;
     int mag;
     for (var node in this) {
-      mag = Math.max(1, node.incoming.length + node.outgoing.length);
-      mag = Math.min(mag, 5);
+      if (node is SubgraphBoundary) {
+        mag = 4;
+      } else {
+        mag = Math.max(1, node.incoming.length + node.outgoing.length);
+        mag = Math.min(mag, 5);
+      }
       total += mag;
       node.index = total;
       total += mag;

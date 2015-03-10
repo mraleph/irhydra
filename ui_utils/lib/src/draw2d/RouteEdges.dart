@@ -21,6 +21,12 @@ class RouteEdges extends GraphVisitor {
     for (int i = 0; i < g.edges.length; i++) {
       Edge edge = g.edges[i];
       edge.start = new Point(edge.sourceOffset + edge.source.x, edge.source.y + edge.source.height);
+      if (edge.source is SubgraphBoundary) {
+        SubgraphBoundary boundary = edge.source;
+        if (boundary.parent.head == boundary)
+          edge.start.y = boundary.parent.y
+              + boundary.parent.insets.top;
+      }
       edge.end = new Point(edge.targetOffset + edge.target.x, edge.target.y);
       if (edge.vNodes != null) {
         routeLongEdge(edge, g);

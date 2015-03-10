@@ -16,6 +16,20 @@ part of graph;
  * @since 2.1.2
  */
 class GraphUtilities {
+  static Subgraph getCommonAncestor(Node left, Node right) {
+    Subgraph parent;
+    if (right is Subgraph)
+      parent = right;
+    else
+      parent = right.parent;
+    while (parent != null) {
+      if (parent.isNested(left))
+        return parent;
+      parent = parent.parent;
+    }
+    return null;
+  }
+
   /**
    * Counts the number of edge crossings in a DirectedGraph
    * @param graphthe graph whose crossed edges are counted

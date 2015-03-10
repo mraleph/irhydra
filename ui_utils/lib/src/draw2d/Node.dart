@@ -1,4 +1,4 @@
-/**
+ /**
  * Copyright (c) 2003, 2010 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -103,7 +103,19 @@ class Node {
   List<Object> workingData = new List<Object>(3);
   List<int> workingInts = new List<int>.filled(4, 0);
 
-  Node({this.data: null});
+  Subgraph parent;
+
+  // Used in Compound graphs to quickly determine whether a node is inside a
+  // subgraph.
+  int nestingIndex = -1;
+
+  final int rowOrder = -1;
+
+  Node({this.data: null, this.parent: null}) {
+    if (parent != null) {
+      parent.addMember(this);
+    }
+  }
 
   /** Returns the incoming attachment point. */
   int get offsetIncoming => width ~/ 2;
@@ -114,4 +126,15 @@ class Node {
   String toString() => "N($data)";
 
   iteratorNeighbors() => new NeighborsIterator(this);
+
+  /**
+   * For internal use only. Returns <code>true</code> if the given node is
+   * equal to this node. This method is implemented for consitency with
+   * Subgraph.
+   *
+   * @param node
+   *            the node in question
+   * @return <code>true</code> if nested
+   */
+  bool isNested(Node node) => identical(this, node);
 }
