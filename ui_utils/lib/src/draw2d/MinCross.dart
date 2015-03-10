@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Sweeps up and down the ranks rearranging them so as to reduce edge crossings.

@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Places nodes into ranks for a compound directed graph. If a subgraph spans a

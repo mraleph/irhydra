@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Converts a compound directed graph into a simple directed graph.

@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Assigns a valid rank assignment to all nodes based on their edges. The

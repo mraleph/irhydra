@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * A graph consisting of nodes and directed edges. A DirectedGraph serves as the

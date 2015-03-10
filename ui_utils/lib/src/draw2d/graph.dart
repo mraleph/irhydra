@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library graph;
+library draw2d.graph;
 
 import 'dart:math' as math;
 import 'dart:collection' as collection;

@@ -9,7 +9,7 @@
  */
 
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Stores four integers for top, left, bottom, and right measurements.

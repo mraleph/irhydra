@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * A Stack of segments.
@@ -350,7 +350,7 @@ class Path {
     stack.push(null);
     stack.push(null);
     stack.push(new Segment(start, end));
-    while (!stack.isEmpty) 
+    while (!stack.isEmpty)
       addSegment(stack.pop(), stack.popObstacle(), stack.popObstacle(), allObstacles);
   }
   /**

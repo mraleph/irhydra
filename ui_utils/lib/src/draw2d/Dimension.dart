@@ -9,7 +9,7 @@
  */
 
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Stores an integer width and height. This class provides various methods for
@@ -52,7 +52,7 @@ class Dimension {
   String toString() {
     return "Dimension(${width}, ${height})";
   }
-  
+
   /**
    * Swaps the width and height of this Dimension, and returns this for
    * convenience. Can be useful in orientation changes.

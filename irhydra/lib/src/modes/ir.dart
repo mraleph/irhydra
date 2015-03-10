@@ -203,39 +203,12 @@ class ParsedIr {
 }
 
 /** Block in the control flow graph. */
-class Block implements graph.Block {
+class Block extends graph.BasicBlock {
   /** Block's number in a sequence of blocks. */
-  final int id;
-
-  final String name;
-  final successors = <Block>[];
-  final predecessors = <Block>[];
-
   final hir = <Instruction>[];
   final lir = <Instruction>[];
 
-  static final EMPTY_MARKS = new Set();
-
-  Set<String> marks = EMPTY_MARKS;
-
-  Block(this.id, this.name) {
-    assert(id >= 0);
-  }
-
-  toString() => name;
-
-  /** Creates an edge from this [Block] to the block [to]. */
-  edge(Block to) {
-    to.predecessors.add(this);
-    successors.add(to);
-  }
-
-  mark(tag) {
-    if (marks == EMPTY_MARKS) {
-      marks = new Set();
-    }
-    marks.add(tag);
-  }
+  Block(id, name) : super(id, name);
 }
 
 class MultiId {

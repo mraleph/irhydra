@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * This visitor eliminates cycles in the graph using a "greedy" heuristic. Nodes

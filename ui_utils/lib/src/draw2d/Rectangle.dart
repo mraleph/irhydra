@@ -10,7 +10,7 @@
  */
 
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Represents a Rectangle(x, y, width, height). This class provides various

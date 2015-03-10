@@ -26,8 +26,7 @@ import 'package:irhydra/src/modes/code.dart' as code;
 import 'package:ui_utils/task.dart';
 import 'package:ui_utils/xref.dart' as xref;
 import 'package:ui_utils/brewer.dart' as brewer;
-import 'package:ui_utils/graph.dart' as graph;
-
+import 'package:ui_utils/havlak.dart' as havlak;
 
 import 'package:polymer/polymer.dart';
 
@@ -288,7 +287,7 @@ class IRPane extends PolymerElement {
       ir.code.prologue.forEach(codeRenderer.display);
     }
 
-    final nesting = graph.computeLoopNesting(ir.blocks);
+    final nesting = havlak.findLoops(ir.blocks.values.toList(growable: false)).nesting;
 
     final maxNesting = nesting.fold(0, math.max);
 

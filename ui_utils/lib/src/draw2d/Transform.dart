@@ -9,7 +9,7 @@
  */
 
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Provides support for transformations of scaling, translation and rotation.

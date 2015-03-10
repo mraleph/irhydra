@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 class LeftRight {
   // $TODO Delete and use NodePair class, equivalent

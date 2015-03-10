@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * A vertex representation for the ShortestPathRouting. Vertices are either one
@@ -23,7 +23,7 @@ class Vertex extends Point {
   static const NOT_SET = 0;
   static const INNIE = 1;
   static const OUTIE = 2;
-  
+
   // for shortest path
   List neighbors;
   bool isPermanent = false;

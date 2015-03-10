@@ -9,7 +9,7 @@
  */
 
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Constants representing cardinal directions and relative positions. Some of
@@ -36,23 +36,23 @@ part of graph;
  */
 class PositionConstants {
   /**
-   * None 
+   * None
    */
   static const int NONE = 0;
   /**
-   * Left 
+   * Left
    */
   static const int LEFT = 1;
   /**
-   * Center (Horizontal) 
+   * Center (Horizontal)
    */
   static const int CENTER = 2;
   /**
-   * Right 
+   * Right
    */
   static const int RIGHT = 4;
   /**
-   * Bit-wise OR of LEFT, CENTER, and RIGHT 
+   * Bit-wise OR of LEFT, CENTER, and RIGHT
    */
   static const int LEFT_CENTER_RIGHT = LEFT | CENTER;
   /**
@@ -66,71 +66,71 @@ class PositionConstants {
    */
   static const int ALWAYS_RIGHT = 128;
   /**
-   * Top 
+   * Top
    */
   static const int TOP = 8;
   /**
-   * Middle (Vertical) 
+   * Middle (Vertical)
    */
   static const int MIDDLE = 16;
   /**
-   * Bottom 
+   * Bottom
    */
   static const int BOTTOM = 32;
   /**
-   * Bit-wise OR of TOP, MIDDLE, and BOTTOM 
+   * Bit-wise OR of TOP, MIDDLE, and BOTTOM
    */
   static const int TOP_MIDDLE_BOTTOM = TOP | MIDDLE;
   /**
-   * North 
+   * North
    */
   static const int NORTH = 1;
   /**
-   * South 
+   * South
    */
   static const int SOUTH = 4;
   /**
-   * West 
+   * West
    */
   static const int WEST = 8;
   /**
-   * East 
+   * East
    */
   static const int EAST = 16;
   /**
-   * A constant indicating horizontal direction 
+   * A constant indicating horizontal direction
    */
   static const int HORIZONTAL = 64;
   /**
-   * A constant indicating vertical direction 
+   * A constant indicating vertical direction
    */
   static const int VERTICAL = 128;
   /**
-   * North-East: a bit-wise OR of {@link #NORTH} and {@link #EAST} 
+   * North-East: a bit-wise OR of {@link #NORTH} and {@link #EAST}
    */
   static const int NORTH_EAST = NORTH | EAST;
   /**
-   * North-West: a bit-wise OR of {@link #NORTH} and {@link #WEST} 
+   * North-West: a bit-wise OR of {@link #NORTH} and {@link #WEST}
    */
   static const int NORTH_WEST = NORTH | WEST;
   /**
-   * South-East: a bit-wise OR of {@link #SOUTH} and {@link #EAST} 
+   * South-East: a bit-wise OR of {@link #SOUTH} and {@link #EAST}
    */
   static const int SOUTH_EAST = SOUTH | EAST;
   /**
-   * South-West: a bit-wise OR of {@link #SOUTH} and {@link #WEST} 
+   * South-West: a bit-wise OR of {@link #SOUTH} and {@link #WEST}
    */
   static const int SOUTH_WEST = SOUTH | WEST;
   /**
-   * North-South: a bit-wise OR of {@link #NORTH} and {@link #SOUTH} 
+   * North-South: a bit-wise OR of {@link #NORTH} and {@link #SOUTH}
    */
   static const int NORTH_SOUTH = NORTH | SOUTH;
   /**
-   * East-West: a bit-wise OR of {@link #EAST} and {@link #WEST} 
+   * East-West: a bit-wise OR of {@link #EAST} and {@link #WEST}
    */
   static const int EAST_WEST = EAST | WEST;
   /**
-   * North-South-East-West: a bit-wise OR of all 4 directions. 
+   * North-South-East-West: a bit-wise OR of all 4 directions.
    */
   static const int NSEW = NORTH_SOUTH | EAST_WEST;
 }

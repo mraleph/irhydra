@@ -10,7 +10,7 @@
  */
 
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Represents a List of Points.

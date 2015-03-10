@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Contains the information from all edges going from a given cluster to some
@@ -42,7 +42,7 @@ class CollapsedEdges {
 
   bool get isTight =>
     tightestEdge.slack == 0;
-  
+
   /**
    * Compares the given edge to the current tightest edge. If the given edge
    * is tighter than the current, the current tightest is returned. Otherwise,

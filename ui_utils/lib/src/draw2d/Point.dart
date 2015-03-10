@@ -9,7 +9,7 @@
  */
 
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * Represents a point (x, y) in 2-dimensional space. This class provides various
@@ -21,7 +21,7 @@ class Point {
   int y;
 
   Point(this.x, this.y);
-  
+
   Point clone() => new Point(x, y);
 
   /**
@@ -36,14 +36,14 @@ class Point {
     }
     return false;
   }
-  
+
   /**
    * @see java.lang.Object#hashCode()
    */
   int get hashCode {
     return (x * y) ^ (x + y);
   }
-  
+
   /**
    * @return String representation.
    * @since 2.0
@@ -77,7 +77,7 @@ class Point {
     y += p.y;
     return this;
   }
-  
+
   /**
    * Scales this Point by the specified amount.
    * @return <code>this</code> for convenience

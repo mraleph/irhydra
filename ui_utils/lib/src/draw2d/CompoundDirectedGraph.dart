@@ -8,7 +8,7 @@
  * IBM Corporation - initial API and implementation
  */
 
-part of graph;
+part of draw2d.graph;
 
 /**
  * A <code>DirectedGraph</code> whose Nodes may be compound {@link Subgraph}s,
