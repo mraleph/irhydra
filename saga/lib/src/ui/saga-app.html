@@ -1,0 +1,116 @@
+<!--
+// Copyright 2015 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
+<link rel="import" href="../../../../packages/polymer/polymer.html">
+<link rel="import" href="../../../../packages/ui_utils/components/graph-pane.html">
+
+<polymer-element name="saga-app">
+  <template>
+    <link rel="stylesheet" href="../../../../packages/ui_utils/assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../../packages/ui_utils/assets/bootstrap/css/bootstrap-theme.min.css">
+    <style>
+      :host {
+        position: fixed;
+        display: flex;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+      }
+
+      pre {
+        font-family: 'Inconsolata', monospace;
+        font-size: 14pt;
+        background: #fdf6e3;
+      }
+
+      .flexbox-container {
+        display: -ms-flex;
+        display: -webkit-flex;
+        display: flex;
+        width: 100%;
+        max-height: 100%;
+      }
+
+      .flexbox-container > * {
+        width: 100%;
+        padding: 10px;
+        overflow-y: scroll;
+        margin: 0px;
+      }
+
+      .asm-immediate {
+        color: #2aa198;
+      }
+
+      .asm-call-target {
+        color: #d33682;
+        cursor: pointer;
+      }
+
+      .asm-opcode {
+        /* font-weight: bold; */
+        color: #859900;
+      }
+
+      .asm-register {
+        color: #657b83;
+        cursor: pointer;
+      }
+
+      .asm-label {
+        color: #268bd2;
+      }
+
+      .asm-call-target .popover {
+        background: #002b36;
+      }
+
+      .asm-call-target .popover.top .arrow:after {
+        border-top-color: #002b36;
+      }
+
+      .asm-call-target button[data-attr] {
+        background: none !important;
+        border: none;
+        padding: 0 !important;
+        font: 'Inconsolata', monospace;
+        cursor: pointer;
+        color: #839496;
+      }
+
+      .asm-call-target button[data-attr]:not(.set) {
+        text-decoration: line-through;
+      }
+      
+      .inline-marker {
+        display: none;
+        cursor: pointer;
+      }
+      
+      .inline-marker:hover, .ir-use:hover .inline-marker {
+        display: inline-block;
+      }
+    </style>
+
+    <div class="flexbox-container">
+      <pre id="code"></pre>
+      <graph-pane ir="{{graph}}" on-block-mouse-over="{{showBlockAction}}" on-block-mouse-out="{{hideBlockAction}}"></graph-pane>
+      <pre id="ir"></pre>
+    </div>
+  </template>
+  <script type="application/dart" src="saga-app.dart"></script>
+</polymer-element>

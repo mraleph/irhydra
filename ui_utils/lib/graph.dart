@@ -27,6 +27,8 @@ class BasicBlock {
   final List<BasicBlock> successors = <BasicBlock>[];
   final List<BasicBlock> predecessors = <BasicBlock>[];
 
+  int unlikely = 0;
+
   Set<String> marks = _EMPTY_MARKS;
 
   BasicBlock(this.id, this.name) {
@@ -36,10 +38,16 @@ class BasicBlock {
   toString() => name;
 
   /** Creates an edge from this [BasicBlock] to the block [to]. */
-  edge(BasicBlock to) {
+  edge(BasicBlock to, {unlikely: false}) {
     to.predecessors.add(this);
     successors.add(to);
+    if (unlikely) {
+      this.unlikely |= 1 << (successors.length - 1);
+    }
   }
+
+  isUnlikelySuccessor(BasicBlock block) =>
+    unlikely != 0 && (unlikely & (1 << successors.indexOf(block))) != 0;
 
   mark(tag) {
     if (identical(marks, _EMPTY_MARKS)) {

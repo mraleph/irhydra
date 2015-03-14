@@ -80,7 +80,7 @@ class InitialRankSolver extends GraphVisitor {
       graph.forestRoot = new Node(data: "the forest root");
       graph.nodes.add(graph.forestRoot);
       for (var tree in forest) {
-        graph.edges.add(new Edge(graph.forestRoot, tree[0], 0, 0));
+        graph.edges.add(new Edge(graph.forestRoot, tree[0], delta: 0, weight: 0));
       }
     }
   }

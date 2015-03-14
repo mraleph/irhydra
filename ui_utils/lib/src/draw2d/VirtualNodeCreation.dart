@@ -41,7 +41,7 @@ class VirtualNodeCreation extends RevertableChange {
       currentNode.padding = padding;
       currentNode.rank = offset + i;
       graph.ranks[offset + i].add(currentNode);
-      currentEdge = new Edge(prevNode, currentNode, 1, edge.weight * LONG_EDGE_X);
+      currentEdge = new Edge(prevNode, currentNode, delta: 1, weight: edge.weight * LONG_EDGE_X);
       if (i == 0) {
         currentEdge.weight = edge.weight * INNER_EDGE_X;
       }
@@ -49,7 +49,7 @@ class VirtualNodeCreation extends RevertableChange {
       graph.nodes.add(currentNode);
       prevNode = currentNode;
     }
-    currentEdge = new Edge(prevNode, edge.target, 1, edge.weight * INNER_EDGE_X);
+    currentEdge = new Edge(prevNode, edge.target, delta: 1, weight: edge.weight * INNER_EDGE_X);
     graph.edges.add(edges[edges.length - 1] = currentEdge);
     graph.removeEdge(edge);
   }

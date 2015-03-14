@@ -133,8 +133,8 @@ class HorizontalPlacement extends SpanningTreeVisitor {
     Node vPrime = get(v);
     int uOffset = e.sourceOffset;
     int vOffset = e.targetOffset;
-    Edge eu = new Edge(ne, uPrime, 0, e.weight * weight);
-    Edge ev = new Edge(ne, vPrime, 0, e.weight * weight);
+    Edge eu = new Edge(ne, uPrime, delta: 0, weight: e.weight * weight);
+    Edge ev = new Edge(ne, vPrime, delta: 0, weight: e.weight * weight);
     int dw = uOffset - vOffset;
     if (dw < 0) eu.delta = -dw; else ev.delta = dw;
     prime.edges.add(eu);
@@ -221,7 +221,7 @@ class HorizontalPlacement extends SpanningTreeVisitor {
         n = rank[i];
         nPrime = new Node(data: n);
         if (i == 0) {
-          e = new Edge(graphLeft, nPrime, 0, 0);
+          e = new Edge(graphLeft, nPrime, delta: 0, weight: 0);
           prime.edges.add(e);
           e.delta = graph.getPadding(n).left + graph.getMargin().left;
         } else {
@@ -234,7 +234,7 @@ class HorizontalPlacement extends SpanningTreeVisitor {
         prime.nodes.add(nPrime);
         map(n, nPrime);
         if (i == rank.count() - 1) {
-          e = new Edge(nPrime, graphRight, 0, 0);
+          e = new Edge(nPrime, graphRight, delta: 0, weight: 0);
           e.delta = n.width + graph.getPadding(n).right
               + graph.getMargin().right;
           prime.edges.add(e);

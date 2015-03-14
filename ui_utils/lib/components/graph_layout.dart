@@ -42,9 +42,9 @@ typedef AttachRefCallback(html.Element el, String name);
  * Attaching cross-references to individual blocks using [attachRef].
  */
 display(html.Element pane,
-        Map<String, BasicBlock> blocks,
+        Map<dynamic, BasicBlock> blocks,
         AttachRefCallback attachRef,
-        { Map<String, double> blockTicks }) {
+        { Map<dynamic, double> blockTicks }) {
   // Compute loop nesting depth for each block. It will be used to
   // select appropriate fill color from the Brewer's palette.
   final lsg = havlak.findLoops(blocks.values.toList(growable: false));
@@ -82,6 +82,12 @@ display(html.Element pane,
   };
   svg.nodes.add(deadGroup);
 
+  final unlikelyGroup = new SvgElement.tag('g');
+  unlikelyGroup.attributes = {
+    "stroke-dasharray": "5,5"
+  };
+  svg.nodes.add(unlikelyGroup);
+
   // Render all blocks. The bigger block's loop depth is the more intense color
   // will be used to fill it.
 
@@ -115,10 +121,15 @@ display(html.Element pane,
   for (var edge in g.edges) {
     final color = edge.isFeedback ? "red" : "black";
 
+    final fromBlock = edge.source.data;
+    final toBlock = edge.target.data;
+
     final path = _pathFromPoints(g.size, edge.points, color);
-    if (edge.source.data.marks.contains("dead") ||
-        edge.target.data.marks.contains("v8.dead")) {
+    if (fromBlock.marks.contains("dead") ||
+        toBlock.marks.contains("v8.dead")) {
       deadGroup.nodes.add(path);
+    } else if (fromBlock.isUnlikelySuccessor(toBlock)) {
+      unlikelyGroup.nodes.add(path);
     } else {
       svg.nodes.add(path);
     }
@@ -130,7 +141,7 @@ display(html.Element pane,
 }
 
 /** Creates draw2d DirectedGraph from the map of blocks */
-_toDirectedGraph(Map<String, BasicBlock> blocks, havlak.LSG lsg) {
+_toDirectedGraph(Map<dynamic, BasicBlock> blocks, havlak.LSG lsg) {
   final g = new draw2d.DirectedGraph();
 
   final backEdges = new Map<int, Set<int>>();
@@ -158,7 +169,7 @@ _toDirectedGraph(Map<String, BasicBlock> blocks, havlak.LSG lsg) {
       final from = fromBlock.id;
       final to = toBlock.id;
 
-      final edge = new draw2d.Edge(g.nodes[from], g.nodes[to]);
+      final edge = new draw2d.Edge(g.nodes[from], g.nodes[to], weight: fromBlock.isUnlikelySuccessor(toBlock) ? 1 : 10);
       g.edges.add(edge);
 
       if (backEdges.containsKey(toBlock.id) && backEdges[toBlock.id].contains(fromBlock.id)) {

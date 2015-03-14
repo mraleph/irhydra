@@ -59,7 +59,7 @@ class CompoundHorizontalPlacement extends HorizontalPlacement {
         if (prev == null) {
           Node left = addSeparatorsLeft(n, null);
           if (left != null) {
-            Edge e = new Edge(graphLeft, getPrime(left), 0, 0);
+            Edge e = new Edge(graphLeft, getPrime(left), delta: 0, weight: 0);
             prime.edges.add(e);
             e.delta = graph.getPadding(n).left
                 + graph.getMargin().left;
@@ -86,7 +86,7 @@ class CompoundHorizontalPlacement extends HorizontalPlacement {
     int separation = left.width + graph.getPadding(left).right
         + graph.getPadding(right).left;
     prime.edges
-        .add(new Edge(getPrime(left), getPrime(right), separation, 0));
+        .add(new Edge(getPrime(left), getPrime(right), delta: separation, weight: 0));
   }
 
   Node addSeparatorsLeft(Node n, Subgraph graph) {
@@ -118,11 +118,11 @@ class CompoundHorizontalPlacement extends HorizontalPlacement {
       Node tail = getPrime(s.tail);
       Node left = getPrime(s.left);
       Node right = getPrime(getRight(s));
-      prime.edges.add(new Edge(left, right, s.width, 0));
-      prime.edges.add(new Edge(left, head, 0, 1));
-      prime.edges.add(new Edge(head, right, 0, 1));
-      prime.edges.add(new Edge(left, tail, 0, 1));
-      prime.edges.add(new Edge(tail, right, 0, 1));
+      prime.edges.add(new Edge(left, right, delta: s.width, weight: 0));
+      prime.edges.add(new Edge(left, head, delta: 0, weight: 1));
+      prime.edges.add(new Edge(head, right, delta: 0, weight: 1));
+      prime.edges.add(new Edge(left, tail, delta: 0, weight: 1));
+      prime.edges.add(new Edge(tail, right, delta: 0, weight: 1));
     }
     return s.left;
   }

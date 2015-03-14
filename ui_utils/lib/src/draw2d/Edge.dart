@@ -101,7 +101,7 @@ class Edge {
   int weight = 1;
 
 
-  Edge(this.source, this.target, [this.delta = 1, this.weight = 1]) {
+  Edge(this.source, this.target, {this.delta: 1, this.weight: 1}) {
     source.outgoing.add(this);
     target.incoming.add(this);
   }

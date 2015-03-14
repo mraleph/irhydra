@@ -1,0 +1,16 @@
+name: saga
+version: 0.0.1
+environment:
+  sdk: '>=1.0.0 <2.0.0'
+dependencies:
+  browser: any
+  paper_elements: '>=0.6.1 <0.7.0'
+  petitparser: any
+  polymer: '>=0.15.4 <0.16.0'
+  ui_utils:
+    path: ../ui_utils
+  liquid: any
+transformers:
+- polymer:
+    entry_points: web/index.html
+- liquid

@@ -31,6 +31,8 @@ class Data {
   Data.of(js.JsObject obj, id)
     : _data = obj.callMethod('data', [id]);
 
+  get tip => _data.callMethod('tip').callMethod('get', [0]);
+
   addTipClass(String name) => _data.callMethod('tip').callMethod('addClass', [name]);
 
   show() => _data.callMethod('show');
