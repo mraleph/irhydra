@@ -87,9 +87,11 @@ class Operator {
 
 class Result {
   final Operator operator;
-  final String text;
+  final chunks;
 
-  Result(this.operator, this.text);
+  Result(this.operator, this.chunks) {
+    assert(chunks is List || chunks is Node || chunks is String);
+  }
 
   static join(op, arr) {
     if (arr.length == 1) {
@@ -98,55 +100,87 @@ class Result {
     return arr.reduce((Result lhs, Result rhs) => binary(lhs, op, rhs));
   }
 
+  static withParen(result, cond, value) {
+    if (cond) {
+      result.add('(');
+    }
+    result.add(value);
+    if (cond) {
+      result.add(')');
+    }
+  }
+
   static binary(Result lhs, op, Result rhs) {
-    if (op == Operator.ADD && rhs.operator == Operator.ATOM && rhs.text[0] == "-") {
+    if (op == Operator.ADD &&
+        rhs.operator == Operator.ATOM &&
+        rhs.chunks is String &&
+        rhs.chunks[0] == "-") {
       op = Operator.SUB;
-      rhs = atom(rhs.text.substring(1));
+      rhs = atom(rhs.chunks.substring(1));
     }
 
-    if (op == Operator.DOT) {
-      print("${op.precedence} ${lhs} (${lhs.operator.precedence}) / ${rhs} (${rhs.operator.precedence})");
+    final result = [];
 
-    }
+    withParen(result, lhs.operator.precedence > op.precedence, lhs.chunks);
+    result.add(op.tight ? op.symbol : " ${op.symbol} ");
+    withParen(result, (rhs.operator.precedence >= op.precedence && rhs.operator != op), rhs.chunks);
 
-    final lhsText = lhs.operator.precedence > op.precedence ? "(${lhs.text})" : lhs.text;
-    final symbol = op.tight ? op.symbol : " ${op.symbol} ";
-    final rhsText = (rhs.operator.precedence >= op.precedence && rhs.operator != op) ? "(${rhs.text})" : rhs.text;
-    return new Result(op, "${lhsText}${symbol}${rhsText}");
+    return new Result(op, result);
   }
 
   static unary(op, Result val) {
     if (op.precedence < val.operator.precedence) {
-      return new Result(op, "${op.symbol}(${val.text})");
+      return new Result(op, [op.symbol, "(", val.chunks, ")"]);
     } else {
-      return new Result(op, "${op.symbol}${val.text}");
+      return new Result(op, [op.symbol, val.chunks]);
     }
   }
 
   static mixfix(op, lhs, openSymbol, rhs, closeSymbol) {
-    final lhsText = lhs.operator.precedence > op.precedence ? "(${lhs.text})" : lhs.text;
-    return new Result(op, "${lhsText}${openSymbol}${rhs}${closeSymbol}");
+    final result = [];
+
+    withParen(result, lhs.operator.precedence > op.precedence, lhs.chunks);
+
+    result.add(openSymbol);
+    result.add(rhs.chunks);
+    result.add(closeSymbol);
+
+    return new Result(op, result);
   }
 
-  static atom(text) {
-    return new Result(Operator.ATOM, text);
+  static atom(chunks) {
+    return new Result(Operator.ATOM, chunks);
   }
 
-  toString() => text;
+  static flattenChunk(f, chunks) {
+    if (chunks is List) {
+      for (var chunk in chunks) {
+        flattenChunk(f, chunk);
+      }
+    } else if (chunks is Result) {
+      flattenChunk(f, chunks.chunks);
+    } else {
+      f(chunks);
+    }
+  }
+
+  flattenWith(f) => flattenChunk(f, chunks);
+
+  toString() => chunks is String ? chunks : chunks.join('');
 }
 
-renderRef(def) {
+Result renderRef(def) {
   final node = Node.toPresentation(def);
   if (node.isInline) {
     return renderNode(def);
   } else {
-    return Result.atom(node.name);
+    return Result.atom(node);
   }
 }
 
-renderUse(use) => renderRef(use.def);
+Result renderUse(use) => renderRef(use.def);
 
-renderNode(def) {
+Result renderNode(def) {
   final cb = nodeRendering[def.op.typeTag];
   if (cb != null) {
     return cb(def);
@@ -162,7 +196,7 @@ final nodeRendering = {
     return Result.atom(CpuRegister.kNames[node.op.n]);
   },
   "OpPhi": (node) {
-    return Result.atom("Phi(${node.inputs.map((use) => renderRef(use.def)).join(', ')})");
+    return Result.atom(["Phi("]..addAll(intersperseValue(node.inputs.map(renderUse), ", "))..add(")"));
   },
   "OpAddr": (node) {
     final result = [];
@@ -186,11 +220,11 @@ final nodeRendering = {
     return Result.join(Operator.ADD, result);
   },
   "OpBinaryArith": (node) {
-    final lhs = renderRef(node.inputs[0].def);
+    final lhs = renderUse(node.inputs[0]);
     final op = Operator.BINARY_OPERATORS[node.op.opkind];
-    final rhs = renderRef(node.inputs[1].def);
+    final rhs = renderUse(node.inputs[1]);
     if (op == null) {
-      return Result.atom("${node.op.opkind}(${lhs}, ${rhs})");
+      return Result.atom(["${node.op.opkind}(", lhs, ", " , rhs, ")"]);
     }
     return Result.binary(lhs, op, rhs);
   },
@@ -201,29 +235,29 @@ final nodeRendering = {
     return Result.binary(Result.unary(Operator.DEREF, renderRef(node.inputs[0].def)), Operator.ASSIGN, renderRef(node.inputs[1].def));
   },
   "OpReturn": (node) {
-    return Result.atom("return ${renderRef(node.inputs[0].def)}");
+    return Result.atom(["return ", renderRef(node.inputs[0].def)]);
   },
   "OpBranchIf": (node) {
     final condition = Result.binary(renderUse(node.inputs[0]),
                                     Operator.BINARY_OPERATORS[node.op.condition],
                                     renderUse(node.inputs[1]));
     if (node.op.elseTarget != null) {
-      return Result.atom("if ${condition} then ${node.op.thenTarget} else ${node.op.elseTarget}");
+      return Result.atom(["if ", condition, " then ", node.op.thenTarget, " else ", node.op.elseTarget]);
     } else {
-      return Result.atom("if ${condition} then ${node.op.thenTarget}");
+      return Result.atom(["if ", condition, " then ", node.op.thenTarget]);
     }
   },
   "OpGoto": (node) {
-    return Result.atom("goto ${node.op.target}");
+    return Result.atom(["goto ", node.op.target]);
   },
   "OpSelectIf": (node) {
     final condition = Result.binary(renderUse(node.inputs[0]),
                                     Operator.BINARY_OPERATORS[node.op.condition],
                                     renderUse(node.inputs[1]));
-    return Result.atom("if ${condition} then ${renderUse(node.inputs[2])} else ${renderUse(node.inputs[3])}");
+    return Result.atom(["if ", condition, " then ", renderUse(node.inputs[2]), " else ", renderUse(node.inputs[3])]);
   },
   "OpUnpack": (node) {
-    return Result.atom("unpack(${renderUse(node.inputs[0])})");
+    return Result.atom(["unpack(", renderUse(node.inputs[0]), ")"]);
   },
   "OpLoadElement": (node) {
     return Result.mixfix(Operator.INDEX, renderUse(node.inputs[0]), "[", renderUse(node.inputs[1]), "]");
@@ -267,6 +301,7 @@ class Node extends Observable {
 final vNodeRef = v.componentFactory(NodeRef);
 class NodeRef extends Component {
   @property() Node node;
+  @property() var parent;
 
   bool _editing = false;
   var nameElement;
@@ -324,6 +359,14 @@ class NodeRef extends Component {
   }
 }
 
+intersperseValue(it, val) sync* {
+  var comma = false;
+  for (var v in it) {
+    if (comma) yield val; else comma = true;
+    yield v;
+  }
+}
+
 intersperse(it, f) sync* {
   var comma = false;
   for (var v in it) {
@@ -347,10 +390,31 @@ class NodeComponent extends Component {
         ..add(v.text(" <- "));
     }
 
-    children
-      ..add(v.text("${renderNode(node.origin)}"));
-      // ..addAll(intersperse(node.origin.inputs.map(buildRef), () => v.text(', ')))
-      // ..add(v.text(")"));
+    final Result res = renderNode(node.origin);
+
+    var str = null;
+    res.flattenWith((val) {
+      if (val is String) {
+        str = (str == null) ? val : (str + val);
+        return;
+      }
+
+      if (str != null) {
+        children.add(v.text(str));
+        str = null;
+      }
+
+      if (val is Node) {
+        onPropertyChange(val, #isInline, invalidate);
+        children.add(vNodeRef(node: val, classes: ["ir-use"]));
+      } else {
+        children.add(v.text('${val.name}'));
+      }
+    });
+    if (str != null) {
+      children.add(v.text(str));
+      str = null;
+    }
 
     return v.root()(children);
   }
