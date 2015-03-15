@@ -95,7 +95,12 @@ class CodePane extends Component {
   var flowData;
 
   var whenRendered;
-  rendered() => whenRendered();
+  rendered() {
+    if (whenRendered != null) {
+      whenRendered();
+      whenRendered = null;
+    }
+  }
 
   var entities = {};
   var entitiesArray = [];

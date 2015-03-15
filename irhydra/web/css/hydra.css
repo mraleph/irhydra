@@ -14,30 +14,6 @@
   padding: 9px 0;
 }
 
-.xref .tooltip-inner {
-  max-width: 100% !important;
-}
-
-.tooltip.in.xref {
-  opacity: 1 !important;
-}
-
-.tooltip.xref pre {
-  -moz-border-radius: 0;
-  -webkit-border-radius: 0;
-  -o-border-radius: 0;
-  border-radius: 0;
-  border-width: 0;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  font-family: monospace;
-  font-size: 12pt;
-  word-wrap: normal;
-  color: inherit;
-}
-
-.popover.xref,
 .popover.deopt {
   max-width: 500px !important;
 }

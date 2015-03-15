@@ -21,3 +21,11 @@ serve.sh
 web/deps/jquery-ui-*/
 web/demos/webrebels/
 .pub
+
+saga/web/code1.asm
+
+saga/web/code2.asm
+
+saga/web/code3.asm
+
+saga/web/code4.asm
