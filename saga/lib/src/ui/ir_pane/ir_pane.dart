@@ -23,6 +23,22 @@ import 'package:liquid/vdom.dart' as v;
 import 'package:saga/src/flow/cpu_register.dart';
 import 'package:saga/src/flow/node.dart' as node;
 
+intersperseValue(it, val) sync* {
+  var comma = false;
+  for (var v in it) {
+    if (comma) yield val; else comma = true;
+    yield v;
+  }
+}
+
+intersperse(it, f) sync* {
+  var comma = false;
+  for (var v in it) {
+    if (comma) yield f(); else comma = true;
+    yield v;
+  }
+}
+
 render(html.Element pane, Map<String, node.BB> blocks) {
   pane.children.clear();
   injectComponent(new App()..blocks = blocks.values.toList(), pane);
@@ -97,7 +113,7 @@ class Result {
   final chunks;
 
   Result(this.operator, this.chunks) {
-    assert(chunks is List || chunks is Node || chunks is String);
+    assert(chunks is List || chunks is Node || chunks is String || chunks is v.VHtmlElement);
   }
 
   static join(op, arr) {
@@ -124,7 +140,7 @@ class Result {
     final result = [];
 
     withParen(result, lhs, (refOp) => refOp.precedence > op.precedence);
-    result.add(op.tight ? op.symbol : " ${op.symbol} ");
+    result.add(vKeyword(op.tight ? op.symbol : " ${op.symbol} "));
     withParen(result, rhs, (refOp) => refOp.precedence >= op.precedence && refOp != op);
 
     return new Result(op, result);
@@ -190,15 +206,19 @@ Result renderNode(def) {
   return Result.atom("{$def}");
 }
 
+final vKonstant = (txt) => v.span(classes: ['ir-node-konstant'])(txt);
+final vOp = (txt) => v.span(classes: ['ir-node-op'])(txt);
+final vKeyword = (txt) => v.span(classes: ['ir-node-keyword'])(txt);
+
 final nodeRendering = {
   "OpKonstant": (node) {
-    return Result.atom(node.op.value.toString());
+    return Result.atom(vKonstant(node.op.value.toString()));
   },
   "OpArg": (node) {
     return Result.atom(CpuRegister.kNames[node.op.n]);
   },
   "OpPhi": (node) {
-    return Result.atom(["Phi("]..addAll(intersperseValue(node.inputs.map(renderUse), ", "))..add(")"));
+    return Result.atom([vOp("\u03C6"), "("]..addAll(intersperseValue(node.inputs.map(renderUse), ", "))..add(")"));
   },
   "OpAddr": (node) {
     final result = [];
@@ -209,20 +229,20 @@ final nodeRendering = {
     if (base != null) result.add(renderRef(base));
     if (index != null) {
       if (node.op.scale != 1) {
-        result.add(Result.binary(renderRef(index), Operator.MUL, Result.atom(node.op.scale.toString())));
+        result.add(Result.binary(renderRef(index), Operator.MUL, Result.atom(vKonstant(node.op.scale.toString()))));
       } else {
         result.add(renderRef(index));
       }
     }
 
     if (result.length == 0) {
-      return Result.atom(node.op.offset.toString());
+      return Result.atom(vKonstant(node.op.offset.toString()));
     } else {
       final offset = node.op.offset;
       final negate = offset < 0;
       return Result.binary(Result.join(Operator.ADD, result),
           negate ? Operator.SUB : Operator.ADD,
-          Result.atom(negate ? (-offset).toString() : offset.toString()));
+          Result.atom(vKonstant(negate ? (-offset).toString() : offset.toString())));
     }
 
     return Result.join(Operator.ADD, result);
@@ -232,7 +252,7 @@ final nodeRendering = {
     final op = Operator.BINARY_OPERATORS[node.op.opkind];
     final rhs = renderUse(node.inputs[1]);
     if (op == null) {
-      return Result.atom(["${node.op.opkind}(", lhs, ", " , rhs, ")"]);
+      return Result.atom([vOp(node.op.opkind), "(", lhs, ", " , rhs, ")"]);
     }
     return Result.binary(lhs, op, rhs);
   },
@@ -243,29 +263,29 @@ final nodeRendering = {
     return Result.binary(Result.unary(Operator.DEREF, renderUse(node.inputs[0])), Operator.ASSIGN, renderUse(node.inputs[1]));
   },
   "OpReturn": (node) {
-    return Result.atom(["return ", renderUse(node.inputs[0])]);
+    return Result.atom([vKeyword("return "), renderUse(node.inputs[0])]);
   },
   "OpBranchIf": (node) {
     final condition = Result.binary(renderUse(node.inputs[0]),
                                     Operator.BINARY_OPERATORS[node.op.condition],
                                     renderUse(node.inputs[1]));
     if (node.op.elseTarget != null) {
-      return Result.atom(["if ", condition, " then ", node.op.thenTarget, " else ", node.op.elseTarget]);
+      return Result.atom([vKeyword("if "), condition, vKeyword(" then "), node.op.thenTarget.toString(), vKeyword(" else "), node.op.elseTarget.toString()]);
     } else {
-      return Result.atom(["if ", condition, " then ", node.op.thenTarget]);
+      return Result.atom([vKeyword("if "), condition, vKeyword(" then "), node.op.thenTarget.toString()]);
     }
   },
   "OpGoto": (node) {
-    return Result.atom(["goto ", node.op.target]);
+    return Result.atom([vKeyword("goto "), node.op.target.toString()]);
   },
   "OpSelectIf": (node) {
     final condition = Result.binary(renderUse(node.inputs[0]),
                                     Operator.BINARY_OPERATORS[node.op.condition],
                                     renderUse(node.inputs[1]));
-    return Result.atom(["if ", condition, " then ", renderUse(node.inputs[2]), " else ", renderUse(node.inputs[3])]);
+    return Result.atom([vKeyword("if "), condition, vKeyword(" then "), renderUse(node.inputs[2]), vKeyword(" else "), renderUse(node.inputs[3])]);
   },
   "OpUnpack": (node) {
-    return Result.atom(["unpack(", renderUse(node.inputs[0]), ")"]);
+    return Result.atom([vOp("unpack"), "(", renderUse(node.inputs[0]), ")"]);
   },
   "OpLoadElement": (node) {
     return Result.mixfix(Operator.INDEX, renderUse(node.inputs[0]), "[", renderUse(node.inputs[1]), "]");
@@ -358,27 +378,54 @@ class EditableName extends Component {
   build() => v.root()(v.span()(entity.name));
 }
 
+abstract class InvalidationMixin {
+  var subscriptions;
+
+  _unsubscribe() {
+    if (subscriptions != null) {
+      for (var subscription in subscriptions)
+        subscription.cancel();
+      subscriptions = null;
+    }
+  }
+
+  get dependencies;
+
+  void invalidate();
+
+  void updated() {
+    _unsubscribe();
+    subscriptions = dependencies.map((obj) =>
+      obj.changes.listen((_) => invalidate())).toList();
+  }
+
+  detached() {
+    _unsubscribe();
+  }
+}
+
+var NodeRefId = 0;
 
 final vNodeRef = v.componentFactory(NodeRef);
-class NodeRef extends Component {
+class NodeRef extends Component with InvalidationMixin {
   @property() Node node;
   @property() var parens;
 
   void create() { element = new html.SpanElement(); }
 
   void init() {
-    node.changes.listen((_) => invalidate());
-
     element.onClick.matches('.inline-marker').listen((e) {
       node.isInline = true;
     });
   }
 
+  get dependencies => [node];
+
   build() {
     if (node.isInline) {
       return v.root()(vNodeBody(node: node, parens: parens));
     } else {
-      final children = [vEditableName(entity: node)];
+      final children = [vEditableName(entity: node, classes: ['ir-node-name'])];
       if (node.canBeInlined) {
         final classes = ['inline-marker'];
         if (node.hasSingleUse) classes.add('single-use');
@@ -386,22 +433,6 @@ class NodeRef extends Component {
       }
       return v.root()(children);
     }
-  }
-}
-
-intersperseValue(it, val) sync* {
-  var comma = false;
-  for (var v in it) {
-    if (comma) yield val; else comma = true;
-    yield v;
-  }
-}
-
-intersperse(it, f) sync* {
-  var comma = false;
-  for (var v in it) {
-    if (comma) yield f(); else comma = true;
-    yield v;
   }
 }
 
@@ -453,7 +484,8 @@ class NodeBodyComponent extends Component {
         flush();
         children.add(vNodeRef(node: val.ref, parens: val.needsParens, classes: ["ir-use"]));
       } else {
-        append(val.name);
+        flush();
+        children.add(val);
       }
     });
     if (needsParen) append(')');
@@ -471,8 +503,8 @@ class NodeComponent extends Component {
 
   build() =>
     v.root()(node.isNamed ? [
-      vEditableName(entity: node),
-      v.text(" <- "),
+      vEditableName(entity: node, classes: ['ir-node-name']),
+      vKeyword(" <- "),
       vNodeBody(node: node)
     ] : [
       vNodeBody(node: node)
@@ -493,10 +525,13 @@ class BlockComponent extends Component {
   }
 
   build() {
-    final children = [v.text(block.name), v.text('\n')];
-    children.addAll(intersperse(nodes.where((node) => node.isVisible).map(buildNode), () => v.text('\n')));
-    children.add(v.text("\n\n"));
-    return v.root()(children);
+    final vnodes = intersperse(nodes.where((node) => node.isVisible).map(buildNode), () => v.text('\n'));
+    return v.root()([
+      v.text(block.name),
+      v.text('\n'),
+      v.div(classes: ['ir-block-body'])(vnodes),
+      v.text('\n\n')
+    ]);
   }
 
   static buildNode(Node node) => vNode(node: node);

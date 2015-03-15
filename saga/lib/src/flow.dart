@@ -16,13 +16,15 @@ library flow;
 
 import 'package:saga/src/parser.dart' show Addr, Imm, RegRef;
 
-import 'package:saga/src/flow/node.dart';
-import 'package:saga/src/flow/ssa.dart';
+import 'package:saga/src/flow/compact_likely.dart' as compact_likely;
 import 'package:saga/src/flow/cpu_register.dart';
-import 'package:saga/src/flow/locals.dart';
-import 'package:saga/src/flow/loads.dart';
 import 'package:saga/src/flow/dce.dart';
 import 'package:saga/src/flow/fuse_branches.dart';
+import 'package:saga/src/flow/interference.dart' as interference;
+import 'package:saga/src/flow/loads.dart';
+import 'package:saga/src/flow/locals.dart';
+import 'package:saga/src/flow/node.dart';
+import 'package:saga/src/flow/ssa.dart';
 
 
 class MachineState {
@@ -258,7 +260,17 @@ class MachineState {
   };
 }
 
-build(ir) {
+class FlowData {
+  final blocks;
+  final refUses;
+  final interference;
+
+  FlowData(this.blocks, this.refUses, this.interference);
+}
+
+build(code) {
+  final ir = code.buildCfg();
+
   Node.start(ir.blocks.values.first);
   var state = new MachineState(ir.blockMap);
 
@@ -278,8 +290,7 @@ build(ir) {
   typeLoads(state, state.blocks);
   dce(state.blocks);
 
-
-  // removeEmptyBlocks(state.blocks);
-
-  return state;
+  return new FlowData(compact_likely.compact(state.blocks),
+                      state.refUses,
+                      interference.build(state.blocks));
 }

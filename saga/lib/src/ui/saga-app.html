@@ -35,6 +35,7 @@
         font-family: 'Inconsolata', monospace;
         font-size: 14pt;
         background: #fdf6e3;
+        color: #657b83;
       }
 
       .flexbox-container {
@@ -52,7 +53,7 @@
         margin: 0px;
       }
 
-      .asm-immediate {
+      .asm-immediate, .ir-node-konstant {
         color: #2aa198;
       }
 
@@ -110,7 +111,19 @@
       }
 
       .single-use {
-        color: green;
+        color: #859900;
+      }
+            
+      .ir-node-keyword {
+        color: #859900;
+      }
+      
+      .ir-node-op {
+        color: #268bd2;
+      }
+      
+      .ir-block-body {
+        padding-left: 10px;
       }
     </style>
 

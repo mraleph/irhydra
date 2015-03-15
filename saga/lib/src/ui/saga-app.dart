@@ -20,7 +20,6 @@ import 'package:saga/src/parser.dart' as parser;
 import 'package:ui_utils/xref.dart';
 import 'package:ui_utils/bootstrap.dart' as bs;
 import 'package:saga/src/flow.dart' as flow;
-import 'package:saga/src/flow/node.dart' as node;
 import 'package:ui_utils/delayed_reaction.dart';
 import 'package:saga/src/ui/ir_pane/ir_pane.dart' as ir_pane;
 
@@ -29,6 +28,13 @@ class Graph {
   final blockTicks = null;
 
   Graph(this.blocks);
+}
+
+timeAndReport(action, name) {
+  final stopwatch = new Stopwatch()..start();
+  final result = action();
+  print("${name} took ${stopwatch.elapsedMilliseconds} ms.");
+  return result;
 }
 
 @CustomTag('saga-app')
@@ -86,92 +92,24 @@ class SagaApp extends PolymerElement {
       }
     });
 
-    HttpRequest.getString("code.asm").then((text) => render(parser.parse(text)));
-  }
-
-  compact(Map<String, node.BB> blocks) {
-    final throws = new Set<node.BB>.identity();
-
-    mark(block) {
-      if (!throws.add(block)) {
-        return;
-      }
-
-      for (var pred in block.predecessors) {
-        if (pred.successors.every(throws.contains)) {
-          mark(pred);
-        }
-      }
-    }
-
-    for (var block in blocks.values) {
-      final last = block.code.isNotEmpty ? block.code.last : null;
-      if (last != null &&
-          last.op is node.OpCall &&
-          last.op.target.attributes.contains(parser.CallTargetAttribute.NORETURN)) {
-        mark(block);
-      }
-    }
-
-
-    final visited = new List<node.MergedBB>(blocks.length);
-    var result = <node.MergedBB>[];
-    for (var block in blocks.values) {
-      if (visited[block.id] != null) {
-        continue;
-      }
-
-      final merged = new node.MergedBB(result.length, [block]);
-      result.add(merged);
-      visited[block.id] = merged;
-
-      final last = block.code.isNotEmpty ? block.code.last : null;
-      if (last != null &&
-          (last.op is node.OpBranchIf ||
-           last.op is node.OpBranchOn) &&
-          throws.contains(block.successors[1]) &&
-          (visited[block.successors.first.id] == null) &&
-          block.successors.first.predecessors.length == 1) {
-        visited[block.successors.first.id] = merged;
-        merged.blocks.add(block.successors.first);
-      }
-    }
-
-    redirect(target) =>
-      (target is node.BB) ? visited[target.id] : target;
-
-    for (var block in result) {
-      final lastBlock = block.blocks.last;
-      for (var innerBlock in block.blocks) {
-        for (var succ in innerBlock.successors) {
-          if (visited[succ.id] != block || innerBlock == lastBlock) {
-            block.edge(visited[succ.id], unlikely: innerBlock != lastBlock || throws.contains(succ));
-            assert(visited[succ.id].blocks.first == succ);
-          }
-        }
-
-        if (innerBlock.code.isNotEmpty) {
-          final last = innerBlock.code.last;
-          if (last.op is node.OpGoto) {
-            last.op.target = redirect(last.op.target);
-          } else if (last.op is node.OpBranchIf || last.op is node.OpBranchOn) {
-            last.op.thenTarget = redirect(last.op.thenTarget);
-            last.op.elseTarget = innerBlock == lastBlock ? redirect(last.op.elseTarget) : null;
-          }
-        }
-      }
-    }
-
-    return new Map<String, node.BB>.fromIterable(result, key: (block) => block.name);
+    HttpRequest.getString("code.asm").then((text) {
+      final code = timeAndReport(() => parser.parse(text), "parsing");
+      render(code);
+    });
   }
 
   render(pcode) {
-    final ir = pcode.buildCfg();
-    flowData = flow.build(ir);
+    var blocks;
+    timeAndReport(() {
+      flowData = flow.build(pcode);
+      blocks = flowData.blocks;
+      graph = new Graph(blocks);
+    }, "flow analysis");
 
-    final blocks = compact(ir.blocks);
-    graph = new Graph(blocks);
+    timeAndReport(() => updateUI(pcode, blocks), "rendering");
+  }
 
+  updateUI(pcode, blocks) {
     blockRef = new XRef((id) {
       return "<pre>" + blocks[id].asm.join('\n') + "</pre>";
     });
@@ -316,17 +254,6 @@ class SagaApp extends PolymerElement {
     code.nodes
       ..clear()
       ..addAll(result.map((v) => v is String ? new Text(v) : v));
-
-    for (var block in blocks.values) {
-      print("${block}");
-      for (var op in block.phis) {
-        print("$op");
-      }
-      for (var op in block.code) {
-        print("$op");
-      }
-      print("");
-    }
 
     ir_pane.render($['ir'], blocks);
   }

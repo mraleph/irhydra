@@ -52,12 +52,15 @@ class OpLoadField extends Op {
   final field;
 
   OpLoadField(this.field);
+  get typeTag => "OpLoadField";
 
   format(inputs) => "${inputs[0]}.${field.name}";
 }
 
+const LOAD_ELEMENT = const SingletonOp("OpLoadElement");
+
 loadElement(elementType, array, index) {
-  return new Node(const SingletonOp("OpLoadElement"), [array, index])..type = elementType;
+  return new Node(LOAD_ELEMENT, [array, index])..type = elementType;
 }
 
 typeLoads(state, blocks) {

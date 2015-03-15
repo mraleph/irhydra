@@ -87,7 +87,7 @@ class Node extends LinkedListEntry<Node> {
 
   BB block;
 
-  Node._(this.op, vals) : id = _id++, inputs = new List<Use>(vals.length) {
+  Node._(this.op, vals) : id = maxId++, inputs = new List<Use>(vals.length) {
     for (var i = 0; i < vals.length; i++) {
       inputs[i] = new Use(this, i)..setTo(vals[i]);
     }
@@ -216,11 +216,11 @@ class Node extends LinkedListEntry<Node> {
 
   get alive => list != null;
 
-  static var _id = 0;
+  static var maxId = 0;
 
   static start(BB block) {
     entryBlock = block;
-    _id = 0;
+    maxId = 0;
     konsts.clear();
   }
 }
@@ -262,7 +262,7 @@ class Use extends LinkedListEntry<Use> {
   toString() => def != null ? "v${def.id}" : "_";
 }
 
-class Op {
+abstract class Op {
   const Op();
 
   format(inputs) {
@@ -271,7 +271,7 @@ class Op {
   }
 
   get tag => typeTag;
-  get typeTag => "${runtimeType}";
+  get typeTag;
   get attrs => const [];
   get hasEffect => false;
 }
@@ -295,6 +295,7 @@ class OpKonstant extends Op {
   final int value;
 
   OpKonstant(this.value);
+  get typeTag => "OpKonstant";
 
   format(_) => value;
 }
@@ -304,6 +305,7 @@ class OpAddr extends Op {
   final int offset;
 
   OpAddr(this.scale, this.offset);
+  get typeTag => "OpAddr";
 
   format(inputs) => "[${inputs[0]} + ${inputs[1]} * ${scale} + ${offset}]";
 }
@@ -312,6 +314,7 @@ class OpBinaryArith extends Op {
   final opkind;
 
   const OpBinaryArith(this.opkind);
+  get typeTag => "OpBinaryArith";
 
   format(inputs) =>
     "${inputs[0]} ${opkind} ${inputs[1]}";
@@ -331,6 +334,7 @@ class OpSelect extends Op {
   final condition;
 
   OpSelect(this.condition);
+  get typeTag => "OpSelect";
 
   get attrs => [condition];
 }
@@ -339,6 +343,7 @@ class OpSelectIf extends Op {
   final condition;
 
   OpSelectIf(this.condition);
+  get typeTag => "OpSelectIf";
 
   format(inputs) =>
     "if ${inputs[0]} ${condition} ${inputs[1]} then ${inputs[2]} else ${inputs[3]}";
@@ -348,6 +353,7 @@ class OpGoto extends Op {
   var target;
 
   OpGoto(this.target);
+  get typeTag => "OpGoto";
 
   get hasEffect => true;
 }
@@ -358,6 +364,7 @@ class OpBranchOn extends Op {
   var elseTarget;
 
   OpBranchOn(this.condition, this.thenTarget, this.elseTarget);
+  get typeTag => "OpBranchOn";
 
   get hasEffect => true;
 }
@@ -368,6 +375,7 @@ class OpBranchIf extends Op {
   var elseTarget;
 
   OpBranchIf(this.condition, this.thenTarget, this.elseTarget);
+  get typeTag => "OpBranchIf";
 
   format(inputs) =>
     "if ${inputs[0]} ${condition} ${inputs[1]} then ${thenTarget} else ${elseTarget}";
@@ -377,7 +385,9 @@ class OpBranchIf extends Op {
 
 class OpArg extends Op {
   final n;
+
   OpArg(this.n);
+  get typeTag => "OpArg";
 
   get attrs => [n];
 }
@@ -386,6 +396,7 @@ class OpCall extends Op {
   final target;
 
   OpCall(this.target);
+  get typeTag => "OpCall";
 
   get hasEffect => true;
 }
