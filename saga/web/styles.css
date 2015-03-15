@@ -14,12 +14,117 @@
 */
 
 body {
-    font-family: RobotoDraft, sans-serif;
-    color: #333;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
-    -webkit-touch-callout: none;
+  font-family: RobotoDraft, sans-serif;
+  color: #333;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-touch-callout: none;
+}
+
+pre {
+  font-family: 'Inconsolata', monospace;
+  font-size: 14pt;
+  background: #fdf6e3;
+  color: #657b83;
+}
+
+.flexbox-container {
+  display: -ms-flex;
+  display: -webkit-flex;
+  display: flex;
+  width: 100%;
+  max-height: 100%;
+  position: fixed;
+  display: flex;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+}
+
+.flexbox-container > * {
+  width: 100%;
+  padding: 10px;
+  overflow-y: scroll;
+  margin: 0px;
+}
+
+.asm-immediate, .ir-node-konstant {
+  color: #2aa198;
+}
+
+.asm-call-target {
+  color: #d33682;
+  cursor: pointer;
+}
+
+.asm-opcode {
+  color: #859900;
+}
+
+.asm-register {
+  color: #657b83;
+  cursor: pointer;
+}
+
+.asm-label {
+  color: #268bd2;
+}
+
+.asm-call-target .popover {
+  background: #002b36;
+}
+
+.asm-call-target .popover.top .arrow:after {
+  border-top-color: #002b36;
+}
+
+.asm-call-target button[data-attr] {
+  background: none !important;
+  border: none;
+  padding: 0 !important;
+  font: 'Inconsolata', monospace;
+  cursor: pointer;
+  color: #839496;
+}
+
+.asm-call-target button[data-attr]:not(.set) {
+  text-decoration: line-through;
+}
+
+.inline-marker {
+  display: none;
+  cursor: pointer;
+}
+
+.inline-marker:hover, .ir-use:hover > .inline-marker {
+  display: inline-block;
+}
+
+.node-body-hover {
+  text-decoration: underline;
+}
+
+.single-use {
+  color: #859900;
+}
+      
+.ir-node-keyword {
+  color: #859900;
+}
+
+.ir-node-op {
+  color: #268bd2;
+}
+
+.ir-block-body {
+  padding-left: 10px;
+}
+
+#graph {
+  margin-left: auto;
+  margin-right: auto;
 }

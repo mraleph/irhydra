@@ -9,6 +9,8 @@ dependencies:
   sass: any
   ui_utils:
     path: ../ui_utils
+  ui_components:
+    path: ../ui_components
 transformers:
 - sass
 - polymer:

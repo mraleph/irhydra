@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library ir_pane;
+library saga.ui.ir_pane;
 
 import 'dart:html' as html;
 
@@ -22,22 +22,7 @@ import 'package:liquid/vdom.dart' as v;
 
 import 'package:saga/src/flow/cpu_register.dart';
 import 'package:saga/src/flow/node.dart' as node;
-
-intersperseValue(it, val) sync* {
-  var comma = false;
-  for (var v in it) {
-    if (comma) yield val; else comma = true;
-    yield v;
-  }
-}
-
-intersperse(it, f) sync* {
-  var comma = false;
-  for (var v in it) {
-    if (comma) yield f(); else comma = true;
-    yield v;
-  }
-}
+import 'package:saga/src/util.dart';
 
 render(html.Element pane, Map<String, node.BB> blocks) {
   pane.children.clear();

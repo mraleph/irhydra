@@ -1,8 +1,2 @@
 name: ui_utils
 version: 0.0.1
-dependencies:
-  core_elements: any
-  polymer: any
-transformers:
-- polymer:
-    entry_points: []

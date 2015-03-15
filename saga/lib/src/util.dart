@@ -12,7 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file is only used by Dart Editor. It displays errors and warnings after
-// analyzing a polymer.dart app.
+library saga.util;
 
-export 'package:polymer/default_build.dart';
+intersperseValue(it, val) sync* {
+  var comma = false;
+  for (var v in it) {
+    if (comma) yield val; else comma = true;
+    yield v;
+  }
+}
+
+intersperse(it, f) sync* {
+  var comma = false;
+  for (var v in it) {
+    if (comma) yield f(); else comma = true;
+    yield v;
+  }
+}

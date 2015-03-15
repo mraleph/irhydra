@@ -4,13 +4,11 @@ environment:
   sdk: '>=1.0.0 <2.0.0'
 dependencies:
   browser: any
-  paper_elements: '>=0.6.1 <0.7.0'
   petitparser: any
-  polymer: '>=0.15.4 <0.16.0'
   ui_utils:
     path: ../ui_utils
   liquid: any
+  observe: any
 transformers:
-- polymer:
-    entry_points: web/index.html
+- observe
 - liquid

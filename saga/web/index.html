@@ -23,30 +23,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="scaffolded-by" content="https://github.com/google/stagehand">
   <title>Saga</title>
-
-  <!-- Add to homescreen for Chrome on Android -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
-
-  <!-- Add to homescreen for Safari on iOS -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Web Starter Kit">
-  <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
-
-  <!-- Tile icon for Win8 (144x144 + tile color) -->
-  <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
-  <meta name="msapplication-TileColor" content="#3372DF">
   
   <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
-  <!-- example of using a paper element -->
-  <link rel="import" href="packages/paper_elements/roboto.html">
-
-  <!-- example of your own custom element -->
-  <link rel="import" href="packages/saga/src/ui/saga-app.html">
-
-  <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="hydra.css">
 
   <script src="packages/ui_utils/assets/jquery/js/jquery-2.0.3.js"></script>
@@ -56,15 +35,16 @@
   <link rel="stylesheet" href="packages/ui_utils/assets/bootstrap/css/bootstrap-theme.min.css">
   <script src="packages/ui_utils/assets/bootstrap/js/bootstrap.js"></script>
 
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/languages/x86asm.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
-<body unresolved>
-
-  <saga-app></saga-app>
-
-  <script type="application/dart">export 'package:polymer/init.dart';</script>
+<body>
+    <div class="flexbox-container">
+      <pre id="code"></pre>
+      <div><div id="graph"></div></div>
+      <pre id="ir"></pre>
+    </div>
+  <script type="application/dart" src="main.dart"></script>
+  <script data-pub-inline src="packages/browser/dart.js"></script>
 </body>
 </html>

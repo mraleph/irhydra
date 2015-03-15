@@ -16,7 +16,7 @@ library graph_pane;
 
 import 'dart:html';
 import 'package:ui_utils/task.dart';
-import 'package:ui_utils/components/graph_layout.dart' as graphview;
+import 'package:ui_utils/graph_layout.dart' as graphview;
 import 'package:polymer/polymer.dart';
 
 class HoverDetail {

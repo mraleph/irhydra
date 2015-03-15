@@ -133,6 +133,12 @@ packages:
     description: template_binding
     source: hosted
     version: "0.14.0+1"
+  ui_components:
+    description:
+      path: "../ui_components"
+      relative: true
+    source: path
+    version: "0.0.1"
   ui_utils:
     description:
       path: "../ui_utils"

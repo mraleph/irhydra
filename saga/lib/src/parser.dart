@@ -14,7 +14,10 @@
 
 library parser;
 
+import 'dart:async';
+
 import 'package:petitparser/petitparser.dart' as p;
+
 import 'package:saga/src/flow/node.dart' show BB;
 
 final codeRe = new RegExp(r"^\s+(0x[0-9a-f]+):\s+(?:data32 |rep )?(\w+)([^;#]*)([;#].*)?$");
@@ -100,10 +103,21 @@ class CallTargetAttribute {
 }
 
 class CallTarget {
+  final ParsedCode owner;
+
   final target;
   final attributes = new Set<CallTargetAttribute>();
 
-  CallTarget(this.target);
+  CallTarget(this.owner, this.target);
+
+  toggleAttribute(attr) {
+    if (attributes.contains(attr)) {
+      attributes.remove(attr);
+    } else {
+      attributes.add(attr);
+    }
+    owner._changesController.add(null);
+  }
 
   toString() => "CallTarget($target)";
 }
@@ -119,7 +133,7 @@ class ParsedCode {
     final addrMap = new Map<String, int>.fromIterables(code.map((op) => op.addr), new Iterable.generate(code.length));
 
     toCallTarget(addr) =>
-        callTargets.putIfAbsent(addr, () => new CallTarget(addr));
+        callTargets.putIfAbsent(addr, () => new CallTarget(this, addr));
 
     var blockStarted = false;
     for (var i = 0; i < code.length; i++) {
@@ -202,6 +216,8 @@ class ParsedCode {
     return new Ir(new Map.fromIterable(blocks.values, key: (block) => block.name, value: (block) => block), blocks);
   }
 
+  final _changesController = new StreamController.broadcast();
+  get changes => _changesController.stream;
 }
 
 parse(String text) => new ParsedCode(text);
