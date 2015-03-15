@@ -191,11 +191,11 @@ class MachineState {
     }),
 
     "cmovl": uv((rhs, lhs, dst) {
-      define(dst, emit(Node.select("<", useFlags(), lhs, rhs)));
+      define(dst, emit(Node.select("<", useFlags(), rhs, lhs)));
     }),
 
     "cmovg": uv((rhs, lhs, dst) {
-      define(dst, emit(Node.select(">", useFlags(), lhs, rhs)));
+      define(dst, emit(Node.select(">", useFlags(), rhs, lhs)));
     }),
 
     "xchg": (rhs, lhs) {

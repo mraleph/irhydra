@@ -95,14 +95,22 @@
       .asm-call-target button[data-attr]:not(.set) {
         text-decoration: line-through;
       }
-      
+
       .inline-marker {
         display: none;
         cursor: pointer;
       }
-      
-      .inline-marker:hover, .ir-use:hover .inline-marker {
+
+      .inline-marker:hover, .ir-use:hover > .inline-marker {
         display: inline-block;
+      }
+
+      .node-body-hover {
+        text-decoration: underline;
+      }
+
+      .single-use {
+        color: green;
       }
     </style>
 

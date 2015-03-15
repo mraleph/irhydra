@@ -85,6 +85,13 @@ class Operator {
   };
 }
 
+class ContextualRef {
+  final ref;
+  final needsParens;
+
+  ContextualRef(this.ref, this.needsParens);
+}
+
 class Result {
   final Operator operator;
   final chunks;
@@ -94,55 +101,45 @@ class Result {
   }
 
   static join(op, arr) {
-    if (arr.length == 1) {
-      return arr[0];
-    }
-    return arr.reduce((Result lhs, Result rhs) => binary(lhs, op, rhs));
+    return arr.reduce((lhs, rhs) => binary(lhs, op, rhs));
   }
 
-  static withParen(result, cond, value) {
-    if (cond) {
+  static withParen(result, value, bool cond(Operator op)) {
+    if (value is Node) {
+      result.add(new ContextualRef(value, cond));
+      return;
+    }
+    assert(value is Result);
+    final needsParen = cond(value.operator);
+    if (needsParen) {
       result.add('(');
     }
     result.add(value);
-    if (cond) {
+    if (needsParen) {
       result.add(')');
     }
   }
 
-  static binary(Result lhs, op, Result rhs) {
-    if (op == Operator.ADD &&
-        rhs.operator == Operator.ATOM &&
-        rhs.chunks is String &&
-        rhs.chunks[0] == "-") {
-      op = Operator.SUB;
-      rhs = atom(rhs.chunks.substring(1));
-    }
-
+  static binary(lhs, op, rhs) {
     final result = [];
 
-    withParen(result, lhs.operator.precedence > op.precedence, lhs.chunks);
+    withParen(result, lhs, (refOp) => refOp.precedence > op.precedence);
     result.add(op.tight ? op.symbol : " ${op.symbol} ");
-    withParen(result, (rhs.operator.precedence >= op.precedence && rhs.operator != op), rhs.chunks);
+    withParen(result, rhs, (refOp) => refOp.precedence >= op.precedence && refOp != op);
 
     return new Result(op, result);
   }
 
-  static unary(op, Result val) {
-    if (op.precedence < val.operator.precedence) {
-      return new Result(op, [op.symbol, "(", val.chunks, ")"]);
-    } else {
-      return new Result(op, [op.symbol, val.chunks]);
-    }
+  static unary(op, Node val) {
+    return new Result(op, [op.symbol, new ContextualRef(val, (refOp) => op.precedence < refOp.precedence)]);
   }
 
-  static mixfix(op, lhs, openSymbol, rhs, closeSymbol) {
+  static mixfix(op, Node lhs, openSymbol, Node rhs, closeSymbol) {
     final result = [];
 
-    withParen(result, lhs.operator.precedence > op.precedence, lhs.chunks);
-
+    result.add(new ContextualRef(lhs, (refOp) => refOp.precedence > op.precedence));
     result.add(openSymbol);
-    result.add(rhs.chunks);
+    result.add(rhs);
     result.add(closeSymbol);
 
     return new Result(op, result);
@@ -169,7 +166,9 @@ class Result {
   toString() => chunks is String ? chunks : chunks.join('');
 }
 
-Result renderRef(def) {
+
+/*
+renderRef(def) {
   final node = Node.toPresentation(def);
   if (node.isInline) {
     return renderNode(def);
@@ -177,8 +176,11 @@ Result renderRef(def) {
     return Result.atom(node);
   }
 }
+ */
 
-Result renderUse(use) => renderRef(use.def);
+Node renderRef(def) => Node.toPresentation(def);
+
+Node renderUse(use) => renderRef(use.def);
 
 Result renderNode(def) {
   final cb = nodeRendering[def.op.typeTag];
@@ -213,8 +215,14 @@ final nodeRendering = {
       }
     }
 
-    if (node.op.offset != 0) {
-      result.add(Result.atom(node.op.offset.toString()));
+    if (result.length == 0) {
+      return Result.atom(node.op.offset.toString());
+    } else {
+      final offset = node.op.offset;
+      final negate = offset < 0;
+      return Result.binary(Result.join(Operator.ADD, result),
+          negate ? Operator.SUB : Operator.ADD,
+          Result.atom(negate ? (-offset).toString() : offset.toString()));
     }
 
     return Result.join(Operator.ADD, result);
@@ -229,13 +237,13 @@ final nodeRendering = {
     return Result.binary(lhs, op, rhs);
   },
   "OpLoad": (node) {
-    return Result.unary(Operator.DEREF, renderRef(node.inputs[0].def));
+    return Result.unary(Operator.DEREF, renderUse(node.inputs[0]));
   },
   "OpStore": (node) {
-    return Result.binary(Result.unary(Operator.DEREF, renderRef(node.inputs[0].def)), Operator.ASSIGN, renderRef(node.inputs[1].def));
+    return Result.binary(Result.unary(Operator.DEREF, renderUse(node.inputs[0])), Operator.ASSIGN, renderUse(node.inputs[1]));
   },
   "OpReturn": (node) {
-    return Result.atom(["return ", renderRef(node.inputs[0].def)]);
+    return Result.atom(["return ", renderUse(node.inputs[0])]);
   },
   "OpBranchIf": (node) {
     final condition = Result.binary(renderUse(node.inputs[0]),
@@ -269,13 +277,16 @@ final nodeRendering = {
 
 class Node extends Observable {
   final node.Node origin;
-  final bool used;
-  final bool hidden;
+  final int useCount;
+  final bool isHidden;
 
   @observable String name;
   @observable bool isInline = false;
 
-  Node(origin, this.name) : origin = origin, used = origin.hasNonPhantomUses, hidden = origin.op is node.OpArg {
+  Node(origin, this.name)
+    : origin = origin,
+      useCount = origin.nonPhantomUses.length,
+      isHidden = origin.op is node.OpArg {
     isInline = origin.op is node.OpKonstant ||
         origin.op is node.OpAddr;
     if (origin.op is node.OpArg) {
@@ -284,78 +295,97 @@ class Node extends Observable {
   }
 
   get canBeInlined {
-    return origin.op != node.PHI && !hidden;
+    return origin.op != node.PHI && !isHidden;
   }
 
-  get isNamed => !isInline && used;
+  get hasSingleUse => useCount == 1;
 
-  get isVisible => !isInline && !hidden && (used || origin.hasEffect);
+  get isUsed => useCount > 0;
+
+  get isNamed => !isInline && isUsed;
+
+  get isVisible => !isInline && !isHidden && (isUsed || origin.hasEffect);
 
   static final Map<int, Node> nodes = new Map<int, Node>();
 
   static toPresentation(node.Node n) {
     return nodes.putIfAbsent(n.id, () => new Node(n, "v${n.id}"));
   }
+
+  toString() => "Node(${origin})";
 }
+
+final vEditableName = v.componentFactory(EditableName);
+class EditableName extends Component {
+  @property() var entity;
+
+  bool editing = false;
+
+  void create() { element = new html.SpanElement(); }
+
+  void init() {
+    element.onDoubleClick.listen((e) => startEditing());
+
+    element.onKeyDown.listen((e) {
+      if (e.keyCode == html.KeyCode.ENTER) {
+        endEditing();
+      } else if (e.keyCode == html.KeyCode.ESC) {
+        endEditing(apply: false);
+      }
+    });
+
+    element.onBlur.capture((e) => endEditing());
+  }
+
+  startEditing() {
+    if (!editing) {
+      element.contentEditable = "true";
+      element.focus();
+      editing = true;
+    }
+  }
+
+  endEditing({apply: true}) {
+    if (editing) {
+      editing = false;
+      element.contentEditable = "false";
+      if (apply) {
+        entity.name = element.text;
+      }
+    }
+  }
+
+  build() => v.root()(v.span()(entity.name));
+}
+
 
 final vNodeRef = v.componentFactory(NodeRef);
 class NodeRef extends Component {
   @property() Node node;
-  @property() var parent;
-
-  bool _editing = false;
-  var nameElement;
+  @property() var parens;
 
   void create() { element = new html.SpanElement(); }
 
   void init() {
     node.changes.listen((_) => invalidate());
 
-    element.onDoubleClick.matches('.node-name').listen((e) {
-      startEditing();
-    });
-
-    element.onKeyDown.listen((e) {
-      if (e.keyCode == html.KeyCode.ENTER) {
-        endEditing();
-        e.stopPropagation();
-        e.preventDefault();
-      }
-    });
-
-    element.onBlur.capture((e) => endEditing());
-
     element.onClick.matches('.inline-marker').listen((e) {
       node.isInline = true;
     });
   }
 
-  startEditing() {
-    if (!_editing) {
-      nameElement.container.contentEditable = "true";
-      nameElement.container.focus();
-      _editing = true;
-    }
-  }
-
-  endEditing() {
-    if (_editing) {
-      _editing = false;
-      nameElement.container.contentEditable = "false";
-      node.name = nameElement.container.text;
-    }
-  }
-
   build() {
-    final children = [
-      nameElement = v.span(classes: ['node-name'])(v.text(node.name)),
-    ];
-
-    if (node.canBeInlined) {
-      children.add(v.span(classes: ['inline-marker'])("\u25BC"));
+    if (node.isInline) {
+      return v.root()(vNodeBody(node: node, parens: parens));
+    } else {
+      final children = [vEditableName(entity: node)];
+      if (node.canBeInlined) {
+        final classes = ['inline-marker'];
+        if (node.hasSingleUse) classes.add('single-use');
+        children.add(v.span(classes: classes)("\u25BC"));
+      }
+      return v.root()(children);
     }
-
-    return v.root()(children);
   }
 }
 
@@ -375,62 +405,78 @@ intersperse(it, f) sync* {
   }
 }
 
+final vNodeBody = v.componentFactory(NodeBodyComponent);
+class NodeBodyComponent extends Component {
+  @property() Node node;
+  @property() var parens;
+
+  create() { element = new html.SpanElement(); }
+
+  init() {
+    element.onMouseOver.listen((e) {
+      element.classes.add("node-body-hover");
+      e.stopPropagation();
+    });
+    element.onMouseOut.listen((e) {
+      element.classes.remove("node-body-hover");
+      e.stopPropagation();
+    });
+  }
+
+  updated() {
+    element.classes.remove("node-body-hover");
+  }
+
+  build() {
+    final children = [];
+
+    final res = renderNode(node.origin);
+    final needsParen = parens != null && parens(res.operator);
+
+    var str = null;
+    append(suffix) { str = (str == null) ? suffix : str + suffix; }
+    flush() {
+      if (str != null) {
+        children.add(v.text(str));
+        str = null;
+      }
+    }
+
+    if (needsParen) append('(');
+    res.flattenWith((val) {
+      if (val is String) {
+        append(val);
+      } else if (val is Node) {
+        flush();
+        children.add(vNodeRef(node: val, classes: ["ir-use"]));
+      } else if (val is ContextualRef) {
+        flush();
+        children.add(vNodeRef(node: val.ref, parens: val.needsParens, classes: ["ir-use"]));
+      } else {
+        append(val.name);
+      }
+    });
+    if (needsParen) append(')');
+    flush();
+
+    return v.root(classes: [])(children);
+  }
+}
+
 final vNode = v.componentFactory(NodeComponent);
 class NodeComponent extends Component {
   @property() Node node;
 
   create() { element = new html.SpanElement(); }
 
-  build() {
-    var children = [];
-
-    if (node.isNamed) {
-      children
-        ..add(vNodeRef(node: node))
-        ..add(v.text(" <- "));
-    }
-
-    final Result res = renderNode(node.origin);
-
-    var str = null;
-    res.flattenWith((val) {
-      if (val is String) {
-        str = (str == null) ? val : (str + val);
-        return;
-      }
-
-      if (str != null) {
-        children.add(v.text(str));
-        str = null;
-      }
-
-      if (val is Node) {
-        onPropertyChange(val, #isInline, invalidate);
-        children.add(vNodeRef(node: val, classes: ["ir-use"]));
-      } else {
-        children.add(v.text('${val.name}'));
-      }
-    });
-    if (str != null) {
-      children.add(v.text(str));
-      str = null;
-    }
-
-    return v.root()(children);
-  }
-
-  buildRef(use) {
-    if (use.def == null) {
-      return v.text('_');
-    }
-
-    final pres = Node.toPresentation(use.def);
-    if (pres.isInline) {
-      return vNode(node: pres);
-    } else {
-      return vNodeRef(node: pres, classes: ["ir-use"]);
-    }
-  }
+  build() =>
+    v.root()(node.isNamed ? [
+      vEditableName(entity: node),
+      v.text(" <- "),
+      vNodeBody(node: node)
+    ] : [
+      vNodeBody(node: node)
+    ]);
 }
 
 final vBlock = v.componentFactory(BlockComponent);
@@ -450,7 +496,6 @@ class BlockComponent extends Component {
     final children = [v.text(block.name), v.text('\n')];
     children.addAll(intersperse(nodes.where((node) => node.isVisible).map(buildNode), () => v.text('\n')));
     children.add(v.text("\n\n"));
-
     return v.root()(children);
   }
 

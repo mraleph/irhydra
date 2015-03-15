@@ -37,6 +37,15 @@ final rules = {
     return node;
   },
 
+  "+": (node) {
+    if (node.inputs[1].def.op is OpKonstant &&
+        node.inputs[1].def.op.value < 0) {
+      return Node.binary(SUB, node.inputs[0].def,
+        Node.konst(-node.inputs[1].def.op.value));
+    }
+    return node;
+  },
+
   "OpSelectIf": (node) {
     final left = node.inputs[0].def;
     final right = node.inputs[1].def;

@@ -179,7 +179,9 @@ class Node extends LinkedListEntry<Node> {
 
   get hasUses => uses.isNotEmpty;
 
-  get hasNonPhantomUses => uses.where((use) => use.at.op != PHANTOM).isNotEmpty;
+  get nonPhantomUses => uses.where((use) => use.at.op != PHANTOM);
+
+  get hasNonPhantomUses => nonPhantomUses.isNotEmpty;
 
   replaceUses(def) {
     if (uses.isEmpty) return;
