@@ -29,3 +29,16 @@ intersperse(it, f) sync* {
     yield v;
   }
 }
+
+intersperseWith(it, f) sync* {
+  var i = 0;
+  for (var v in it) {
+    if (i != 0) {
+      yield f(i);
+      i++;
+    }
+   
+    yield v;
+    i++;
+  }
+}

@@ -28,10 +28,11 @@ pre {
   font-family: 'Inconsolata', monospace;
   font-size: 14pt;
   background: #fdf6e3;
-  color: #657b83;
+  color: #657b83 !important;
+  line-height: 1.428571429;
 }
 
-.flexbox-container {
+.saga-app {
   display: -ms-flex;
   display: -webkit-flex;
   display: flex;
@@ -45,7 +46,7 @@ pre {
   bottom: 0px;
 }
 
-.flexbox-container > * {
+.saga-app > * {
   width: 100%;
   padding: 10px;
   overflow-y: scroll;
@@ -86,9 +87,10 @@ pre {
   background: none !important;
   border: none;
   padding: 0 !important;
-  font: 'Inconsolata', monospace;
+  font-family: 'Inconsolata', monospace;
   cursor: pointer;
   color: #839496;
+  font-size: 13pt;
 }
 
 .asm-call-target button[data-attr]:not(.set) {
@@ -111,7 +113,7 @@ pre {
 .single-use {
   color: #859900;
 }
-      
+
 .ir-node-keyword {
   color: #859900;
 }
@@ -124,7 +126,7 @@ pre {
   padding-left: 10px;
 }
 
-#graph {
+.graph-pane {
   margin-left: auto;
   margin-right: auto;
 }

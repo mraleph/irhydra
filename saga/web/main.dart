@@ -16,12 +16,19 @@ library saga.main;
 
 import 'dart:html';
 
+import 'package:observe/observe.dart';
+
 import 'package:saga/src/parser.dart' as parser;
-import 'package:ui_utils/xref.dart';
 import 'package:saga/src/flow.dart' as flow;
 import 'package:saga/src/ui/ir_pane/ir_pane.dart' as ir_pane;
 import 'package:ui_utils/graph_layout.dart' as graph_layout;
 import 'package:saga/src/ui/code_pane.dart' as code_pane;
+import 'package:saga/src/ui/tooltip.dart';
+import 'package:ui_utils/delayed_reaction.dart';
+
+
+import 'package:liquid/liquid.dart';
+import 'package:liquid/vdom.dart' as v;
 
 timeAndReport(action, name) {
   final stopwatch = new Stopwatch()..start();
@@ -40,22 +47,89 @@ displayGraph(Element pane, blocks, ref) {
 }
 
 render(code, {keepScroll: false}) {
-  var flowData;
   timeAndReport(() {
-    flowData = flow.build(code);
+    app.flowData = flow.build(code);
   }, "flow analysis");
-
-  displayGraph(document.getElementById('graph'), flowData.blocks, new XRef((id) {
-    return "<pre>" + flowData.blocks[id].asm.join('\n') + "</pre>";
-  }));
-
-  timeAndReport(() {
-    code_pane.render(document.getElementById('code'), flowData, keepScroll: keepScroll);
-    ir_pane.render(document.getElementById('ir'), flowData.blocks);
-  } , "rendering");
 }
 
+
+class BlockTooltip extends Tooltip {
+  final flowData;
+  
+  final _delayed = new DelayedReaction(delay: const Duration(milliseconds: 100));
+  
+  int id = maxId++;
+  static int maxId = 0;
+  
+  toString() => "BlockTooltip($id)";
+  
+  BlockTooltip(this.flowData);
+
+  show(el, id) {
+    print("${this}.show(${el}, ${id})");
+    _delayed.schedule(() {
+      final block = flowData.blocks[id];
+      target = el;
+      isVisible = true;
+      content = () => v.pre()([
+        code_pane.vBlock(block: block),
+        v.text('\n'),
+        ir_pane.vBlock(block: block)
+      ]);
+    });
+  }
+
+  hide() {
+    _delayed.cancel();
+    isVisible = false;
+  }
+}
+
+
+final vGraphPane = v.componentFactory(GraphPaneComponent);
+class GraphPaneComponent extends Component {
+  @property() var flowData;
+  
+  var graphPane;
+  var tooltip;
+  
+  build() =>
+    v.root()([
+      graphPane = v.div(classes: const ['graph-pane']),
+      (tooltip = new BlockTooltip(flowData)).build()
+    ]);
+  
+  update() async {
+    await writeDOM();
+    print(tooltip);
+    displayGraph(graphPane.ref, flowData.blocks, tooltip);
+  }
+}
+
+class SagaApp extends Observable {
+  @observable var flowData; 
+}
+
+class SagaAppComponent extends Component {
+  var app;
+  
+  init() {
+    app.changes.listen((_) => invalidate());
+  }
+  
+  build() =>
+    v.root(classes: const ["saga-app"])(app.flowData == null ? const [] : [
+      code_pane.vCodePane(flowData: app.flowData),
+      vGraphPane(flowData: app.flowData),
+      ir_pane.vIrPane(flowData: app.flowData)
+    ]);
+}
+
+final app = new SagaApp();
+
 main() {
+  injectComponent(new SagaAppComponent()..app = app, document.querySelector("body"));
+
   HttpRequest.getString("code.asm").then((text) {
     final code = timeAndReport(() => parser.parse(text), "parsing");
     render(code);

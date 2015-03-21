@@ -24,22 +24,21 @@ import 'package:saga/src/flow/cpu_register.dart';
 import 'package:saga/src/flow/node.dart' as node;
 import 'package:saga/src/util.dart';
 
-render(html.Element pane, Map<String, node.BB> blocks) {
-  pane.children.clear();
-  injectComponent(new App()..blocks = blocks.values.toList(), pane);
-}
+// render(html.Element pane, Map<String, node.BB> blocks) {
+//  pane.children.clear();
+//  injectComponent(new App()..blocks = blocks.values.toList(), pane);
+// }
 
-class App extends Component {
-  List<node.BB> blocks;
+final vIrPane = v.componentFactory(IrPaneComponent);
+class IrPaneComponent extends Component {
+  @property() var flowData;
 
-  void init() {
-    Node.nodes.clear();
-  }
-
+  create() { element = new html.PreElement(); }
+  
   build() {
-    return v.root()(blocks.map((block) {
-      return vBlock(block: block, key: "B${block.id}");
-    }));
+    Node.nodes.clear();
+    return v.root()(intersperseWith(flowData.blocks.values.map((block) =>
+        vBlock(block: block, key: "B${block.id}")), (i) => v.text('\n', key: "T${i}")));
   }
 }
 
@@ -378,7 +377,7 @@ abstract class InvalidationMixin {
 
   void invalidate();
 
-  void updated() {
+  updated() {
     _unsubscribe();
     subscriptions = dependencies.map((obj) =>
       obj.changes.listen((_) => invalidate())).toList();
@@ -515,7 +514,6 @@ class BlockComponent extends Component {
       v.text(block.name),
       v.text('\n'),
       v.div(classes: ['ir-block-body'])(vnodes),
-      v.text('\n\n')
     ]);
   }
 

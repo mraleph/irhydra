@@ -207,6 +207,9 @@ class Node extends LinkedListEntry<Node> {
   }
 
   replaceWith(def) {
+    if (origin != null && def.origin == null) {
+      def.origin =  origin;
+    }
     insertAfter(def);
     replaceUses(def);
     remove();

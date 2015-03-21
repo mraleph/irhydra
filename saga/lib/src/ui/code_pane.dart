@@ -20,22 +20,12 @@ import 'package:liquid/liquid.dart';
 import 'package:liquid/vdom.dart' as v;
 import 'package:ui_utils/bootstrap.dart' as bs;
 import 'package:ui_utils/delayed_reaction.dart';
-import 'package:ui_utils/xref.dart';
 
+import 'package:saga/src/flow/node.dart' as node;
 import 'package:saga/src/parser.dart' as parser;
 import 'package:saga/src/util.dart';
-
-
-render(Element pane, flowData, {keepScroll: false}) {
-  final codePane = new CodePane()..flowData = flowData;
-  if (keepScroll) {
-    final scroll = pane.scrollTop;
-    codePane.whenRendered = () => pane.scrollTop = scroll;
-  }
-
-  pane.nodes.clear();
-  injectComponent(codePane, pane);
-}
+import 'package:saga/src/ui/tooltip.dart';
+import 'package:saga/src/ui/ir_pane/ir_pane.dart' as ir_pane;
 
 vLabel(txt) => v.span(classes: const ['asm-label'])(txt);
 vKeyword(txt) => v.span(classes: const ['asm-opcode'])(txt);
@@ -48,35 +38,23 @@ class CallTargetComponent extends Component {
     element = new SpanElement();
   }
 
-  var menuVisible = false;
-  final delayedHide = new DelayedReaction(delay: const Duration(milliseconds: 150));
-
-  hideMenu() {
-    delayedHide.schedule(() {
-      bs.popover(element).destroy();
-      menuVisible = false;
-    });
-  }
+  final delayedHide = new DelayedReaction(delay: const Duration(milliseconds: 150));  
+  final tooltip = new Tooltip(placement: Placement.TOP);
 
   init() {
-    element.onMouseOver.listen((_) {
-      if (!menuVisible) {
-        var po = bs.popover(element, {
-          "title": '',
-          "content": parser.CallTargetAttribute.values.map((attr) => "<button class='${callTarget.attributes.contains(attr) ? 'set' : ''}' data-attr='${attr.name}'>((${attr}))</button>"),
-          "trigger": "manual",
-          "placement": "top",
-          "html": true,
-          "container": element
-        })..show();
-        po.tip.onMouseOver.listen((_) => delayedHide.cancel());
-        po.tip.onMouseOut.listen((_) => hideMenu());
-        menuVisible = true;
-      } else {
-        delayedHide.cancel();
+    element.onMouseEnter.listen((_) {
+      if (!tooltip.isVisible) {
+        tooltip.content = _buildButtons;
+        tooltip.target = element;
+        tooltip.isVisible = true;
       }
+      delayedHide.cancel();
     });
-    element.onMouseOut.listen((_) => hideMenu());
+    element.onMouseLeave.listen((_) {
+      delayedHide.schedule(() {
+        tooltip.isVisible = false;
+      });
+    });
 
     element.onClick.listen((e) {
       final attrName = e.target.attributes['data-attr'];
@@ -86,76 +64,35 @@ class CallTargetComponent extends Component {
       }
     });
   }
+  
+  _buildButtons() =>
+    parser.CallTargetAttribute.values.map((attr) =>
+      v.button(classes: callTarget.attributes.contains(attr) ? ['set'] : [],
+               attributes: {"data-attr": attr.name})(attr.toString()));
 
   build() =>
-    v.root(classes: const ['asm-call-target'])(callTarget.target);
+    v.root(classes: const ['asm-call-target'])([
+      v.text(callTarget.target),
+      tooltip.build()
+    ]);
 }
 
-class CodePane extends Component {
-  var flowData;
 
-  var whenRendered;
-  rendered() {
-    if (whenRendered != null) {
-      whenRendered();
-      whenRendered = null;
-    }
-  }
-
-  var entities = {};
-  var entitiesArray = [];
-
-  void init() {
-    lookup(def) {
-      /*if (def is flow.Use) {
-        return lookup(def.def);
-      } if (def is flow.Phi) {
-        return "<small>${def}</small>\n" + def.inputs.where((v) => v.def != def).map(lookup).join('\n');
-      } else if (def is flow.Select) {
-        return [lookup(def.thenValue),
-                lookup(def.elseValue),
-                lookup(def.inputs[0].def),
-                "${def.origin} in ${def.block.origin.name}"].join('\n');
-      } else if (def.origin != null) {
-        return "${def.origin} in ${def.block.origin.name}";
-      }*/
-      return def.toString();
-    }
-
-    element.onMouseOver.listen((e) {
-      final key = e.target.attributes['data-entity'];
-      if (key != null) {
-        final use = flowData.refUses[entities[key]];
-        if (use != null && use.def != null) {
-          final text = lookup(use.def);
-          if (text != null) {
-            POPOVER.show(e.target, "<pre>${text}</pre>");
-          }
-        }
-      }
-    });
-
-    element.onMouseOut.listen((e) {
-      final key = e.target.attributes['data-entity'];
-      if (key != null) {
-        POPOVER.destroy(e.target);
-      }
-    });
-  }
-
-  build() {
-    entities.clear();
-    var children = [];
-    for (var block in flowData.blocks.values) buildBlock(children, block);
-    return v.root()(children);
-  }
-
+class Formater {
+  final entities;
+  
+  Formater(this.entities);
+  
   toEntity(ref) {
-    final key = "${entities.length}";
-    entities[key] = ref;
-    return key;
+    if (entities != null) {
+      final key = "${entities.length}";
+      entities[key] = ref;
+      return key;
+    } else {
+      return "";
+    }
   }
-
+  
   List<v.VNode> formatOperand(val) {
     if (val is parser.RegRef) {
       return [v.span(classes: const ['asm-register'], attributes: {"data-entity": toEntity(val)})(val.name)];
@@ -202,8 +139,91 @@ class CodePane extends Component {
         ..addAll(intersperse(op.operands.reversed.map(formatOperand), () => [v.text(', ')]).expand((l) => l));
     }
   }
+}
 
-  buildBlock(List<v.VNode> result, block) {
+
+final vCodePane = v.componentFactory(CodePaneComponent);
+class CodePaneComponent extends Component {
+  @property() var flowData;
+  
+  final formater = new Formater({});
+  
+  create() { element = new PreElement(); }
+
+  var whenRendered;
+  rendered() {
+    if (whenRendered != null) {
+      whenRendered();
+      whenRendered = null;
+    }
+  }
+
+  var tooltip;
+
+  void init() {
+    lookup(def) {
+      if (def is node.Use) {
+        return lookup(def.def);
+      } if (def.op == node.PHI) {
+        assert(false);
+        // return "<small>${def}</small>\n" + def.inputs.where((v) => v.def != def).map(lookup).join('\n');
+      } else if (def.op is node.OpSelectIf) {
+        return [lookup(def.thenValue),
+                lookup(def.elseValue),
+                lookup(def.inputs[0].def),
+                "${def.origin} in ${def.block.origin.name}"].join('\n');
+      } else if (def.origin != null) {
+        return [v.div()(ir_pane.vNode(node: ir_pane.Node.toPresentation(def)))]
+            ..addAll(formater.format(def.origin))
+            ..add(v.text(" in ${def.block.name}"));
+      }
+      return v.text(def.toString()); // [ir_pane.vNode(node: ir_pane.Node.toPresentation(def))];
+    }
+
+    element.onMouseOver.listen((e) {
+      final key = e.target.dataset['entity'];
+      if (key != null) {
+        final use = flowData.refUses[formater.entities[key]];
+        if (use != null && use.def != null) {
+          final text = lookup(use.def);
+          if (text != null) {
+            tooltip.target = e.target;
+            tooltip.content = () => text;
+            tooltip.isVisible = true;
+          }
+        }
+      }
+    });
+
+    element.onMouseOut.listen((e) {
+      final key = e.target.attributes['data-entity'];
+      if (key != null) {
+        tooltip.isVisible = false;
+      }
+    });
+  }
+
+  build() {
+    formater.entities.clear();
+    var children = intersperse(flowData.blocks.values.map((block) =>
+        vBlock(block: block, formater: formater)), () => v.text('\n')).toList(growable: true);
+
+    tooltip = new Tooltip();
+    children.add(vTooltip(data: tooltip));
+    return v.root()(children);
+  }
+}
+
+
+final vBlock = v.componentFactory(BlockComponent);
+class BlockComponent extends Component {
+  @property() var block;
+  @property() var formater;
+
+  build() {
+    final f = formater != null ? formater : new Formater(null);
+    
+    List<v.VNode> result = [];
     result.add(vLabel("${block.name}:"));
     if (block.predecessors.length > 1) {
       result.add(v.text(" ("));
@@ -214,9 +234,9 @@ class CodePane extends Component {
     for (var op in block.asm) {
       result
         ..add(v.text("  "))
-        ..addAll(format(op))
+        ..addAll(f.format(op))
         ..add(v.text("\n"));
     }
-    result.add(v.text("\n"));
+    return v.root()(result);
   }
 }
