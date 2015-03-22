@@ -31,7 +31,7 @@ abstract class Tooltip extends Observable {
 
   Tooltip({this.placement: tooltip.Placement.BOTTOM});
 
-  build() => vTooltip(data: this);
+  build({key}) => vTooltip(data: this, key: key);
 }
 
 class TooltipWithContent extends Tooltip {

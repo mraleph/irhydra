@@ -22,21 +22,56 @@ import 'package:liquid/vdom.dart' as v;
 
 import 'package:saga/src/flow/cpu_register.dart';
 import 'package:saga/src/flow/node.dart' as node;
+import 'package:saga/src/ui/tooltip.dart';
 import 'package:saga/src/util.dart';
 
 final vIrPane = v.componentFactory(IrPaneComponent);
-class IrPaneComponent extends Component {
+class IrPaneComponent extends Component<html.PreElement> {
   @property() var flowData;
 
-  create() { element = new html.PreElement(); }
+  var tooltip = new NodeRefTooltip();
+
+  create() {
+    element = new html.PreElement();
+    element.onMouseOver.capture((e) {
+      final ref = e.target.attributes['data-ref'];
+      if (ref != null) {
+        tooltip.show(e.target, Node.nodes[int.parse(ref)]);
+      }
+    });
+    element.onMouseOut.capture((e) {
+      final ref = e.target.attributes['data-ref'];
+      if (ref != null) tooltip.hide();
+    });
+  }
 
   build() {
     Node.nodes.clear();
-    return v.root()(intersperseWith(flowData.blocks.values.map((block) =>
+
+    final children = intersperseWith(flowData.blocks.values.map((block) =>
         vBlock(block: block,
                key: "B${block.id}",
-               attributes: { 'data-block': block.name })), (i) => v.text('\n', key: "T${i}")));
+               attributes: { 'data-block': block.name })), (i) => v.text('\n', key: "T${i}")).toList(growable: true);
+
+    children.add(tooltip.build(key: "Tooltip"));
+    return v.root()(children);
   }
+}
+
+class NodeRefTooltip extends Tooltip {
+  Node def;
+
+  show(el, def) {
+    this.def = def;
+    this.target = el;
+    this.isVisible = true;
+  }
+
+  hide() {
+    this.isVisible = false;
+  }
+
+  get content => def != null ? v.pre()(vNode(node: def)) : v.pre();
 }
 
 class Operator {
@@ -312,6 +347,7 @@ class Node extends Observable {
 
 final vEditableName = v.componentFactory(EditableName);
 class EditableName extends Component {
+  @property() var ref;
   @property() var entity;
 
   bool editing = false;
@@ -350,7 +386,7 @@ class EditableName extends Component {
     }
   }
 
-  build() => v.root()(v.span()(entity.name));
+  build() => v.root()(v.span(attributes: ref != null ? {'data-ref': ref} : null)(entity.name));
 }
 
 abstract class InvalidationMixin {
@@ -400,7 +436,7 @@ class NodeRef extends Component with InvalidationMixin {
     if (node.isInline) {
       return v.root()(vNodeBody(node: node, parens: parens));
     } else {
-      final children = [vEditableName(entity: node, classes: ['ir-node-name'])];
+      final children = [vEditableName(entity: node, classes: ['ir-node-name'], ref: "${node.origin.id}")];
       if (node.canBeInlined) {
         final classes = ['inline-marker'];
         if (node.hasSingleUse) classes.add('single-use');
