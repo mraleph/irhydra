@@ -224,7 +224,9 @@ class CodePaneComponent extends Component {
   build() {
     formater.entities.clear();
     var children = intersperse(flowData.blocks.values.map((block) =>
-        vBlock(block: block, formater: formater)), () => v.text('\n')).toList(growable: true);
+        vBlock(block: block,
+               formater: formater,
+               attributes: {'data-block': block.name})), () => v.text('\n')).toList(growable: true);
 
     children.add(tooltip.build());
     return v.root()(children);
@@ -255,6 +257,7 @@ class BlockComponent extends Component {
         ..addAll(f.format(op))
         ..add(v.text("\n"));
     }
+
     return v.root()(result);
   }
 }

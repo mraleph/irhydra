@@ -71,7 +71,7 @@ pre {
   cursor: pointer;
 }
 
-.asm-label {
+.asm-label, .ir-block-name {
   color: #268bd2;
 }
 

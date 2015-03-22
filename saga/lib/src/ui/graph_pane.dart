@@ -14,6 +14,9 @@
 
 library saga.ui.graph_pane;
 
+import 'dart:html';
+import 'dart:js' as js;
+
 import 'package:liquid/liquid.dart';
 import 'package:liquid/vdom.dart' as v;
 import 'package:ui_utils/delayed_reaction.dart';
@@ -75,8 +78,16 @@ class GraphPaneComponent extends Component {
   static displayGraph(pane, blocks, ref) {
     final stopwatch = new Stopwatch()..start();
     graph_layout.display(pane, blocks, (label, blockId) {
-      label.onMouseOver.listen((event) => ref.show(event.target, blockId));
+      label.onMouseOver.listen((e) => ref.show(e.target, blockId));
       label.onMouseOut.listen((_) => ref.hide());
+      label.onClick.listen((e) {
+        for (var el in document.querySelectorAll('[data-block=${blockId}]')) {
+          el.scrollIntoView();
+          js.context.callMethod('jQuery', [el]).callMethod('effect', ['highlight', new js.JsObject.jsify({ 'color': 'rgba(203, 75, 22, 0.5)' }), 500]);
+        }
+        e.stopPropagation();
+        e.preventDefault();
+      });
     });
     print("graph_layout took ${stopwatch.elapsedMilliseconds}");
   }

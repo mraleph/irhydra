@@ -33,7 +33,9 @@ class IrPaneComponent extends Component {
   build() {
     Node.nodes.clear();
     return v.root()(intersperseWith(flowData.blocks.values.map((block) =>
-        vBlock(block: block, key: "B${block.id}")), (i) => v.text('\n', key: "T${i}")));
+        vBlock(block: block,
+               key: "B${block.id}",
+               attributes: { 'data-block': block.name })), (i) => v.text('\n', key: "T${i}")));
   }
 }
 
@@ -161,18 +163,6 @@ class Result {
   toString() => chunks is String ? chunks : chunks.join('');
 }
 
-
-/*
-renderRef(def) {
-  final node = Node.toPresentation(def);
-  if (node.isInline) {
-    return renderNode(def);
-  } else {
-    return Result.atom(node);
-  }
-}
- */
-
 Node renderRef(def) => Node.toPresentation(def);
 
 Node renderUse(use) => renderRef(use.def);
@@ -185,9 +175,10 @@ Result renderNode(def) {
   return Result.atom("{$def}");
 }
 
-final vKonstant = (txt) => v.span(classes: ['ir-node-konstant'])(txt);
-final vOp = (txt) => v.span(classes: ['ir-node-op'])(txt);
-final vKeyword = (txt) => v.span(classes: ['ir-node-keyword'])(txt);
+vKonstant(txt) => v.span(classes: const ['ir-node-konstant'])(txt);
+vOp(txt) => v.span(classes: const ['ir-node-op'])(txt);
+vKeyword(txt) => v.span(classes: const ['ir-node-keyword'])(txt);
+vBlockName(bb) => v.span(classes: const ['ir-block-name'])("${bb}");
 
 final nodeRendering = {
   "OpKonstant": (node) {
@@ -249,13 +240,13 @@ final nodeRendering = {
                                     Operator.BINARY_OPERATORS[node.op.condition],
                                     renderUse(node.inputs[1]));
     if (node.op.elseTarget != null) {
-      return Result.atom([vKeyword("if "), condition, vKeyword(" then "), node.op.thenTarget.toString(), vKeyword(" else "), node.op.elseTarget.toString()]);
+      return Result.atom([vKeyword("if "), condition, vKeyword(" then "), vBlockName(node.op.thenTarget), vKeyword(" else "), vBlockName(node.op.elseTarget)]);
     } else {
-      return Result.atom([vKeyword("if "), condition, vKeyword(" then "), node.op.thenTarget.toString()]);
+      return Result.atom([vKeyword("if "), condition, vKeyword(" then "), vBlockName(node.op.thenTarget)]);
     }
   },
   "OpGoto": (node) {
-    return Result.atom([vKeyword("goto "), node.op.target.toString()]);
+    return Result.atom([vKeyword("goto "), vBlockName(node.op.target)]);
   },
   "OpSelectIf": (node) {
     final condition = Result.binary(renderUse(node.inputs[0]),
@@ -506,9 +497,8 @@ class BlockComponent extends Component {
   build() {
     final vnodes = intersperse(nodes.where((node) => node.isVisible).map(buildNode), () => v.text('\n'));
     return v.root()([
-      v.text(block.name),
-      v.text('\n'),
-      v.div(classes: ['ir-block-body'])(vnodes),
+      v.span(classes: const ['ir-block-name'])("${block.name}:\n"),
+      v.div(classes: const ['ir-block-body'])(vnodes),
     ]);
   }
 
