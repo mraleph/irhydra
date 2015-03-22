@@ -38,12 +38,12 @@ class CallTargetComponent extends Component {
   }
 
   final delayedHide = new DelayedReaction(delay: const Duration(milliseconds: 150));
-  final tooltip = new Tooltip(placement: Placement.TOP);
+  final tooltip = new TooltipWithContent(placement: Placement.TOP);
 
   init() {
+    tooltip.contentBuilder = _buildButtons;
     element.onMouseEnter.listen((_) {
       if (!tooltip.isVisible) {
-        tooltip.content = _buildButtons;
         tooltip.target = element;
         tooltip.isVisible = true;
       }
@@ -141,6 +141,70 @@ class Formater {
 }
 
 
+class EntityTooltip extends Tooltip {
+  final flowData;
+  final formater;
+
+  EntityTooltip(this.flowData, this.formater);
+
+  node.Node def;
+
+  attach(root) {
+    root.onMouseOver.listen((e) {
+      final key = e.target.dataset['entity'];
+      if (key != null) {
+        final use = flowData.refUses[formater.entities[key]];
+        if (use != null && use.def != null) {
+          def = use.def;
+          target = e.target;
+          isVisible = true;
+        }
+      }
+    });
+
+    root.onMouseOut.listen((e) {
+      final key = e.target.attributes['data-entity'];
+      if (key != null) {
+        isVisible = false;
+      }
+    });
+  }
+
+  show(el, id) {
+    target = el;
+    isVisible = true;
+  }
+
+  hide() {
+    isVisible = false;
+  }
+
+  get content => def != null ? v.pre()(format(def, new Set())) : v.pre();
+
+  format(node.Node def, visited) {
+    if (def.op == node.PHI) {
+      final result = [];
+      visited.add(def);
+      for (var input in def.inputs) {
+        if (!visited.contains(input.def)) {
+          visited.add(input.def);
+          if (result.isNotEmpty) result.add(v.text('\n'));
+          result.addAll(format(input.def, visited));
+        }
+      }
+      return result;
+    } else if (def.origin != null) {
+      return [v.div(classes: const ['tooltip-def'])(ir_pane.vNode(node: ir_pane.Node.toPresentation(def)))]
+          ..addAll(formater.format(def.origin))
+          ..add(v.text(" in ${def.block.name}"));
+    } else if (def.op is node.OpArg) {
+      return [v.text("<argument>")];
+    }
+    return [v.text(def.toString())]; // [ir_pane.vNode(node: ir_pane.Node.toPresentation(def))];
+  }
+}
+
+
 final vCodePane = v.componentFactory(CodePaneComponent);
 class CodePaneComponent extends Component {
   @property() var flowData;
@@ -149,57 +213,11 @@ class CodePaneComponent extends Component {
 
   create() { element = new PreElement(); }
 
-  var whenRendered;
-  rendered() {
-    if (whenRendered != null) {
-      whenRendered();
-      whenRendered = null;
-    }
-  }
-
-  var tooltip;
+  EntityTooltip tooltip;
 
   void init() {
-    lookup(def) {
-      if (def is node.Use) {
-        return lookup(def.def);
-      } if (def.op == node.PHI) {
-        assert(false);
-        // return "<small>${def}</small>\n" + def.inputs.where((v) => v.def != def).map(lookup).join('\n');
-      } else if (def.op is node.OpSelectIf) {
-        return [lookup(def.thenValue),
-                lookup(def.elseValue),
-                lookup(def.inputs[0].def),
-                "${def.origin} in ${def.block.origin.name}"].join('\n');
-      } else if (def.origin != null) {
-        return [v.div()(ir_pane.vNode(node: ir_pane.Node.toPresentation(def)))]
-            ..addAll(formater.format(def.origin))
-            ..add(v.text(" in ${def.block.name}"));
-      }
-      return v.text(def.toString()); // [ir_pane.vNode(node: ir_pane.Node.toPresentation(def))];
-    }
-
-    element.onMouseOver.listen((e) {
-      final key = e.target.dataset['entity'];
-      if (key != null) {
-        final use = flowData.refUses[formater.entities[key]];
-        if (use != null && use.def != null) {
-          final text = lookup(use.def);
-          if (text != null) {
-            tooltip.target = e.target;
-            tooltip.content = () => text;
-            tooltip.isVisible = true;
-          }
-        }
-      }
-    });
-
-    element.onMouseOut.listen((e) {
-      final key = e.target.attributes['data-entity'];
-      if (key != null) {
-        tooltip.isVisible = false;
-      }
-    });
+    tooltip = new EntityTooltip(flowData, formater);
+    tooltip.attach(element);
   }
 
   build() {
@@ -207,8 +225,7 @@ class CodePaneComponent extends Component {
     var children = intersperse(flowData.blocks.values.map((block) =>
         vBlock(block: block, formater: formater)), () => v.text('\n')).toList(growable: true);
 
-    tooltip = new Tooltip();
-    children.add(vTooltip(data: tooltip));
+    children.add(tooltip.build());
     return v.root()(children);
   }
 }

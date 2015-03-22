@@ -32,16 +32,17 @@ fold(Node n) {
 final rules = {
   "^": (node) {
     if (node.inputs[0].def == node.inputs[0].def) {
-      return Node.konst(0);
+      return Node.konst(0, origin: node.origin);
     }
     return node;
   },
 
   "+": (node) {
-    if (node.inputs[1].def.op is OpKonstant &&
-        node.inputs[1].def.op.value < 0) {
+    final rhs = node.inputs[1].def;
+    if (rhs.op is OpKonstant &&
+        rhs.op.value < 0) {
       return Node.binary(SUB, node.inputs[0].def,
-        Node.konst(-node.inputs[1].def.op.value));
+        Node.konst(-rhs.op.value, origin: rhs.origin));
     }
     return node;
   },

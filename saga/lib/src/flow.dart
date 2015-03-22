@@ -66,16 +66,19 @@ class MachineState {
     }
   }
 
-  Node emit(op, {point}) {
-    if (op.list == null) {
+  Node emit(node, {point}) {
+    if (node.list == null) {
       if (point == null) {
-        currentBlock.append(op);
+        currentBlock.append(node);
       } else {
-        point.insertBefore(op);
+        point.insertBefore(node);
       }
-      op.origin = current;
+      node.origin = current;
+    } else if (node.op is OpKonstant &&
+               node.origin == null) {
+      return emit(Node.konst(node.op.value, origin: current));
     }
-    return op;
+    return node;
   }
 
   define(int reg, Node value) {
@@ -101,8 +104,9 @@ class MachineState {
     throw "unexpected ${val.runtimeType}";
   }
 
-  Node toKonst(val) =>
-    Node.konst(val is String ? int.parse(val).toSigned(32) : val);
+  Node toKonst(val, {origin}) =>
+    Node.konst(val is String ? int.parse(val).toSigned(32) : val,
+               origin: origin);
 
   recordUse(ref, val) {
     if (ref is! Imm) {

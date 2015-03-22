@@ -130,3 +130,8 @@ pre {
   margin-left: auto;
   margin-right: auto;
 }
+
+.tooltip-def {
+  font-size: 0.95em;
+  font-style: italic;  
+}

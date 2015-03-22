@@ -28,24 +28,15 @@ class BlockTooltip extends Tooltip {
 
   final _delayed = new DelayedReaction(delay: const Duration(milliseconds: 100));
 
-  int id = maxId++;
-  static int maxId = 0;
-
-  toString() => "BlockTooltip($id)";
-
   BlockTooltip(this.flowData);
 
+
+  var block;
   show(el, id) {
-    print("${this}.show(${el}, ${id})");
     _delayed.schedule(() {
-      final block = flowData.blocks[id];
+      block = flowData.blocks[id];
       target = el;
       isVisible = true;
-      content = () => v.pre()([
-        code_pane.vBlock(block: block),
-        v.text('\n'),
-        ir_pane.vBlock(block: block)
-      ]);
     });
   }
 
@@ -53,6 +44,13 @@ class BlockTooltip extends Tooltip {
     _delayed.cancel();
     isVisible = false;
   }
+
+  get content =>
+    v.pre()(block != null ? [
+      code_pane.vBlock(block: block),
+      v.text('\n'),
+      ir_pane.vBlock(block: block)
+    ] : const []);
 }
 
 
@@ -71,7 +69,6 @@ class GraphPaneComponent extends Component {
 
   update() async {
     await writeDOM();
-    print(tooltip);
     displayGraph(graphPane.ref, flowData.blocks, tooltip);
   }
 

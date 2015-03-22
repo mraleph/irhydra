@@ -103,11 +103,14 @@ class Node extends LinkedListEntry<Node> {
 
   static BB entryBlock = null;
   static Map<int, Node> konsts = <int, Node>{};
-  static konst(int val) {
-    var k = konsts[val];
+  static konst(int val, {origin}) {
+    var k = origin == null ? konsts[val] : null;
     if (k == null) {
-      k = konsts[val] = new Node(new OpKonstant(val), []);
+      k = new Node(new OpKonstant(val), []);
+      k.origin = origin;
       entryBlock.prepend(k);
+
+      if (origin == null) konsts[val] = k;
     }
     return k;
   }

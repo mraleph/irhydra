@@ -23,15 +23,23 @@ import 'package:ui_utils/tooltip.dart' as tooltip;
 
 export 'package:ui_utils/tooltip.dart' show Placement;
 
-class Tooltip extends Observable {
+abstract class Tooltip extends Observable {
   @observable tooltip.Placement placement;
   @observable Element target;
   @observable bool isVisible = false;
-  @observable var content;
-  
+  get content;
+
   Tooltip({this.placement: tooltip.Placement.BOTTOM});
-  
+
   build() => vTooltip(data: this);
+}
+
+class TooltipWithContent extends Tooltip {
+  var contentBuilder;
+
+  TooltipWithContent({placement: tooltip.Placement.BOTTOM}) : super(placement: placement);
+
+  get content => contentBuilder();
 }
 
 final vTooltip = v.componentFactory(TooltipComponent);
@@ -45,7 +53,7 @@ class TooltipComponent extends Component {
       subscription = null;
     }
   }
-  
+
   updated() {
     _unsubscribe();
     subscription = data.changes.listen((_) {
@@ -59,14 +67,13 @@ class TooltipComponent extends Component {
       }
     });
   }
-  
+
   detached() => _unsubscribe();
 
   build() {
-    final content = data.content != null ? data.content() : const [];
     return v.root(classes: ['popover', 'xref', tooltip.className(data.placement)])([
       v.div(classes: const ['arrow']),
-      v.div(classes: const ['popover-content'])(content)
+      v.div(classes: const ['popover-content'])(data.content)
     ]);
   }
 }
