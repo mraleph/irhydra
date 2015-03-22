@@ -37,8 +37,15 @@ intersperseWith(it, f) sync* {
       yield f(i);
       i++;
     }
-   
+
     yield v;
     i++;
   }
+}
+
+timeAndReport(action, name) {
+  final stopwatch = new Stopwatch()..start();
+  final result = action();
+  print("${name} took ${stopwatch.elapsedMilliseconds} ms.");
+  return result;
 }

@@ -18,7 +18,6 @@ import 'dart:html';
 
 import 'package:liquid/liquid.dart';
 import 'package:liquid/vdom.dart' as v;
-import 'package:ui_utils/bootstrap.dart' as bs;
 import 'package:ui_utils/delayed_reaction.dart';
 
 import 'package:saga/src/flow/node.dart' as node;
@@ -38,7 +37,7 @@ class CallTargetComponent extends Component {
     element = new SpanElement();
   }
 
-  final delayedHide = new DelayedReaction(delay: const Duration(milliseconds: 150));  
+  final delayedHide = new DelayedReaction(delay: const Duration(milliseconds: 150));
   final tooltip = new Tooltip(placement: Placement.TOP);
 
   init() {
@@ -64,7 +63,7 @@ class CallTargetComponent extends Component {
       }
     });
   }
-  
+
   _buildButtons() =>
     parser.CallTargetAttribute.values.map((attr) =>
       v.button(classes: callTarget.attributes.contains(attr) ? ['set'] : [],
@@ -80,9 +79,9 @@ class CallTargetComponent extends Component {
 
 class Formater {
   final entities;
-  
+
   Formater(this.entities);
-  
+
   toEntity(ref) {
     if (entities != null) {
       final key = "${entities.length}";
@@ -92,7 +91,7 @@ class Formater {
       return "";
     }
   }
-  
+
   List<v.VNode> formatOperand(val) {
     if (val is parser.RegRef) {
       return [v.span(classes: const ['asm-register'], attributes: {"data-entity": toEntity(val)})(val.name)];
@@ -145,9 +144,9 @@ class Formater {
 final vCodePane = v.componentFactory(CodePaneComponent);
 class CodePaneComponent extends Component {
   @property() var flowData;
-  
+
   final formater = new Formater({});
-  
+
   create() { element = new PreElement(); }
 
   var whenRendered;
@@ -222,7 +221,7 @@ class BlockComponent extends Component {
 
   build() {
     final f = formater != null ? formater : new Formater(null);
-    
+
     List<v.VNode> result = [];
     result.add(vLabel("${block.name}:"));
     if (block.predecessors.length > 1) {

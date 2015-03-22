@@ -24,17 +24,12 @@ import 'package:saga/src/flow/cpu_register.dart';
 import 'package:saga/src/flow/node.dart' as node;
 import 'package:saga/src/util.dart';
 
-// render(html.Element pane, Map<String, node.BB> blocks) {
-//  pane.children.clear();
-//  injectComponent(new App()..blocks = blocks.values.toList(), pane);
-// }
-
 final vIrPane = v.componentFactory(IrPaneComponent);
 class IrPaneComponent extends Component {
   @property() var flowData;
 
   create() { element = new html.PreElement(); }
-  
+
   build() {
     Node.nodes.clear();
     return v.root()(intersperseWith(flowData.blocks.values.map((block) =>
