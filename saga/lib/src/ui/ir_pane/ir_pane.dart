@@ -288,6 +288,11 @@ class Node extends Observable {
     return origin.op != node.PHI && !isHidden;
   }
 
+  get canBeOutlined {
+    return origin.op is! node.OpKonstant &&
+        origin.op is! node.OpAddr;
+  }
+
   get hasSingleUse => useCount == 1;
 
   get isUsed => useCount > 0;
@@ -422,6 +427,10 @@ class NodeBodyComponent extends Component {
       element.classes.remove("node-body-hover");
       e.stopPropagation();
     });
+    element.onClick.matches(".outline-marker").listen((e) {
+      if (node.canBeOutlined) node.isInline = false;
+      e.stopPropagation();
+    });
   }
 
   updated() {
@@ -430,6 +439,10 @@ class NodeBodyComponent extends Component {
 
   build() {
     final children = [];
+
+    if (node.canBeOutlined && node.isInline) {
+      children.add(v.span(classes: ['outline-marker'])("\u25B2"));
+    }
 
     final res = renderNode(node.origin);
     final needsParen = parens != null && parens(res.operator);

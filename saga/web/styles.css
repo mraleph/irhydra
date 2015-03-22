@@ -97,7 +97,7 @@ pre {
   text-decoration: line-through;
 }
 
-.inline-marker {
+.inline-marker, .outline-marker {
   display: none;
   cursor: pointer;
 }
@@ -108,6 +108,10 @@ pre {
 
 .node-body-hover {
   text-decoration: underline;
+}
+
+.node-body-hover > .outline-marker {
+  display: inline-block;
 }
 
 .single-use {
