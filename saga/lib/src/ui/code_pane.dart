@@ -78,9 +78,10 @@ class CallTargetComponent extends Component {
 
 
 class Formater {
+  final pane;
   final entities;
 
-  Formater(this.entities);
+  Formater(this.pane, this.entities);
 
   toEntity(ref) {
     if (entities != null) {
@@ -132,7 +133,7 @@ class Formater {
 
   List<v.VNode> format(op) {
     if (op.opcode.startsWith("j")) {
-      return [vKeyword(op.opcode), v.text(" "), vLabel("->${op.operands.first}")];
+      return [vKeyword(op.opcode), v.text(" "), vLabel("->${pane.flowData.blockMap[op.operands.first]}")];
     } else {
       return [vKeyword(op.opcode), v.text(" ")]
         ..addAll(intersperse(op.operands.reversed.map(formatOperand), () => [v.text(', ')]).expand((l) => l));
@@ -142,10 +143,9 @@ class Formater {
 
 
 class EntityTooltip extends Tooltip {
-  final flowData;
-  final formater;
+  final pane;
 
-  EntityTooltip(this.flowData, this.formater);
+  EntityTooltip(this.pane);
 
   node.Node def;
 
@@ -153,7 +153,7 @@ class EntityTooltip extends Tooltip {
     root.onMouseOver.listen((e) {
       final key = e.target.dataset['entity'];
       if (key != null) {
-        final use = flowData.refUses[formater.entities[key]];
+        final use = pane.flowData.refUses[pane.formater.entities[key]];
         if (use != null && use.def != null) {
           def = use.def;
           target = e.target;
@@ -195,7 +195,7 @@ class EntityTooltip extends Tooltip {
       return result;
     } else if (def.origin != null) {
       return [v.div(classes: const ['tooltip-def'])(ir_pane.vNode(node: ir_pane.Node.toPresentation(def)))]
-          ..addAll(formater.format(def.origin))
+          ..addAll(pane.formater.format(def.origin))
           ..add(v.text(" in ${def.block.name}"));
     } else if (def.op is node.OpArg) {
       return [v.text("<argument>")];
@@ -209,14 +209,15 @@ final vCodePane = v.componentFactory(CodePaneComponent);
 class CodePaneComponent extends Component {
   @property() var flowData;
 
-  final formater = new Formater({});
 
   create() { element = new PreElement(); }
 
+  Formater formater;
   EntityTooltip tooltip;
 
   void init() {
-    tooltip = new EntityTooltip(flowData, formater);
+    formater = new Formater(this, {});
+    tooltip = new EntityTooltip(this);
     tooltip.attach(element);
   }
 
@@ -234,10 +235,11 @@ class CodePaneComponent extends Component {
 final vBlock = v.componentFactory(BlockComponent);
 class BlockComponent extends Component {
   @property() var block;
+  @property() var flowData;
   @property() var formater;
 
   build() {
-    final f = formater != null ? formater : new Formater(null);
+    final f = formater != null ? formater : new Formater(this, null);
 
     List<v.VNode> result = [];
     result.add(vLabel("${block.name}:"));

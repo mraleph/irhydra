@@ -47,7 +47,7 @@ class BlockTooltip extends Tooltip {
 
   get content =>
     v.pre()(block != null ? [
-      code_pane.vBlock(block: block),
+      code_pane.vBlock(block: block, flowData: flowData),
       v.text('\n'),
       ir_pane.vBlock(block: block)
     ] : const []);

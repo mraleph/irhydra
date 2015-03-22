@@ -268,8 +268,16 @@ class FlowData {
   final blocks;
   final refUses;
   final interference;
+  final blockMap;
 
-  FlowData(this.blocks, this.refUses, this.interference);
+  FlowData(blocks, this.refUses, this.interference, blockMap)
+      : blocks = blocks,
+        blockMap = computeBlockMap(blocks, blockMap);
+
+  static computeBlockMap(blocks, blockMap) {
+    final instr2idx = new Map.fromIterable(blockMap.keys, key: (idx) => blockMap[idx].asm.first);
+    return new Map.fromIterable(blocks.values, key: (block) => instr2idx[block.asm.first]);
+  }
 }
 
 build(code) {
@@ -296,5 +304,6 @@ build(code) {
 
   return new FlowData(compact_likely.compact(state.blocks),
                       state.refUses,
-                      interference.build(state.blocks));
+                      interference.build(state.blocks),
+                      ir.blockMap);
 }
