@@ -7,7 +7,8 @@ dependencies:
   petitparser: any
   ui_utils:
     path: ../ui_utils
-  liquid: any
+  liquid:
+    git: git://github.com/mraleph/liquid.git
   observe: any
 transformers:
 - observe
