@@ -30,6 +30,7 @@ pre {
   background: #fdf6e3;
   color: #657b83 !important;
   line-height: 1.428571429;
+  cursor: default;
 }
 
 .saga-app {
@@ -128,6 +129,10 @@ pre {
 
 .ir-block-body {
   padding-left: 10px;
+}
+
+.ir-node-name {
+  cursor: pointer;
 }
 
 .graph-pane {
