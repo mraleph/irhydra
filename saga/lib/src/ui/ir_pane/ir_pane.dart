@@ -14,6 +14,7 @@
 
 library saga.ui.ir_pane;
 
+import 'dart:async';
 import 'dart:html' as html;
 
 import 'package:observe/observe.dart';
@@ -21,6 +22,7 @@ import 'package:liquid/liquid.dart';
 import 'package:liquid/vdom.dart' as v;
 
 import 'package:saga/src/flow/cpu_register.dart';
+import 'package:saga/src/flow/interference.dart' as interference;
 import 'package:saga/src/flow/node.dart' as node;
 import 'package:saga/src/ui/tooltip.dart';
 import 'package:saga/src/util.dart';
@@ -46,7 +48,7 @@ class IrPaneComponent extends Component<html.PreElement> {
   }
 
   build() {
-    Node.nodes.clear();
+    Node.setFlowData(flowData);
 
     final children = intersperseWith(flowData.blocks.values.map((block) =>
         vBlock(block: block,
@@ -336,13 +338,75 @@ class Node extends Observable {
 
   get isVisible => !isInline && !isHidden && (isUsed || origin.hasEffect);
 
-  static final Map<int, Node> nodes = new Map<int, Node>();
+  interferesWith(otherId) =>
+    flowData.interference.contains(new interference.Edge(origin.id, otherId));
 
-  static toPresentation(node.Node n) {
-    return nodes.putIfAbsent(n.id, () => new Node(n, "v${n.id}"));
+  bool canRenameTo(newName) {
+    if (name == newName) {
+      return true;
+    }
+
+    final conflicts = names[newName];
+    if (conflicts == null) {
+      return true;
+    }
+
+    if (conflicts is num) {
+      return !interferesWith(conflicts);
+    }
+
+    for (var otherId in conflicts) {
+      if (interferesWith(otherId)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
-  toString() => "Node(${origin})";
+  renameTo(newName) {
+    if (name == newName) {
+      return;
+    }
+
+    assert(canRenameTo(newName));
+    final oldConflicts = names[name];
+    if (oldConflicts is num) {
+      assert(oldConflicts == origin.id);
+      names[name] = null;
+    } else {
+      oldConflicts.remove(origin.id);
+    }
+
+    final newConflicts = names[newName];
+    if (newConflicts == null) {
+      names[newName] = origin.id;
+    } else if (newConflicts is num) {
+      names[newName] = new Set.from([origin.id, newConflicts]);
+    } else {
+      names[newName].add(origin.id);
+    }
+
+    name = newName;
+  }
+
+  static var flowData;
+  static final Map<String, dynamic> names = new Map<String, dynamic>();
+  static final Map<int, Node> nodes = new Map<int, Node>();
+
+  static setFlowData(fd) {
+    flowData = fd;
+    names.clear();
+    nodes.clear();
+  }
+
+  static toPresentation(node.Node n) {
+    return nodes.putIfAbsent(n.id, () {
+      final node = new Node(n, "v${n.id}");
+      names["v${n.id}"] = n.id;
+      return node;
+    });
+  }
 }
 
 final vEditableName = v.componentFactory(EditableName);
@@ -359,14 +423,37 @@ class EditableName extends Component {
 
     element.onKeyDown.listen((e) {
       if (e.keyCode == html.KeyCode.ENTER) {
+        if (!isValidName) {
+          e.preventDefault();
+          e.stopPropagation();
+          element.focus();
+          return;
+        }
+
         endEditing();
       } else if (e.keyCode == html.KeyCode.ESC) {
+        element.classes.remove("invalid-name");
         endEditing(apply: false);
       }
     });
 
-    element.onBlur.capture((e) => endEditing());
+    element.onBlur.capture((e) {
+      if (!isValidName) {
+        e.preventDefault();
+        e.stopPropagation();
+        element.focus();
+        return;
+      }
+
+      endEditing();
+    });
+
+    element.onInput.listen((e) {
+      element.classes.toggle("invalid-name", !isValidName);
+    });
   }
+
+  get isValidName => entity.canRenameTo(element.text);
 
   startEditing() {
     if (!editing) {
@@ -381,16 +468,21 @@ class EditableName extends Component {
       editing = false;
       element.contentEditable = "false";
       if (apply) {
-        entity.name = element.text;
+        entity.renameTo(element.text);
+      } else {
+        element.text = entity.name;
       }
     }
   }
 
-  build() => v.root()(v.span(attributes: ref != null ? {'data-ref': ref} : null)(entity.name));
+  build() => v.root(attributes: ref != null ? {'data-ref': ref} : null)(entity.name);
 }
 
 abstract class InvalidationMixin {
   var subscriptions;
+
+  Iterable<StreamSubscription> subscribe() =>
+    dependencies.map((obj) => obj.changes.listen((_) => invalidate()));
 
   _unsubscribe() {
     if (subscriptions != null) {
@@ -400,14 +492,19 @@ abstract class InvalidationMixin {
     }
   }
 
+  _resubscribe() {
+    subscriptions = subscribe().toList(growable: false);
+  }
+
   get dependencies;
 
   void invalidate();
 
+  init() => _resubscribe();
+
   updated() {
     _unsubscribe();
-    subscriptions = dependencies.map((obj) =>
-      obj.changes.listen((_) => invalidate())).toList();
+    _resubscribe();
   }
 
   detached() {
@@ -415,22 +512,22 @@ abstract class InvalidationMixin {
   }
 }
 
-var NodeRefId = 0;
-
 final vNodeRef = v.componentFactory(NodeRef);
 class NodeRef extends Component with InvalidationMixin {
   @property() Node node;
   @property() var parens;
 
+  get dependencies => [node];
+
   void create() { element = new html.SpanElement(); }
 
   void init() {
+    super.init();
     element.onClick.matches('.inline-marker').listen((e) {
       node.isInline = true;
     });
   }
 
-  get dependencies => [node];
 
   build() {
     if (node.isInline) {
@@ -515,8 +612,10 @@ class NodeBodyComponent extends Component {
 }
 
 final vNode = v.componentFactory(NodeComponent);
-class NodeComponent extends Component {
+class NodeComponent extends Component with InvalidationMixin {
   @property() Node node;
+
+  get dependencies => [node];
 
   create() { element = new html.SpanElement(); }
 
@@ -531,19 +630,19 @@ class NodeComponent extends Component {
 }
 
 final vBlock = v.componentFactory(BlockComponent);
-class BlockComponent extends Component {
+class BlockComponent extends Component with InvalidationMixin {
   @property() node.BB block;
 
   var nodes;
 
-  void init() {
+  subscribe() => nodes == null ? const [] :
+    nodes.map((node) => onPropertyChange(node, #isInline, invalidate));
+
+  build() {
     nodes = []
       ..addAll(block.phis.map(Node.toPresentation))
       ..addAll(block.code.map(Node.toPresentation));
-    nodes.forEach((node) => onPropertyChange(node, #isInline, invalidate));
-  }
 
-  build() {
     final vnodes = intersperse(nodes.where((node) => node.isVisible).map(buildNode), () => v.text('\n'));
     return v.root()([
       v.span(classes: const ['ir-block-name'])("${block.name}:\n"),

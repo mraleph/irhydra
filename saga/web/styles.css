@@ -140,6 +140,11 @@ pre {
   margin-right: auto;
 }
 
+.invalid-name {
+  color: #dc322f;
+  font-weight: bold;
+}
+
 .tooltip-def {
   font-size: 0.95em;
   font-style: italic;  
