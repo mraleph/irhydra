@@ -19,7 +19,7 @@
 library formatting;
 
 import 'dart:html';
-import 'package:irhydra/src/parsing.dart' as parsing;
+import 'package:ui_utils/parsing.dart' as parsing;
 
 /** Formatting function that turns text into HTML element based on some rules */
 typedef Element Formatter(String text);

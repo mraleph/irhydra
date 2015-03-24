@@ -63,48 +63,6 @@ loadElement(elementType, array, index) {
   return new Node(LOAD_ELEMENT, [array, index])..type = elementType;
 }
 
-/*
- *
- *
-$ java -cp "$HOME/src/temp/jol/jol-cli/target/jol-cli.jar:." org.openjdk.jol.Main internals javabench.SmallMap
-Running 64-bit HotSpot VM.
-Using compressed references with 3-bit shift.
-Objects are 8 bytes aligned.
-Field sizes by type: 4, 1, 1, 2, 2, 4, 4, 8, 8 [bytes]
-Array element sizes: 4, 1, 1, 2, 2, 4, 4, 8, 8 [bytes]
-
-VM fails to invoke the default constructor, falling back to class-only introspection.
-
-javabench.SmallMap object internals:
- OFFSET  SIZE     TYPE DESCRIPTION                    VALUE
-      0    12          (object header)                N/A
-     12     4      int SmallMap.currentSize           N/A
-     16     4 Object[] SmallMap.keys                  N/A
-     20     4    int[] SmallMap.hashCodes             N/A
-     24     4 Object[] SmallMap.values                N/A
-     28     4      Map SmallMap.fallbackMap           N/A
-Instance size: 32 bytes (estimated, the sample instance is not available)
-Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
-
-$ java -cp "$HOME/src/temp/jol/jol-cli/target/jol-cli.jar:." org.openjdk.jol.Main internals "[I"
-Running 64-bit HotSpot VM.
-Using compressed references with 3-bit shift.
-Objects are 8 bytes aligned.
-Field sizes by type: 4, 1, 1, 2, 2, 4, 4, 8, 8 [bytes]
-Array element sizes: 4, 1, 1, 2, 2, 4, 4, 8, 8 [bytes]
-
-VM fails to invoke the default constructor, falling back to class-only introspection.
-
-[I object internals:
- OFFSET  SIZE  TYPE DESCRIPTION                    VALUE
-      0    12       (object header)                N/A
-     12     4   int [I.length                      N/A
-     16     0   int [I.<elements>                  N/A
-Instance size: 16 bytes (estimated, the sample instance is not available)
-Space losses: 0 bytes internal + 0 bytes external = 0 bytes total
-
- */
-
 typeLoads(state, blocks) {
   state.entryState[CpuRegister.RSI].type = new TypeDescriptor("javabench.SmallMap", {
     12: new FieldDescriptor("currentSize", INT),

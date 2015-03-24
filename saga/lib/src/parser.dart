@@ -17,6 +17,7 @@ library parser;
 import 'dart:async';
 
 import 'package:petitparser/petitparser.dart' as p;
+import 'package:ui_utils/parsing.dart' as parsing;
 
 import 'package:saga/src/flow/node.dart' show BB;
 
@@ -122,14 +123,46 @@ class CallTarget {
   toString() => "CallTarget($target)";
 }
 
+class PrefixParser extends parsing.ParserBase {
+  PrefixParser(str) : super(str.split('\n'));
+
+  get patterns => {
+    r"^# ([\w$.]+) object internals:": (className) {
+      print("class ${className}");
+      enter({
+        r"^#\s+(\d+)\s+\d+\s+([\w\[\]]+)\s+([\w.]+)": (offset, type, name) {
+          print("field ${name} : ${type} at ${offset}");
+        },
+
+        r"Instance size": () {
+          leave();
+        }
+      });
+    },
+
+    r"# (this|parm\d+):\s+(\w+)(?::(\w+))?\s+=\s+('[^']+'|\w+)": (arg, reg0, reg1, type) {
+      print("argument ${arg} in ${reg0}:${reg1} typed ${type}");
+    }
+  };
+}
+
 class ParsedCode {
+  final prefix;
   final List code;
   final callTargets = <String, CallTarget>{};
   final callSites = new Set<int>();
   final fallthroughs = new Set<int>();
   final blockEntries = new Set<int>();
 
-  ParsedCode(text) : code = instructionSeq.parse(text).value {
+  factory ParsedCode(text) {
+    final parsed = instructionSeq.parse(text).value;
+
+    new PrefixParser(parsed[0]).parse();
+
+    return new ParsedCode._(parsed[1], parsed[0]);
+  }
+
+  ParsedCode._(this.code, this.prefix) {
     final addrMap = new Map<String, int>.fromIterables(code.map((op) => op.addr), new Iterable.generate(code.length));
 
     toCallTarget(addr) =>
@@ -222,7 +255,7 @@ class ParsedCode {
 
 parse(String text) => new ParsedCode(text);
 
-final instructionSeq = instruction.trim().plus().end();
+final instructionSeq = (commentSeq.optional() & instruction.trim().plus()).end();
 
 final instruction = ((hexValue & p.char(':')).pick(0) & (trim(prefixes) & trim(p.word().plus().flatten())).pick(1) & operandSeq.optional() & commentSeq).map((matches) {
   final addr = matches[0];

@@ -1,3 +1,17 @@
+  # javabench.SmallMap object internals:
+  #  OFFSET  SIZE     TYPE DESCRIPTION                    VALUE
+  #       0    12          (object header)                N/A
+  #      12     4      int SmallMap.currentSize           N/A
+  #      16     4 Object[] SmallMap.keys                  N/A
+  #      20     4    int[] SmallMap.hashCodes             N/A
+  #      24     4 Object[] SmallMap.values                N/A
+  #      28     4      Map SmallMap.fallbackMap           N/A
+  # Instance size: 32 bytes (estimated, the sample instance is not available)
+  #
+  # {method} {0x00000001218404e0} '_findIndex' '(I)I' in 'javabench/SmallMap'
+  # this:     rsi:rsi   = 'javabench/SmallMap'
+  # parm0:    rdx       = int
+  #           [sp+0x40]  (sp of caller)
   0x0000000108841700: mov    %eax,-0x14000(%rsp)
   0x0000000108841707: push   %rbp
   0x0000000108841708: sub    $0x30,%rsp         ;*synchronization entry

@@ -19,7 +19,7 @@ import 'dart:math' as math;
 
 import 'package:irhydra/src/modes/code.dart' as code;
 import 'package:irhydra/src/modes/ir.dart' as IR;
-import 'package:irhydra/src/parsing.dart' as parsing;
+import 'package:ui_utils/parsing.dart' as parsing;
 
 class MethodProfile {
   final name;

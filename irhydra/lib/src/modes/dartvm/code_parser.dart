@@ -16,7 +16,7 @@
 library modes.dartvm.code_parser;
 
 import 'package:irhydra/src/modes/code.dart';
-import 'package:irhydra/src/parsing.dart' as parsing;
+import 'package:ui_utils/parsing.dart' as parsing;
 import 'package:fixnum/fixnum.dart' as fixnum;
 
 /** Parse given disassembly dump. */

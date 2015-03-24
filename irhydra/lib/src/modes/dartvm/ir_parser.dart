@@ -16,7 +16,7 @@
 library modes.dartvm.ir_parser;
 
 import 'package:irhydra/src/modes/ir.dart' as IR;
-import 'package:irhydra/src/parsing.dart' as parsing;
+import 'package:ui_utils/parsing.dart' as parsing;
 
 import 'package:fixnum/fixnum.dart' as fixnum;
 
