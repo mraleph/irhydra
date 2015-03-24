@@ -496,7 +496,7 @@ abstract class InvalidationMixin {
     subscriptions = subscribe().toList(growable: false);
   }
 
-  get dependencies;
+  get dependencies => [];
 
   void invalidate();
 
