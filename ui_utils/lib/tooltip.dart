@@ -65,7 +65,7 @@ moveArrow(Element element, centerShift, total, position) {
 }
 
 Point _calculatePosition(Element element, Element target, Placement placement) {
-  final targetPos = target.getBoundingClientRect();
+  final targetRect = target.getBoundingClientRect();
 
   final tooltipWidth = element.offsetWidth;
   final tooltipHeight = element.offsetHeight;
@@ -77,21 +77,21 @@ Point _calculatePosition(Element element, Element target, Placement placement) {
   var p;
   switch (placement) {
     case Placement.BOTTOM:
-      p = new Point(targetPos.left + targetPos.width ~/ 2 - tooltipWidth ~/ 2,
-                    targetPos.top + targetPos.height);
+      p = new Point(target.offsetLeft + targetRect.width ~/ 2 - tooltipWidth ~/ 2,
+                    target.offsetTop + targetRect.height);
       break;
 
     case Placement.TOP:
-      p = new Point(targetPos.left + targetPos.width ~/ 2 - tooltipWidth ~/ 2,
-                    targetPos.top - tooltipHeight);
+      p = new Point(target.offsetLeft + targetRect.width ~/ 2 - tooltipWidth ~/ 2,
+                    target.offsetTop - tooltipHeight);
       break;
     case Placement.LEFT:
-      p = new Point(targetPos.left - tooltipWidth,
-                         targetPos.top + targetPos.height ~/ 2 - tooltipHeight ~/ 2);
+      p = new Point(target.offsetLeft - tooltipWidth,
+                    target.offsetTop + targetRect.height ~/ 2 - tooltipHeight ~/ 2);
       break;
     case Placement.RIGHT:
-      p = new Point(targetPos.left + targetPos.width,
-                    targetPos.top + targetPos.height ~/ 2 - tooltipHeight ~/ 2);
+      p = new Point(target.offsetLeft + targetRect.width,
+                    target.offsetTop + targetRect.height ~/ 2 - tooltipHeight ~/ 2);
       break;
   }
 

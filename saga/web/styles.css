@@ -52,6 +52,7 @@ pre {
   padding: 10px;
   overflow-y: scroll;
   margin: 0px;
+  position: relative;
 }
 
 .asm-immediate, .ir-node-konstant {
