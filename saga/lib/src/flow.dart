@@ -34,8 +34,16 @@ class MachineState {
 
   final blockMap;
 
-  MachineState(this.blockMap) {
+  MachineState(code, this.blockMap) :
+    entryState = new List.generate(CpuRegister.kNumberOfRegisters, (reg) => createArg(reg, code), growable: false) {
     sem = _sem;
+  }
+
+  static createArg(reg, code) {
+    final argInfo = code.args[reg];
+    final type = argInfo != null ? code.typeSystem.resolve(argInfo.type) : null;
+    final name = argInfo != null ? argInfo.name : null;
+    return Node.arg(reg, name, type);
   }
 
   final ssa = new SSABuilder(<BB>[]);
@@ -43,9 +51,7 @@ class MachineState {
 
   get currentBlock => blocks.last;
 
-  final entryState = new List.generate(CpuRegister.kNumberOfRegisters,
-                                       (reg) => Node.arg(reg),
-                                       growable: false);
+  final entryState;
 
   final phantom = Node.phantom();
 
@@ -284,7 +290,7 @@ build(code) {
   final ir = code.buildCfg();
 
   Node.start(ir.blocks.values.first);
-  var state = new MachineState(ir.blockMap);
+  var state = new MachineState(code, ir.blockMap);
 
   for (var block in ir.blocks.values) {
     state.startBlock(block);

@@ -16,33 +16,7 @@ library flow.loads;
 
 import 'package:saga/src/flow/cpu_register.dart';
 import 'package:saga/src/flow/node.dart';
-
-class FieldDescriptor {
-  final String name;
-  final TypeDescriptor type;
-
-  FieldDescriptor(this.name, this.type);
-}
-
-class TypeDescriptor {
-  final String name;
-  final Map<int, FieldDescriptor> offsets;
-
-  TypeDescriptor(this.name, this.offsets);
-}
-
-final INT = new TypeDescriptor("I", null);
-
-class ArrayTypeDescriptor extends TypeDescriptor {
-  final elementType;
-
-  static const lengthOffset = 12;
-  static const elementsOffset = 16;
-
-  ArrayTypeDescriptor(td)
-    : elementType = td,
-      super("[${td.name}", { lengthOffset: new FieldDescriptor("length", INT) });
-}
+import 'package:saga/src/flow/types.dart';
 
 loadField(field, obj) {
   return new Node(new OpLoadField(field), [obj])..type = field.type;
@@ -64,11 +38,6 @@ loadElement(elementType, array, index) {
 }
 
 typeLoads(state, blocks) {
-  state.entryState[CpuRegister.RSI].type = new TypeDescriptor("javabench.SmallMap", {
-    12: new FieldDescriptor("currentSize", INT),
-    20: new FieldDescriptor("hashCodes", new ArrayTypeDescriptor(INT))
-  });
-
   final heapBase = state.entryState[CpuRegister.R12];
   for (var use in iterate(heapBase.uses)) {
     if (use.idx == 0 &&
@@ -93,21 +62,21 @@ typeLoads(state, blocks) {
 
         if (base == heapBase &&
             addr.op.scale == 8 &&
-            index.type != null) {
-          final field = index.type.offsets[addr.op.offset];
+            index.type is ReferenceType) {
+          final field = index.type.fieldsByOffset[addr.op.offset];
           if (field != null) {
             final unpacked = Node.unpack(index);
             node.insertBefore(unpacked);
             node.replaceWith(loadField(field, unpacked));
           }
-        } else if (base != null && base.type != null) {
+        } else if (base != null && base.type is ReferenceType) {
           if (index == null) {
-            final field = base.type.offsets[addr.op.offset];
+            final field = base.type.fieldsByOffset[addr.op.offset];
             if (field != null) {
               node.replaceWith(loadField(field, base));
             }
-          } else if (base.type is ArrayTypeDescriptor) {
-            final indexAdj = (addr.op.offset - ArrayTypeDescriptor.elementsOffset) ~/ addr.op.scale;
+          } else if (base.type is ArrayType) {
+            final indexAdj = (addr.op.offset - ArrayType.elementsOffset) ~/ addr.op.scale;
             if (indexAdj != 0) {
               final adjustedIdx = Node.binary(ADD, index, Node.konst(indexAdj));
               node.insertBefore(adjustedIdx);

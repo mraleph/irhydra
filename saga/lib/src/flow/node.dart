@@ -87,14 +87,14 @@ class Node extends LinkedListEntry<Node> {
 
   BB block;
 
-  Node._(this.op, vals) : id = maxId++, inputs = new List<Use>(vals.length) {
+  Node._(this.op, vals, {this.type}) : id = maxId++, inputs = new List<Use>(vals.length) {
     for (var i = 0; i < vals.length; i++) {
       inputs[i] = new Use(this, i)..setTo(vals[i]);
     }
   }
 
-  factory Node(Op op, inputs) {
-    return fold(new Node._(op, inputs));
+  factory Node(Op op, inputs, {type}) {
+    return fold(new Node._(op, inputs, type: type));
   }
 
   static phi(int n) {
@@ -155,26 +155,22 @@ class Node extends LinkedListEntry<Node> {
     return new Node(RETURN, [val]);
   }
 
-  static call(target) {
-    return new Node(new OpCall(target), []);
-  }
+  static call(target) =>
+    new Node(new OpCall(target), []);
 
-  static binary(Op op, left, right) {
-    return new Node(op, [left, right]);
-  }
+  static binary(Op op, left, right) =>
+    new Node(op, [left, right]);
 
-  static phantom() {
-    return new Node(PHANTOM, []);
-  }
+  static phantom() =>
+    new Node(PHANTOM, []);
 
-  static unpack(narrowOop) {
-    return new Node(UNPACK, [narrowOop]);
-  }
+  static unpack(narrowOop) =>
+    new Node(UNPACK, [narrowOop]);
 
-  static arg(int n) => new Node(new OpArg(n), []);
+  static arg(int n, String name, type) =>
+    new Node(new OpArg(n, name), [], type: type);
 
   toString() {
-    // var args = []..addAll(attributes)..addAll(inputs);
     return hasUses ? "v${id} <- ${op.format(inputs)}" : "${op.format(inputs)}";
   }
 
@@ -391,11 +387,14 @@ class OpBranchIf extends Op {
 
 class OpArg extends Op {
   final n;
+  final name;
 
-  OpArg(this.n);
+  OpArg(this.n, this.name);
   get typeTag => "OpArg";
 
   get attrs => [n];
+
+  format(_) => name;
 }
 
 class OpCall extends Op {

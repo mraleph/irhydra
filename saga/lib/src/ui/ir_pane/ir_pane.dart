@@ -317,7 +317,11 @@ class Node extends Observable {
     isInline = origin.op is node.OpKonstant ||
         origin.op is node.OpAddr;
     if (origin.op is node.OpArg) {
-      this.name = CpuRegister.kNames[origin.op.n].toLowerCase();
+      if (origin.op.name != null) {
+        this.name = origin.op.name;
+      } else {
+        this.name = CpuRegister.kNames[origin.op.n].toLowerCase();
+      }
     }
   }
 

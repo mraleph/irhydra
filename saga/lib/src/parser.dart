@@ -19,7 +19,9 @@ import 'dart:async';
 import 'package:petitparser/petitparser.dart' as p;
 import 'package:ui_utils/parsing.dart' as parsing;
 
+import 'package:saga/src/flow/cpu_register.dart' show CpuRegister;
 import 'package:saga/src/flow/node.dart' show BB;
+import 'package:saga/src/flow/types.dart' show TypeSystem;
 
 final codeRe = new RegExp(r"^\s+(0x[0-9a-f]+):\s+(?:data32 |rep )?(\w+)([^;#]*)([;#].*)?$");
 final commentRe = new RegExp(r"^\s+([;#].*)$");
@@ -123,25 +125,56 @@ class CallTarget {
   toString() => "CallTarget($target)";
 }
 
+class ArgumentInfo {
+  final name;
+  final type;
+
+  ArgumentInfo(this.name, this.type);
+}
+
+class FieldInfo {
+  final offset;
+  final name;
+  final type;
+
+  FieldInfo(this.offset, this.name, this.type);
+}
+
+class TypeInfo {
+  final String name;
+  final List<FieldInfo> fields;
+
+  TypeInfo(this.name, this.fields);
+}
+
 class PrefixParser extends parsing.ParserBase {
-  PrefixParser(str) : super(str.split('\n'));
+  final args = <int, ArgumentInfo>{};
+  final types = <String, TypeInfo>{};
+
+  PrefixParser(str) : super(str.split('\n')) {
+    this.parse();
+  }
 
   get patterns => {
     r"^# ([\w$.]+) object internals:": (className) {
-      print("class ${className}");
+      final fields = [];
       enter({
         r"^#\s+(\d+)\s+\d+\s+([\w\[\]]+)\s+([\w.]+)": (offset, type, name) {
-          print("field ${name} : ${type} at ${offset}");
+          final lastDot = name.lastIndexOf('.');
+          if (lastDot >= 0) name = name.substring(lastDot + 1);
+          fields.add(new FieldInfo(int.parse(offset), name, type));
         },
 
-        r"Instance size": () {
-          leave();
-        }
+        r"Instance size": leave
       });
+
+      types[className] = new TypeInfo(className, fields);
     },
 
     r"# (this|parm\d+):\s+(\w+)(?::(\w+))?\s+=\s+('[^']+'|\w+)": (arg, reg0, reg1, type) {
-      print("argument ${arg} in ${reg0}:${reg1} typed ${type}");
+      assert(reg1 == null || reg1 == reg0);
+      if (type[0] == "'") type = type.substring(1, type.length - 1);
+      args[CpuRegister.parse(reg0)] = new ArgumentInfo(arg, type.replaceAll('/', '.'));
     }
   };
 }
@@ -154,15 +187,18 @@ class ParsedCode {
   final fallthroughs = new Set<int>();
   final blockEntries = new Set<int>();
 
+  final Map<int, ArgumentInfo> args;
+  final TypeSystem typeSystem;
+
   factory ParsedCode(text) {
     final parsed = instructionSeq.parse(text).value;
 
-    new PrefixParser(parsed[0]).parse();
+    final pp = new PrefixParser(parsed[0]);
 
-    return new ParsedCode._(parsed[1], parsed[0]);
+    return new ParsedCode._(parsed[1], pp.args, pp.types);
   }
 
-  ParsedCode._(this.code, this.prefix) {
+  ParsedCode._(this.code, this.args, typesInfo) : typeSystem = new TypeSystem(typesInfo) {
     final addrMap = new Map<String, int>.fromIterables(code.map((op) => op.addr), new Iterable.generate(code.length));
 
     toCallTarget(addr) =>
