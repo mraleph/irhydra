@@ -22,6 +22,13 @@
   cursor: default;
 }
 
+.saga-flex {
+  display: -ms-flex;
+  display: -webkit-flex;
+  display: flex;
+  background: #fdf6e3;
+}
+
 .saga-app {
   display: -ms-flex;
   display: -webkit-flex;
@@ -34,6 +41,12 @@
   left: 0px;
   right: 0px;
   bottom: 0px;
+}
+
+.saga-flex > * {
+  width: 100%;
+  padding: 10px;
+  margin: 0px;
 }
 
 .saga-app > * {
@@ -139,5 +152,5 @@
 
 .tooltip-def {
   font-size: 0.95em;
-  font-style: italic;  
+  font-style: italic;
 }

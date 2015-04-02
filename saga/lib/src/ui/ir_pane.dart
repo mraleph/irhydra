@@ -30,6 +30,7 @@ import 'package:saga/src/util.dart';
 final vIrPane = v.componentFactory(IrPaneComponent);
 class IrPaneComponent extends Component<html.PreElement> {
   @property() var flowData;
+  @property() var showOnly;
 
   var tooltip = new NodeRefTooltip();
 
@@ -50,7 +51,7 @@ class IrPaneComponent extends Component<html.PreElement> {
   build() {
     Node.setFlowData(flowData);
 
-    final children = intersperseWith(flowData.blocks.values.map((block) =>
+    final children = intersperseWith(flowData.blocks.values.where(_shouldShow).map((block) =>
         vBlock(block: block,
                key: "B${block.id}",
                attributes: { 'data-block': block.name })), (i) => v.text('\n', key: "T${i}")).toList(growable: true);
@@ -58,6 +59,8 @@ class IrPaneComponent extends Component<html.PreElement> {
     children.add(tooltip.build(key: "Tooltip"));
     return v.root()(children);
   }
+
+  _shouldShow(block) => showOnly == null || showOnly.contains(block.id);
 }
 
 class NodeRefTooltip extends Tooltip {
@@ -116,6 +119,16 @@ class Operator {
     "<=": LE,
     ">=": GE,
     "ae": AE
+  };
+
+  static const BINARY_OPERATOR_NAMES = const {
+    "==": "eq",
+    "!=": "ne",
+    "<": "lt",
+    ">": "gt",
+    "<=": "le",
+    ">=": "ge",
+    "ae": "ae"
   };
 }
 
@@ -291,8 +304,17 @@ final nodeRendering = {
                                     renderUse(node.inputs[1]));
     return Result.atom([vKeyword("if "), condition, vKeyword(" then "), renderUse(node.inputs[2]), vKeyword(" else "), renderUse(node.inputs[3])]);
   },
+  "OpSelect": (node) {
+    final condition = Result.binary(renderUse(node.inputs[0]),
+                                    Operator.DOT,
+                                    Result.atom(Operator.BINARY_OPERATOR_NAMES[node.op.condition]));
+    return Result.atom([vKeyword("if "), condition, vKeyword(" then "), renderUse(node.inputs[1]), vKeyword(" else "), renderUse(node.inputs[2])]);
+  },
   "OpUnpack": (node) {
     return Result.atom([vOp("unpack"), "(", renderUse(node.inputs[0]), ")"]);
+  },
+  "OpFlags": (node) {
+    return Result.atom([vOp("flags"), "(", renderUse(node.inputs[0]), ")"]);
   },
   "OpLoadElement": (node) {
     return Result.mixfix(Operator.INDEX, renderUse(node.inputs[0]), "[", renderUse(node.inputs[1]), "]");
@@ -415,7 +437,7 @@ class Node extends Observable {
 
 final vEditableName = v.componentFactory(EditableName);
 class EditableName extends Component {
-  @property() var ref;
+  @property() var refId;
   @property() var entity;
 
   bool editing = false;
@@ -479,7 +501,7 @@ class EditableName extends Component {
     }
   }
 
-  build() => v.root(attributes: ref != null ? {'data-ref': ref} : null)(entity.name);
+  build() => v.root(attributes: refId != null ? {'data-ref': refId} : null)(entity.name);
 }
 
 abstract class InvalidationMixin {
@@ -537,7 +559,7 @@ class NodeRef extends Component with InvalidationMixin {
     if (node.isInline) {
       return v.root()(vNodeBody(node: node, parens: parens));
     } else {
-      final children = [vEditableName(entity: node, classes: ['ir-node-name'], ref: "${node.origin.id}")];
+      final children = [vEditableName(entity: node, classes: ['ir-node-name'], refId: "${node.origin.id}")];
       if (node.canBeInlined) {
         final classes = ['inline-marker'];
         if (node.hasSingleUse) classes.add('single-use');

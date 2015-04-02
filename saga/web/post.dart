@@ -22,6 +22,7 @@ import 'package:observe/observe.dart';
 
 import 'package:saga/src/parser.dart' as parser;
 import 'package:saga/src/flow/flow.dart' as flow;
+import 'package:saga/src/ui/ir_pane.dart' as ir_pane;
 import 'package:saga/src/ui/code_pane.dart' as code_pane;
 import 'package:saga/src/util.dart' show timeAndReport;
 
@@ -43,13 +44,19 @@ class SagaApp extends Observable {
 class SagaAppComponent extends Component {
   var app;
 
+  final showOnly;
+  final showIr;
+
+  SagaAppComponent(showOnly, {this.showIr: false}) : showOnly = new Set.from(showOnly);
+
   init() {
     app.changes.listen((_) => invalidate());
   }
 
   build() =>
     v.root(classes: const ["saga-root"])(app.flowData == null ? const [] : [
-      code_pane.vCodePane(flowData: app.flowData, showOnly: new Set.from([2]), showIr: false)
+      showIr ? ir_pane.vIrPane(flowData: app.flowData, showOnly: showOnly)
+             : code_pane.vCodePane(flowData: app.flowData, showOnly: showOnly, showIr: false)
     ]);
 }
 
@@ -60,10 +67,23 @@ injectStylesheets(hrefs) {
 }
 
 main() {
-  injectStylesheets(['packages/ui_utils/assets/tooltip.css', 'packages/ui_utils/assets/xref.css', 'styles.css'].map((href) => 'http://localhost:8080/${href}'));
+  injectStylesheets(['/saga/packages/ui_utils/assets/tooltip.css',
+                     '/saga/packages/ui_utils/assets/xref.css',
+                     '/saga/styles.css']);
 
   final app = new SagaApp();
-  injectComponent(new SagaAppComponent()..app = app, document.querySelector("#code0"));
 
-  HttpRequest.getString("http://localhost:8080/code.asm").then(app.display);
+  for (var codeEl in document.querySelectorAll(".code0")) {
+    injectComponent(new SagaAppComponent([2])..app = app, codeEl);
+  }
+
+  for (var codeEl in document.querySelectorAll(".code4")) {
+    injectComponent(new SagaAppComponent([4])..app = app, codeEl);
+  }
+
+  for (var codeEl in document.querySelectorAll(".ir0")) {
+    injectComponent(new SagaAppComponent([2], showIr: true)..app = app, codeEl);
+  }
+
+  HttpRequest.getString("/saga/code.asm").then(app.display);
 }
