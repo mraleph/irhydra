@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/** SSA construction */
-library flow.ssa;
+/// Abstract SSA construction algorithm.
+library saga.flow.ssa;
 
 import 'package:saga/src/flow/node.dart';
+import 'package:saga/src/util.dart';
 
 class SSABuilder {
   final blocks;
@@ -78,10 +79,6 @@ class SSABuilder {
             }
           }
         }
-
-        // if (value == null) {
-        //  continue outer;
-        // }
 
         assert(value != null);
         for (var xphi in worklist) {

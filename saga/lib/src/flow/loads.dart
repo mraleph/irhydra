@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library flow.loads;
+/// Type memory loads based on the type information for incomming arguments and
+/// type layout descriptors.
+/// This pass also recognizes HotSpot specific narrow-oop unpack operations.
+/// See [CompressedOops](https://wikis.oracle.com/display/HotSpotInternals/CompressedOops)
+/// for more information on narrow-oops.
+library saga.flow.loads;
 
 import 'package:saga/src/flow/cpu_register.dart';
 import 'package:saga/src/flow/node.dart';
 import 'package:saga/src/flow/types.dart';
+import 'package:saga/src/util.dart';
 
 loadField(field, obj) {
   return new Node(new OpLoadField(field), [obj])..type = field.type;
@@ -38,16 +44,21 @@ loadElement(elementType, array, index) {
 }
 
 typeLoads(state, blocks) {
-  final heapBase = state.entryState[CpuRegister.R12];
+  // Step 1: recognize unpacking operations and replace them with UNPACK.
+  final heapBase = state.entryState[CpuRegister.R12];   // R12 is narrow-oop-base.
   for (var use in iterate(heapBase.uses)) {
     if (use.idx == 0 &&
         use.at.op is OpAddr &&
-        use.at.op.scale == 8 &&
+        use.at.op.scale == state.pointerSize &&
         use.at.op.offset == 0) {
       use.at.replaceWith(Node.unpack(use.at.inputs[1].def));
     }
   }
 
+  // Step 2: type field and array loads, replace OpLoad with OpLoadField or
+  // LOAD_ELEMENT depending on the kind of the load.
+  // TODO(vegorov): this should be fixpoint to correctly work with phis but
+  // in our toy example there are no phis.
   for (var block in blocks) {
     for (var node in iterate(block.code).where((node) => node.op == LOAD)) {
       final addr = node.inputs[0].def;
@@ -61,7 +72,7 @@ typeLoads(state, blocks) {
         }
 
         if (base == heapBase &&
-            addr.op.scale == 8 &&
+            addr.op.scale == state.pointerSize &&
             index.type is ReferenceType) {
           final field = index.type.fieldsByOffset[addr.op.offset];
           if (field != null) {

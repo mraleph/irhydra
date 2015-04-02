@@ -43,7 +43,11 @@ class Addr {
 
   Addr(this.base, this.index, this.scale, this.offset);
 
-  Addr.absolute(addr) : this(null, null, null, addr);
+  Addr.withOffset(Addr base, offset)
+      : this(base != null ? base.base : null,
+             base != null ? base.index : null,
+             base != null ? base.scale : null,
+             offset);
 
   get isAbsolute => base == null && index == null && scale == null && offset != null;
 
@@ -184,7 +188,6 @@ class ParsedCode {
   final List code;
   final callTargets = <String, CallTarget>{};
   final callSites = new Set<int>();
-  final fallthroughs = new Set<int>();
   final blockEntries = new Set<int>();
 
   final Map<int, ArgumentInfo> args;
@@ -222,10 +225,6 @@ class ParsedCode {
           blockEntries.add(op.operands[0] = addrMap[addr.offset]);
         } else {
           op.operands[0] = toCallTarget(addr.offset);
-        }
-
-        if (opcode != "jmp") {
-          fallthroughs.add(i);
         }
 
         blockStarted = false;
@@ -309,40 +308,32 @@ final commentSeq = (p.anyOf(";#") & p.noneOf('\n').star() & p.char('\n')).flatte
 final prefixes = p.string("data32").optional();
 
 final regName = (p.char("%") & p.lowercase().or(p.digit()).plus()).flatten().map(Reg.from);
-final addrMode = p.char("(") &
-    regName.optional() &
-    (p.char(",") & regName).pick(1).optional() &
-    (p.char(",") & p.digit().plus().flatten()).pick(1).optional() &
-    p.char(")");
+
+final aComma = p.char(",");
+
+final aScale = p.anyOf("1248");
+
+final addrMode = (p.char("(") &
+    regName.optional() & (aComma & regName & (aComma & aScale).pick(1).optional()).optional() &
+    p.char(")")).map((am) {
+    final base = am[1];
+    final index = am[2] != null ? am[2][1] : null;
+    final scale = am[2] != null ? am[2][2] : null;
+    return new Addr(base, index, scale, null);
+  });
 
 final hexValue = (p.char("-").optional() & p.string("0x") & p.anyOf("0123456789abcdef").plus()).flatten();
 final immValue = (p.char(r"$") & hexValue).flatten();
-
-parseAddrMode(am, [offset = null]) {
-  var base = am[1];
-  var index = am[2];
-  final scale = am[3];
-
-  if (scale != null && index == null) {
-    index = base;
-    base = null;
-  }
-
-  return new Addr(base, index, scale, offset);
-}
 
 final anOperand = regName
                 | immValue.map((value) => new Imm(value))
                 | (hexValue & addrMode.optional()).map((addr) {
                     final offset = addr[0];
-                    final am = addr[1];
-                    if (am == null) {
-                      return new Addr.absolute(offset);
-                    }
+                    final base = addr[1];
 
-                    return parseAddrMode(am, offset);
+                    return new Addr.withOffset(base, offset);
                   })
-                | addrMode.map(parseAddrMode);
+                | addrMode;
 
 final operandSeq = (anOperand & (p.char(",") & anOperand).pick(1).star()).map((ops) {
   return [ops[0]]..addAll(ops[1]);

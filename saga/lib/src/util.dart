@@ -49,3 +49,14 @@ timeAndReport(action, name) {
   print("${name} took ${stopwatch.elapsedMilliseconds} ms.");
   return result;
 }
+
+iterate(list) sync* {
+  if (list.isEmpty) return;
+
+  for (var curr = list.first, next;
+       curr != null;
+       curr = next) {
+    next = curr.next;
+    yield curr;
+  }
+}

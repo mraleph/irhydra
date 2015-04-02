@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library flow;
-
-import 'package:saga/src/parser.dart' show Addr, Imm, RegRef;
+library saga.flow;
 
 import 'package:saga/src/flow/compact_likely.dart' as compact_likely;
 import 'package:saga/src/flow/cpu_register.dart';
@@ -25,35 +23,36 @@ import 'package:saga/src/flow/loads.dart';
 import 'package:saga/src/flow/locals.dart';
 import 'package:saga/src/flow/node.dart';
 import 'package:saga/src/flow/ssa.dart';
+import 'package:saga/src/parser.dart' show Addr, Imm, RegRef, Instruction;
 
 
 class MachineState {
-  static const POINTER_SIZE = 8;
-
-  var sem;
-
-  final blockMap;
-
-  MachineState(code, this.blockMap) :
-    entryState = new List.generate(CpuRegister.kNumberOfRegisters, (reg) => createArg(reg, code), growable: false) {
-    sem = _sem;
-  }
-
-  static createArg(reg, code) {
-    final argInfo = code.args[reg];
-    final type = argInfo != null ? code.typeSystem.resolve(argInfo.type) : null;
-    final name = argInfo != null ? argInfo.name : null;
-    return Node.arg(reg, name, type);
-  }
+  final pointerSize = 8;
+  var _semantics;
 
   final ssa = new SSABuilder(<BB>[]);
-  get blocks => ssa.blocks;
-
-  get currentBlock => blocks.last;
 
   final entryState;
 
+  final blockMap;
+
+  Instruction currentInsn;
+  final refUses = {};
   final phantom = Node.phantom();
+
+  MachineState(code, this.blockMap) :
+    entryState = new List.generate(CpuRegister.kNumberOfRegisters, (reg) {
+      final argInfo = code.args[reg];
+      final type = argInfo != null ? code.typeSystem.resolve(argInfo.type) : null;
+      final name = argInfo != null ? argInfo.name : null;
+      return Node.arg(reg, name, type);
+    }, growable: false) {
+    _semantics = semantics;
+  }
+
+  get blocks => ssa.blocks;
+
+  get currentBlock => blocks.last;
 
   startBlock(bb) {
     blocks.add(bb);
@@ -79,16 +78,17 @@ class MachineState {
       } else {
         point.insertBefore(node);
       }
-      node.origin = current;
+      node.origin = currentInsn;
     } else if (node.op is OpKonstant &&
                node.origin == null) {
-      return emit(Node.konst(node.op.value, origin: current));
+      return emit(Node.konst(node.op.value, origin: currentInsn));
     }
     return node;
   }
 
   define(int reg, Node value) {
     ssa.define(reg, value);
+    return value;
   }
 
   Node addrOf(Addr addr) {
@@ -103,7 +103,7 @@ class MachineState {
     if (val is int) {
       return ssa.use(val);
     } else if (val is Imm) {
-      return toKonst(val.value);
+      return toKonst(val.value, origin: currentInsn);
     } else if (val is Addr) {
       return emit(Node.load(addrOf(val)));
     }
@@ -152,11 +152,9 @@ class MachineState {
     }
   }
 
-  var current;
-  final refUses = {};
-  exec(op) {
-    current = op;
-    Function.apply(sem[op.opcode], op.operands);
+  exec(Instruction insn) {
+    currentInsn = insn;
+    Function.apply(_semantics[insn.opcode], insn.operands);
   }
 
   useFlags() => use(CpuRegister.FLAGS);
@@ -172,7 +170,15 @@ class MachineState {
   uv(action) {
     return (src, dst) {
       final rdst = rUseDef(dst);
-      action(rUse(src), rToUse(dst, rdst), rdst);
+      return action(rUse(src), rToUse(dst, rdst), rdst);
+    };
+  }
+
+  uvf(action) {
+    action = uv(action);
+    return (src, dst) {
+      final value = action(src, dst);
+      ssa.define(CpuRegister.FLAGS, emit(Node.flags(value)));
     };
   }
 
@@ -184,14 +190,13 @@ class MachineState {
   }
 
   binary(op) =>
-    uv((rhs, lhs, dst) => define(dst, emit(Node.binary(op, lhs, rhs))));
+    uvf((rhs, lhs, dst) => define(dst, emit(Node.binary(op, lhs, rhs))));
 
   branch(cc) =>
     (target) => emit(Node.branchOn(cc, useFlags(),
         target is int ? blockMap[target] : target, currentBlock.successors[0]));
 
-
-  get _sem => {
+  get semantics => {
     "mov": ud((from, to) {
       if (to is int) {
         define(to, from);
@@ -215,7 +220,7 @@ class MachineState {
     },
 
     "push": (src) {
-      final newSp = emit(Node.binary(SUB, use(CpuRegister.RSP), toKonst(POINTER_SIZE)));
+      final newSp = emit(Node.binary(SUB, use(CpuRegister.RSP), toKonst(pointerSize)));
       emit(Node.store(newSp, rUse(src)));
       ssa.define(CpuRegister.RSP, newSp);
     },
@@ -224,7 +229,7 @@ class MachineState {
       final sp = use(CpuRegister.RSP);
       define(rDef(dst), emit(Node.load(sp)));
       ssa.define(CpuRegister.RSP,
-        emit(Node.binary(ADD, use(CpuRegister.RSP), toKonst(POINTER_SIZE))));
+        emit(Node.binary(ADD, use(CpuRegister.RSP), toKonst(pointerSize))));
     },
 
     "lea": (addr, dst) {

@@ -194,7 +194,10 @@ class EntityTooltip extends Tooltip {
       }
       return result;
     } else if (def.origin != null) {
-      return [v.div(classes: const ['tooltip-def'])(ir_pane.vNode(node: ir_pane.Node.toPresentation(def)))]
+      final result = pane.showIr ?
+          [v.div(classes: const ['tooltip-def'])(ir_pane.vNode(node: ir_pane.Node.toPresentation(def)))] :
+          [];
+      return result
           ..addAll(pane.formater.format(def.origin))
           ..add(v.text(" in ${def.block.name}"));
     } else if (def.op is node.OpArg) {
@@ -208,12 +211,13 @@ class EntityTooltip extends Tooltip {
 final vCodePane = v.componentFactory(CodePaneComponent);
 class CodePaneComponent extends Component {
   @property() var flowData;
-
-
-  create() { element = new PreElement(); }
+  @property() var showOnly;
+  @property() bool showIr = true;
 
   Formater formater;
   EntityTooltip tooltip;
+
+  create() { element = new PreElement(); }
 
   void init() {
     formater = new Formater(this, {});
@@ -223,7 +227,7 @@ class CodePaneComponent extends Component {
 
   build() {
     formater.entities.clear();
-    var children = intersperse(flowData.blocks.values.map((block) =>
+    var children = intersperse(flowData.blocks.values.where(_shouldShow).map((block) =>
         vBlock(block: block,
                formater: formater,
                attributes: {'data-block': block.name})), () => v.text('\n')).toList(growable: true);
@@ -231,6 +235,8 @@ class CodePaneComponent extends Component {
     children.add(tooltip.build());
     return v.root()(children);
   }
+
+  _shouldShow(block) => showOnly == null || showOnly.contains(block.id);
 }
 
 

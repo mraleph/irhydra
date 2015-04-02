@@ -12,9 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library flow.fuse_branches;
+/// Fuse together instructions producing FLAGS and branches that branch
+/// on these flags:
+///
+///     c = a - b
+///     f = flagsOf(c)
+///     BranchOn lt, c
+///
+/// becomes
+///
+///     BranchIf a < b
+///
+library saga.flow.fuse_branches;
 
 import 'package:saga/src/flow/node.dart';
+import 'package:saga/src/util.dart';
 
 fuseBranches(blocks) {
   fusedSelect(select, left, right) =>

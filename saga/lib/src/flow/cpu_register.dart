@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library flow.cpu_register;
+/// Register name parsing.
+/// Supports only x86_64 registers, ignores register size and aliasing.
+library saga.flow.cpu_register;
 
 final registers = (){
   final map = <String, int>{};

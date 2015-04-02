@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library flow.node;
+/// IR description.
+library saga.flow.node;
 
 import 'dart:collection';
 
@@ -54,8 +55,8 @@ class BB extends graph.BasicBlock {
   toString() => "${name}";
 }
 
-// TODO(mraleph) we need to patch successors.predecessors of the blocks that got merged
-// otherwise they are gonna be wrong.
+
+/// compact_likely pass cheats and produces MergedBB instead of normal BB.
 class MergedBB extends graph.BasicBlock implements BB {
   final List<BB> blocks;
 
@@ -404,15 +405,4 @@ class OpCall extends Op {
   get typeTag => "OpCall";
 
   get hasEffect => true;
-}
-
-iterate(list) sync* {
-  if (list.isEmpty) return;
-
-  for (var curr = list.first, next;
-       curr != null;
-       curr = next) {
-    next = curr.next;
-    yield curr;
-  }
 }

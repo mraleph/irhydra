@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-part of flow.node;
+/// Simple folding rules for nodes returning their canonical representation.
+part of saga.flow.node;
 
 fold(Node n) {
   final rule = rules[n.op.tag];

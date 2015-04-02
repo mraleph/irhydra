@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library saga.main;
+library saga.post;
 
 import 'dart:html';
 
@@ -22,9 +22,7 @@ import 'package:observe/observe.dart';
 
 import 'package:saga/src/parser.dart' as parser;
 import 'package:saga/src/flow/flow.dart' as flow;
-import 'package:saga/src/ui/ir_pane/ir_pane.dart' as ir_pane;
 import 'package:saga/src/ui/code_pane.dart' as code_pane;
-import 'package:saga/src/ui/graph_pane.dart' as graph_pane;
 import 'package:saga/src/util.dart' show timeAndReport;
 
 class SagaApp extends Observable {
@@ -50,10 +48,8 @@ class SagaAppComponent extends Component {
   }
 
   build() =>
-    v.root(classes: const ["saga-app", "saga-root"])(app.flowData == null ? const [] : [
-      code_pane.vCodePane(flowData: app.flowData),
-      graph_pane.vGraphPane(flowData: app.flowData),
-      ir_pane.vIrPane(flowData: app.flowData)
+    v.root(classes: const ["saga-root"])(app.flowData == null ? const [] : [
+      code_pane.vCodePane(flowData: app.flowData, showOnly: new Set.from([2]), showIr: false)
     ]);
 }
 
@@ -64,10 +60,10 @@ injectStylesheets(hrefs) {
 }
 
 main() {
-  injectStylesheets(['packages/ui_utils/assets/tooltip.css', 'packages/ui_utils/assets/xref.css', 'styles.css']);
+  injectStylesheets(['packages/ui_utils/assets/tooltip.css', 'packages/ui_utils/assets/xref.css', 'styles.css'].map((href) => 'http://localhost:8080/${href}'));
 
   final app = new SagaApp();
-  injectComponent(new SagaAppComponent()..app = app, document.querySelector("body"));
+  injectComponent(new SagaAppComponent()..app = app, document.querySelector("#code0"));
 
-  HttpRequest.getString("code.asm").then(app.display);
+  HttpRequest.getString("http://localhost:8080/code.asm").then(app.display);
 }

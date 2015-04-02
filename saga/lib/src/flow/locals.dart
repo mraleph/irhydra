@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library flow.locals;
+/// Forward loads/stores through RSP relative slots.
+/// Assumes stack operations are well-behaved and all stack operations are
+/// implicit in the IR.
+library saga.flow.locals;
 
 import 'package:saga/src/flow/node.dart';
 import 'package:saga/src/flow/cpu_register.dart';
 import 'package:saga/src/flow/ssa.dart';
+import 'package:saga/src/util.dart';
 
 findLocals(state, blocks) {
   final entrySp = state.entryState[CpuRegister.RSP];
@@ -66,9 +70,7 @@ findLocals(state, blocks) {
 
   rewire(entrySp, 0);
 
-
   final ssa = new SSABuilder(blocks);
-
   for (var block in blocks) {
     ssa.startBlock(block);
     for (var node in iterate(block.code)) {

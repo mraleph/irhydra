@@ -13,18 +13,7 @@
 ** limitations under the License.
 */
 
-body {
-  font-family: RobotoDraft, sans-serif;
-  color: #333;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
-  -webkit-touch-callout: none;
-}
-
-pre {
+.saga-root pre {
   font-family: 'Inconsolata', monospace;
   font-size: 14pt;
   background: #fdf6e3;
@@ -55,7 +44,8 @@ pre {
   position: relative;
 }
 
-.asm-immediate, .ir-node-konstant {
+.asm-immediate,
+.ir-node-konstant {
   color: #2aa198;
 }
 
@@ -73,7 +63,8 @@ pre {
   cursor: pointer;
 }
 
-.asm-label, .ir-block-name {
+.asm-label,
+.ir-block-name {
   color: #268bd2;
 }
 

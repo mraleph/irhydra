@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library flow.dce;
+/// Dead Code Elimination
+library saga.flow.dce;
 
 dce(blocks) {
   final worklist = new Set();

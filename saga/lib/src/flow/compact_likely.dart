@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library flow.compact_likely;
+/// Merge blocks together assuming that branches leading to NORETURN calls
+/// are "unlikely" and are almost never taken.
+library saga.flow.compact_likely;
 
 import 'package:saga/src/flow/node.dart' as node;
 import 'package:saga/src/parser.dart' as parser;
