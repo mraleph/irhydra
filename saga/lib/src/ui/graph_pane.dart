@@ -23,7 +23,7 @@ import 'package:ui_utils/delayed_reaction.dart';
 import 'package:ui_utils/graph_layout.dart' as graph_layout;
 
 import 'package:saga/src/ui/code_pane.dart' as code_pane;
-import 'package:saga/src/ui/ir_pane/ir_pane.dart' as ir_pane;
+import 'package:saga/src/ui/ir_pane.dart' as ir_pane;
 import 'package:saga/src/ui/tooltip.dart';
 
 class BlockTooltip extends Tooltip {

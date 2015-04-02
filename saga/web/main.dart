@@ -22,7 +22,7 @@ import 'package:observe/observe.dart';
 
 import 'package:saga/src/parser.dart' as parser;
 import 'package:saga/src/flow/flow.dart' as flow;
-import 'package:saga/src/ui/ir_pane/ir_pane.dart' as ir_pane;
+import 'package:saga/src/ui/ir_pane.dart' as ir_pane;
 import 'package:saga/src/ui/code_pane.dart' as code_pane;
 import 'package:saga/src/ui/graph_pane.dart' as graph_pane;
 import 'package:saga/src/util.dart' show timeAndReport;

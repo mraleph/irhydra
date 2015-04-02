@@ -24,7 +24,7 @@ import 'package:saga/src/flow/node.dart' as node;
 import 'package:saga/src/parser.dart' as parser;
 import 'package:saga/src/util.dart';
 import 'package:saga/src/ui/tooltip.dart';
-import 'package:saga/src/ui/ir_pane/ir_pane.dart' as ir_pane;
+import 'package:saga/src/ui/ir_pane.dart' as ir_pane;
 
 vLabel(txt) => v.span(classes: const ['asm-label'])(txt);
 vKeyword(txt) => v.span(classes: const ['asm-opcode'])(txt);
