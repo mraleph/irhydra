@@ -36,38 +36,37 @@
     <div id="welcome-splash">
       <div class="welcome-message">
         <h1>IRHydra<sup>2</sup> <span id="splash-spinner"></span></h1>
-        <p class="lead">This is an <span class="alpha-warning">alpha preview</span> of the tool that can display intermediate representations used by V8 and Dart VM optimizing compilers.</p>
-        <p>Originally it was intended for compiler developers but since release of the first version has been used by JavaScript/Dart developers investigating performance of their applications.</p>
+        <p class="lead">This is a tool that can display intermediate representations used by V8 and Dart VM optimizing compilers.</p>
         <p>If it's you first time trying IRHydra consider watching the following screencast showcasing its main features:</p>
-        <p><!-- <iframe width="420" height="315" src="https://www.youtube.com/embed/pycQWDuCBN8" frameborder="0" allowfullscreen></iframe> --></p>
+        <p><iframe width="420" height="315" src="https://www.youtube.com/embed/pycQWDuCBN8" frameborder="0" allowfullscreen></iframe></p>
         <h2>Demos</h2>
         <p>Try clicking on the links below to explore features that IRHydra provides. Each link loads compilation artifacts collected from a single V8 or Dart VM run on a given source file.</p>
         <ul>
           <li>
             <h3>V8</h3>
             <ul>
-              <li><a href="#demo-1">demo #1</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/v8/deopt-eager/demo.js" target="_blank">source file</a>]</li>
-              <li><a href="#demo-2">demo #2</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/v8/deopt-lazy/demo.js" target="_blank">source file</a>]</li>
-              <li><a href="#demo-3">demo #3</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/v8/deopt-soft/demo.js" target="_blank">source file</a>]</li>
+              <li><a href="#demo-1">demo #1</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/v8/deopt-eager/demo.js" target="_blank">source file</a>]</li>
+              <li><a href="#demo-2">demo #2</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/v8/deopt-lazy/demo.js" target="_blank">source file</a>]</li>
+              <li><a href="#demo-3">demo #3</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/v8/deopt-soft/demo.js" target="_blank">source file</a>]</li>
             </ul>
           </li>
           <li>
             <h3>Dart VM</h3>
             <ul>
-              <li><a href="#demo-4">demo #4</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/dart/demo.dart" target="_blank">source file</a>]</li>
+              <li><a href="#demo-4">demo #4</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/dart/demo.dart" target="_blank">source file</a>]</li>
             </ul>
           </li>
           <li>
             <h3>WebRebels 2014</h3>
             <ul>
-              <li><a href="#webrebels-2014-concat">String concatenation</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/webrebels2014/1-concat/concat.js" target="_blank">source file</a>]</li>
-              <li><a href="#webrebels-2014-concat-fixed">String concatenation (with a fix in V8)</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/webrebels2014/2-concat-fixed/concat.js" target="_blank">source file</a>]</li>
-              <li><a href="#webrebels-2014-prototype-node">Prototype chain traversal (node v0.10.x): data property</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/webrebels2014/3-prototype-node/prototype.js" target="_blank">source file</a>]</li>
-              <li><a href="#webrebels-2014-prototype-node-getter">Prototype chain traversal (node v0.10.x): getter</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/webrebels2014/4-prototype-node-getter/prototype.js" target="_blank">source file</a>]</li>
-              <li><a href="#webrebels-2014-prototype">Prototype chain traversal (newer V8): data property, 2 runs</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/webrebels2014/5-prototype/prototype.js" target="_blank">source file</a>]</li>
-              <li><a href="#webrebels-2014-prototype-tostring">Prototype chain traversal (newer V8): data property, 2 runs, <code>toString</code>-hack</a>  [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/webrebels2014/6-prototype-tostring/prototype.js" target="_blank">source file</a>]</li>
-              <li><a href="#webrebels-2014-method-function">Method vs. Function</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/webrebels2014/7-method-function/method-function.js" target="_blank">source file</a>]</li>
-              <li><a href="#webrebels-2014-method-function-hack">Method vs. Function with more ICs</a> [<a href="https://github.com/mraleph/irhydra/blob/master/web/demos/webrebels2014/8-method-function-hack/method-function.js" target="_blank">source file</a>]</li>
+              <li><a href="#webrebels-2014-concat">String concatenation</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/webrebels2014/1-concat/concat.js" target="_blank">source file</a>]</li>
+              <li><a href="#webrebels-2014-concat-fixed">String concatenation (with a fix in V8)</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/webrebels2014/2-concat-fixed/concat.js" target="_blank">source file</a>]</li>
+              <li><a href="#webrebels-2014-prototype-node">Prototype chain traversal (node v0.10.x): data property</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/webrebels2014/3-prototype-node/prototype.js" target="_blank">source file</a>]</li>
+              <li><a href="#webrebels-2014-prototype-node-getter">Prototype chain traversal (node v0.10.x): getter</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/webrebels2014/4-prototype-node-getter/prototype.js" target="_blank">source file</a>]</li>
+              <li><a href="#webrebels-2014-prototype">Prototype chain traversal (newer V8): data property, 2 runs</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/webrebels2014/5-prototype/prototype.js" target="_blank">source file</a>]</li>
+              <li><a href="#webrebels-2014-prototype-tostring">Prototype chain traversal (newer V8): data property, 2 runs, <code>toString</code>-hack</a>  [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/webrebels2014/6-prototype-tostring/prototype.js" target="_blank">source file</a>]</li>
+              <li><a href="#webrebels-2014-method-function">Method vs. Function</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/webrebels2014/7-method-function/method-function.js" target="_blank">source file</a>]</li>
+              <li><a href="#webrebels-2014-method-function-hack">Method vs. Function with more ICs</a> [<a href="https://github.com/mraleph/irhydra/blob/cf180a09dfe701add33d2e8641ebb0be437e24d4/irhydra/web/demos/webrebels2014/8-method-function-hack/method-function.js" target="_blank">source file</a>]</li>
             </ul>
           </li>
         </ul>
