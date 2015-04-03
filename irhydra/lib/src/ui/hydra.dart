@@ -102,6 +102,11 @@ class HydraElement extends PolymerElement {
   HydraElement.created() : super.created();
 
   _requestArtifact(path) {
+    done(x) {
+      shadowRoot.querySelector("#progress-toast").dismiss();
+      progressUrl = progressValue = progressAction = null;
+    }
+
     if (path.endsWith(".tar.bz2")) {
       unpack(data) {
         if (data is ByteBuffer) {
@@ -125,25 +130,23 @@ class HydraElement extends PolymerElement {
         }
       }
 
-      done(x) {
-        shadowRoot.querySelector("paper-toast").dismiss();
-        progressUrl = progressValue = progressAction = null;
-      }
-
       progressAction = "Downloading";
       progressUrl = path;
-      shadowRoot.querySelector("paper-toast").show();
+      shadowRoot.querySelector("#progress-toast").show();
       return HttpRequest.request(path, responseType: "arraybuffer", onProgress: progress)
         .then((rq) {
           progressAction = "Unpacking";
-          shadowRoot.querySelector("paper-toast").show();
+          shadowRoot.querySelector("#progress-toast").show();
           return new async.Future.delayed(const Duration(milliseconds: 100), () => rq.response);
         })
         .then(unpack)
         .then(loadFiles)
         .then(done, onError: done);
     } else {
-      return HttpRequest.getString(path).then(loadData);
+      progressAction = "Downloading";
+      progressUrl = path;
+      shadowRoot.querySelector("#progress-toast").show();
+      return HttpRequest.getString(path).then(loadData).then(done, onError: done);
     }
   }
 

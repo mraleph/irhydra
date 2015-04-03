@@ -30,7 +30,7 @@
                  opened="{{sourceAnnotatorFailed}}">
     </paper-toast>
 
-    <paper-toast text="{{progressAction}} {{progressUrl}}" duration="3600000">
+    <paper-toast text="{{progressAction}} {{progressUrl}}" duration="3600000" id="progress-toast">
       <template if="{{progressValue != null}}">
         <paper-progress value="{{progressValue}}"></paper-progress>
       </template>
