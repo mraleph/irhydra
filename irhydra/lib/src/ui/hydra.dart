@@ -150,6 +150,14 @@ class HydraElement extends PolymerElement {
   static final DRIVE_REGEXP = new RegExp(r"^drive:([_\w.]+)$");
   static const DRIVE_ROOT = 'http://googledrive.com/host/0B6XwArTFTLptOWZfVTlUWkdkMTg/';
 
+  static final GIST_REGEXP = new RegExp(r"^gist:([^\W_]+(?:-[^\W_]+)*)/([a-f0-9]+)$");
+  static const GIST_ROOT = 'https://gist.githubusercontent.com/';
+
+  _createGistArtifacts(username, id) => [
+    "${GIST_ROOT}${username}/${id}/raw/hydrogen.cfg",
+    "${GIST_ROOT}${username}/${id}/raw/code.asm"
+  ];
+
   _loadDemo(fragment) {
     if (DEMOS.containsKey(fragment)) {
       _wait(DEMOS[fragment], _requestArtifact);
@@ -159,6 +167,13 @@ class HydraElement extends PolymerElement {
     final driveMatch = DRIVE_REGEXP.firstMatch(fragment);
     if (driveMatch != null) {
       _wait(["${DRIVE_ROOT}${driveMatch.group(1)}"], _requestArtifact);
+      return true;
+    }
+
+    // Load artifacts from gist when fragment matches 'gist:username/gistId'.
+    final gistMatch = GIST_REGEXP.firstMatch(fragment);
+    if (gistMatch != null) {
+      _wait(_createGistArtifacts(gistMatch.group(1), gistMatch.group(2)), _requestArtifact);
       return true;
     }
 
