@@ -296,7 +296,7 @@ class IRPane extends PolymerElement {
     for (var block in ir.blocks.values) {
       // currentRowClass = graph.selectBorder(block, nesting[block.id]);
       if (nesting[block.id] > 0) {
-        currentRowClass = "loop-${nesting[block.id]} loop-hotness-${hotness(block)}";
+        currentRowClass = ["loop-${nesting[block.id]}", "loop-hotness-${hotness(block)}"];
       } else {
         currentRowClass = null;
       }
@@ -459,7 +459,13 @@ class IRPane extends PolymerElement {
           ..nodes.add(text)
       ]);
 
-    if (currentRowClass != null) row.classes.add(currentRowClass);
+    if (currentRowClass != null) {
+      if (currentRowClass is String) {
+        row.classes.add(currentRowClass);
+      } else {
+        row.classes.addAll(currentRowClass);
+      }
+    }
 
     if (klass != null) {
       row.classes.add(klass);

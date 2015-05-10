@@ -65,6 +65,7 @@ button.unchecked {
   position: relative;
   -webkit-flex: 1 1;
   flex: 1 1;
+  max-height: 100%;
 }
 
 .sidebar {
@@ -202,6 +203,7 @@ button.unchecked {
   display: -webkit-flex;
   display: flex;
   overflow: auto;
+  max-height: 100%;
 }
 
 .panes, .panes > div {
