@@ -316,12 +316,38 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
   final annotations = method.inlined.map((f) =>
       f.annotations = new List.filled(sources[f.source.id].length, IR.LINE_DEAD)).toList();
 
+  findBlockEntry(block) =>
+    block.hir.firstWhere((instr) => instr.op == "BlockEntry").id;
+
+  findBlockLoop(block) {
+    final blockEntry = findBlockEntry(block);
+    final blockPos = irInfo.hir2pos[blockEntry];
+
+    // Sometimes V8 produces incorrect positions for the first loop body block:
+    // it points to the loops init clause instead of pointing past it.
+    // This confuses our loop finding algorithm that skips init clause.
+    // Try working around this by looking at our predecessor: if its a direct
+    // fall-through and it's position is further ahead compared to ours than
+    // something went wrong - take its position.
+    if (block.predecessors.length == 1 &&
+        block.predecessors.first.id < block.id &&
+        block.predecessors.first.predecessors.length == 1 &&
+        block.predecessors.first.successors.length == 1) {
+      final predBlockEntry = findBlockEntry(block.predecessors.first);
+      final predBlockPos = irInfo.hir2pos[predBlockEntry];
+      if (predBlockPos.inlineId == blockPos.inlineId &&
+          predBlockPos.position > blockPos.position) {
+        return loopOf(predBlockPos);
+      }
+    }
+
+    return loopOf(blockPos);
+  }
+
   // Process IR and mark lines according to IR instructions that were generated from them.
   for (var block in blocks.values) {
     if (block.lir != null) {
-      final blockEntry = block.hir.firstWhere((instr) => instr.op == "BlockEntry").id;
-      final blockPos = irInfo.hir2pos[blockEntry];
-      final blockLoop = loopOf(blockPos);
+      final blockLoop = findBlockLoop(block);
 
       // When processing LIR skip all artificial instructions (gap moves,
       // labels, gotos and stack-checks). Even if they have position falling
