@@ -25,7 +25,7 @@ import 'package:irhydra/src/modes/art/cfg_parser.dart' as cfg_parser;
 class _ARTHIRDescriptor extends HIRDescriptor {
   const _ARTHIRDescriptor() : super();
 
-  codeOf(instr) => instr.code;
+  codeOf(instr, {skipComment: false}) => instr.code;
 }
 
 /**

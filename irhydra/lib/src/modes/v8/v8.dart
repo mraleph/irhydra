@@ -26,9 +26,10 @@ import 'package:irhydra/src/modes/v8/hydrogen_parser.dart' as hydrogen_parser;
 class _V8HIRDescriptor extends HIRDescriptor {
   const _V8HIRDescriptor() : super();
 
-  codeOf(instr) =>
+  codeOf(instr, {skipComment: false}) =>
     instr.code.expand((instr) => instr.code == null ? const []
-                                                     : instr.code);
+                                                     : instr.code)
+              .skip(skipComment ? 1 : 0);
 }
 
 /**
