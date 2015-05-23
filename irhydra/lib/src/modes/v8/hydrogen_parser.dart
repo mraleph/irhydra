@@ -28,6 +28,9 @@ bool canRecognize(String str) =>
  * and phases.
  */
 List<IR.Method> preparse(String str) {
+  // Restore trailing newline if it was stripped somehow e.g. by copy-paste.
+  if (str[str.length - 1] != '\n') str += '\n';
+
   // Matches tags that start/end compilation and cfg records.
   final tagRe = new RegExp(r"(begin|end)_(compilation|cfg)\n");
 
@@ -157,12 +160,14 @@ Map parse(IR.Method method, Function ir, statusObject) {
 
   try {
     source_annotator.annotate(method, blocks, parser);
-  } catch (e) {
+  } catch (e, stack) {
     print("""ERROR: source_annotator.annotate failed.
 There is a mismatch between the source and source positions recorded.
 This can be caused by the presence of CRLF line endings.
 IRHydra assumes LF-only endings. Contact @mraleph for troubleshooting.
 """);
+    print(e);
+    print(stack);
     statusObject.sourceAnnotatorFailed = true;
   }
 

@@ -335,8 +335,10 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
         block.predecessors.first.successors.length == 1) {
       final predBlockEntry = findBlockEntry(block.predecessors.first);
       final predBlockPos = irInfo.hir2pos[predBlockEntry];
-      if (predBlockPos.inlineId == blockPos.inlineId &&
-          predBlockPos.position > blockPos.position) {
+      if (blockPos == null ||
+          (predBlockPos != null &&
+           predBlockPos.inlineId == blockPos.inlineId &&
+           predBlockPos.position > blockPos.position)) {
         return loopOf(predBlockPos);
       }
     }

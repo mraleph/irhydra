@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.22.4"
+    version: "0.25.0+1"
   archive:
     description: archive
     source: hosted
@@ -12,7 +12,7 @@ packages:
   args:
     description: args
     source: hosted
-    version: "0.12.2+6"
+    version: "0.13.1"
   barback:
     description: barback
     source: hosted
@@ -24,19 +24,19 @@ packages:
   cli_util:
     description: cli_util
     source: hosted
-    version: "0.0.1+1"
+    version: "0.0.1+2"
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.2.5"
+    version: "0.2.9"
   collection:
     description: collection
     source: hosted
-    version: "1.1.0"
+    version: "1.1.1"
   core_elements:
     description: core_elements
     source: hosted
-    version: "0.6.0+5"
+    version: "0.7.1+2"
   crypto:
     description: crypto
     source: hosted
@@ -44,15 +44,11 @@ packages:
   csslib:
     description: csslib
     source: hosted
-    version: "0.11.0+4"
-  custom_element_apigen:
-    description: custom_element_apigen
-    source: hosted
-    version: "0.1.3"
+    version: "0.12.0+1"
   dart_style:
     description: dart_style
     source: hosted
-    version: "0.1.3"
+    version: "0.1.8"
   fixnum:
     description: fixnum
     source: hosted
@@ -61,50 +57,54 @@ packages:
     description: glob
     source: hosted
     version: "1.0.4"
-  html5lib:
-    description: html5lib
+  html:
+    description: html
     source: hosted
-    version: "0.12.0"
+    version: "0.12.1+1"
   initialize:
     description: initialize
     source: hosted
-    version: "0.5.1+3"
+    version: "0.6.1"
   logging:
     description: logging
     source: hosted
-    version: "0.9.3"
+    version: "0.11.1"
   matcher:
     description: matcher
     source: hosted
-    version: "0.11.4+2"
+    version: "0.12.0+1"
   observe:
     description: observe
     source: hosted
-    version: "0.13.0"
+    version: "0.13.1+1"
   paper_elements:
     description: paper_elements
     source: hosted
-    version: "0.6.1"
+    version: "0.7.1"
   path:
     description: path
     source: hosted
-    version: "1.3.3"
+    version: "1.3.5"
   polymer:
     description: polymer
     source: hosted
-    version: "0.15.5+4"
+    version: "0.16.3+3"
   polymer_expressions:
     description: polymer_expressions
     source: hosted
     version: "0.13.1"
+  polymer_interop:
+    description: polymer_interop
+    source: hosted
+    version: "0.1.1"
   pool:
     description: pool
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
   quiver:
     description: quiver
     source: hosted
-    version: "0.21.3"
+    version: "0.21.3+1"
   sass:
     description: sass
     source: hosted
@@ -112,27 +112,27 @@ packages:
   smoke:
     description: smoke
     source: hosted
-    version: "0.2.1+1"
+    version: "0.3.3+1"
   source_maps:
     description: source_maps
     source: hosted
-    version: "0.10.0+1"
+    version: "0.10.1"
   source_span:
     description: source_span
     source: hosted
-    version: "1.0.3"
+    version: "1.1.2"
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "1.2.3"
+    version: "1.3.2"
   string_scanner:
     description: string_scanner
     source: hosted
-    version: "0.1.3"
+    version: "0.1.3+1"
   template_binding:
     description: template_binding
     source: hosted
-    version: "0.14.0+1"
+    version: "0.14.0+2"
   ui_components:
     description:
       path: "../ui_components"
@@ -152,11 +152,11 @@ packages:
   watcher:
     description: watcher
     source: hosted
-    version: "0.9.4"
+    version: "0.9.5"
   web_components:
     description: web_components
     source: hosted
-    version: "0.10.5+1"
+    version: "0.11.4+1"
   when:
     description: when
     source: hosted
