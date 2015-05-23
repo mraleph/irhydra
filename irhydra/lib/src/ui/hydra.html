@@ -58,11 +58,13 @@
           </div>
           <div when-ir>
             <button on-click="{{toggleInterestingMode}}" title="Splice source into IR" class="{{ {'unchecked': !showSource} }}"><i class="fa fa-eye"></i></button>
-            <dropdown-element selected="{{codeMode}}">
-              <a data-value="split">Split Disassembly</a>
-              <a data-value="inline">Inline Disassembly</a>
-              <a data-value="none">Hide Disassembly</a>
-            </dropdown-element>
+            <template if="{{ir.code != null}}">
+              <dropdown-element selected="{{codeMode}}">
+                <a data-value="split">Split Disassembly</a>
+                <a data-value="inline">Inline Disassembly</a>
+                <a data-value="none">Hide Disassembly</a>
+              </dropdown-element>
+            </template>
           </div>
           <div when-ir when-source>
             <deopt-links deopts="{{phase.method.deopts}}" on-deopt-click="{{navigateToDeoptAction}}" on-deopt-enter="{{enterDeoptAction}}" on-deopt-leave="{{leaveDeoptAction}}">

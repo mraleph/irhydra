@@ -169,6 +169,8 @@ class IRPane extends PolymerElement {
       return;
     }
 
+    final safeCodeMode = ir.code != null ? codeMode : 'none';
+
     xgutter.clear();
 
     if (showSource) {
@@ -277,13 +279,13 @@ class IRPane extends PolymerElement {
 
     emitInlineCode(ctx, instr) {
       if (ctx == lastCtx &&
-          codeMode == 'inline' &&
+          safeCodeMode == 'inline' &&
           instr.code != null) {
         ctx.codeOf(instr).skip(1).forEach(codeRenderer.display);
       }
     }
 
-    if (codeMode != 'none') {
+    if (safeCodeMode != 'none') {
       ir.code.prologue.forEach(codeRenderer.display);
     }
 
@@ -327,7 +329,7 @@ class IRPane extends PolymerElement {
         emitInlineCode(ctx, branch);
       }
 
-      if (codeMode == 'split') {
+      if (safeCodeMode == 'split') {
         for (var instr in lastCtx.ir(block)) {
           if (instr.code != null) {
             lastCtx.codeOf(instr).forEach(codeRenderer.display);
@@ -338,7 +340,7 @@ class IRPane extends PolymerElement {
       createRange(block.name);
     }
 
-    if (codeMode != 'none') {
+    if (safeCodeMode != 'none') {
       add(" ", " ");
       ir.code.epilogue.forEach(codeRenderer.display);
     }
