@@ -9,6 +9,7 @@ import 'package:ui_utils/html_utils.dart' show toHtml;
 import 'package:ui_utils/xref.dart' show XRef, POPOVER;
 import "package:irhydra/src/modes/perf.dart" as perf;
 import "package:irhydra/src/modes/dartvm/dartvm.dart" as dartvm;
+import "package:irhydra/src/modes/art/art.dart" as art;
 import "package:irhydra/src/modes/v8/v8.dart" as v8;
 import 'package:irhydra/src/ui/spinner-element.dart';
 import 'package:polymer/polymer.dart';
@@ -16,6 +17,7 @@ import 'package:polymer/polymer.dart';
 import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
 
 final MODES = [
+  () => new art.Mode(),  // Must come before V8 mode.
   () => new v8.Mode(),
   () => new dartvm.Mode(),
 ];
@@ -438,6 +440,7 @@ class HydraElement extends PolymerElement {
         final candidate = modeFactory();
         if (candidate.load(text)) {
           newMode = candidate;
+          break;
         }
       }
 

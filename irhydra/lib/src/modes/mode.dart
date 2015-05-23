@@ -29,13 +29,21 @@ abstract class IRDescriptor {
   codeOf(instr) => instr.code;
 }
 
+
+class Descriptions {
+  const Descriptions();
+
+  lookup(ns, value) => null;
+}
+
+
 /**
  * Modes encapsulate the way to parse compilation artifacts.
  */
 abstract class BaseMode {
   get irs;
 
-  get descriptions;
+  final descriptions = const Descriptions();
 
   /** Currently loaded methods. */
   var methods;
