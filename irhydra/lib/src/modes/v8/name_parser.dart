@@ -21,7 +21,9 @@ Name parse(String text) {
     return new Name.fromFull(text);
   }
 
-  if (text.startsWith(r"$") && text.endsWith(r"$")) {
+  if (text.length > 1 &&
+      text.startsWith(r"$") &&
+      text.endsWith(r"$")) {
     text = text.substring(1, text.length - 1);
   }
 
