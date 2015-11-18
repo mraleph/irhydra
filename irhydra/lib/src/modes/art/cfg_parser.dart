@@ -181,7 +181,7 @@ class CfgParser extends parsing.ParserBase {
 final hirMultiLineRe = new RegExp(r"^\s+\d+\s+\d+\s+(\w+\d+)\s+([-\w]+)\s*(.*)$");
 final hirSingleLineRe = new RegExp(r"^\s+\d+\s+\d+\s+(\w+\d+)\s+([-\w]+)\s*(.*)<\|@$");
 
-final disasmRe = new RegExp(r"^0x([a-f0-9]+):\s+[a-f0-9]+\s+(.*)$");
+final disasmRe = new RegExp(r"^(?:0x)?([a-fA-F0-9]+):\s+[a-f0-9]+\s+(.*)$");
 
 class Constant extends IR.Operand {
   final text;

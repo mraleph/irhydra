@@ -52,13 +52,17 @@ class TextFile {
 
   TextFile(this.file, this.action);
 
-  load() => _readAsText(file).then(action);
+  load() => _read(file).then(action);
 
-  static _readAsText(file) {
-    final reader = new FileReader();
-    final result = reader.onLoad.first.then((_) => reader.result);
-    reader.readAsText(file);
-    return result;
+  static _read(file) {
+    // We would like to load file as binary to avoid
+    // line ending normalization.
+    // FileReader.readAsBinaryString is not exposed in Dart
+    // so we trampoline through JS.
+    async.Completer completer = new async.Completer();
+    js.context.callMethod('readAsBinaryString', [
+      file, completer.complete]);
+    return completer.future;
   }
 }
 
@@ -430,9 +434,11 @@ class HydraElement extends PolymerElement {
 
   /** Load data from the given textual artifact if any mode can handle it. */
   loadData(text) {
-    // Normalize line endings.
+    // Warn about Windows-style (CRLF) line endings.
+    // Don't normalize the input: V8 writes code trace in
+    // binary mode (retaining original line endings) so
+    // in theory everything should just work.
     crlfDetected = crlfDetected || text.contains("\r\n");
-    text = text.replaceAll(new RegExp(r"\r\n|\r"), "\n");
 
     if (mode == null || !mode.load(text)) {
       var newMode;

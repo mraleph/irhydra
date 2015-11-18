@@ -129,6 +129,26 @@
           splash.parentNode.removeChild(splash);
         }
       }
+
+      // This is a helper method for loading files without
+      // line-endings normalization because FileReader.readAsBinaryString
+      // is not exposed to Dart.
+      function readAsBinaryString(file, cb) {
+        console.log("Reading %s", file.name);
+        var reader = new FileReader();
+
+        reader.onloadend = function () {
+          console.log("  ... %s loaded (%d characters)",
+                      file.name,
+                      reader.result.length);
+          cb(reader.result);
+        };
+
+        // Fallback to readAsText if for some strange reason
+        // readAsBinaryString is not available.
+        var method = reader.readAsBinaryString || reader.readAsText;
+        method.call(reader, file);
+      }
     </script>
     <hydra-app></hydra-app>
     <script type="application/dart">export "package:polymer/init.dart";</script>

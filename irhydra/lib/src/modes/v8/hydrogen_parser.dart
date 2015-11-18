@@ -184,6 +184,8 @@ class CfgParser extends parsing.ParserBase {
   CfgParser(str) : super(str.split('\n')) {
     hirOperands = parsing.makeSplitter({
       r"0x[a-f0-9]+": (hirId, val) => new Constant(val),
+      // This is to highlight %p formatted pointers on Win64.
+      r"\b[A-F0-9]{16}\b": (hirId, val) => new Constant(val),
       r"B\d+\b": (hirId, val) => new IR.BlockRef(val),
       r"[a-zA-Z]+\d+\b": (hirId, val) => new IR.ValRef(val),
       r"range:(-?\d+)_(-?\d+)(_m0)?": (hirId, low, high, m0) => new Range(low, high, m0 != null),

@@ -155,7 +155,7 @@ class PreParser extends parsing.ParserBase {
     },
 
     // Start of the deoptimization event (we drop no-name deopts)
-    r"^\[deoptimizing \(DEOPT (\w+)\): begin 0x[a-f0-9]+ .* \(opt #(\d+)\) @(\d+)": (type, optId, bailoutId) {
+    r"^\[deoptimizing \(DEOPT (\w+)\): begin (?:0x)?[a-fA-F0-9]+ .* \(opt #(\d+)\) @(\d+)": (type, optId, bailoutId) {
       var reason;
       enter({
         r"^\s+;;; deoptimize: (.*)$": (val) { reason = val; },
@@ -172,7 +172,7 @@ class PreParser extends parsing.ParserBase {
       });
     },
 
-    r"^\[marking dependent code 0x[a-f0-9]+ \(opt #(\d+)\) for deoptimization, reason: ([-\w]+)\]": (optId, reason) {
+    r"^\[marking dependent code (?:0x)?[a-fA-F0-9]+ \(opt #(\d+)\) for deoptimization, reason: ([-\w]+)\]": (optId, reason) {
       attachDeopt(new IR.Deopt(timestamp++, null, [currentLine], reason: reason, type: "lazy", optimizationId: optId));
     },
   };
@@ -193,7 +193,7 @@ class Parser extends parsing.ParserBase {
 
   get patterns => {
     // Instruction.
-    r"^0x([a-f0-9]+)\s+(\d+)\s+[a-f0-9]+\s+([^;]+)(;;.*)?$": (address,
+    r"^(?:0x)?([a-fA-F0-9]+)\s+(\d+)\s+[a-f0-9]+\s+([^;]+)(;;.*)?$": (address,
                                                               offs,
                                                               instr,
                                                               [comment]) {
