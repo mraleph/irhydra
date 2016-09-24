@@ -30,6 +30,13 @@
                  opened="{{sourceAnnotatorFailed}}">
     </paper-toast>
 
+    <paper-toast text="WARNING: code.asm contains TurboFan generated code.
+                      IR view is not supported for TurboFan.
+                      See console for details."
+                 duration="3600000"
+                 opened="{{hasTurboFanCode}}">
+    </paper-toast>
+
     <paper-toast text="{{progressAction}} {{progressUrl}}" duration="3600000" id="progress-toast">
       <template if="{{progressValue != null}}">
         <paper-progress value="{{progressValue}}"></paper-progress>

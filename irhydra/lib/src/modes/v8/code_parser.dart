@@ -57,6 +57,7 @@ class PreParser extends parsing.ParserBase {
   final methods = <IR.Method>[];
 
   final optId = new Optional();
+  final optCompiler = new Optional();
 
   IR.Method currentMethod;
   var timestamp = 0;
@@ -98,6 +99,10 @@ class PreParser extends parsing.ParserBase {
         enterMethod(name, optId.take());
       },
 
+      r"^compiler = (\w+)$": (name) {
+        this.optCompiler.put(name);
+      },
+
       r"^Instructions": {  // Disassembly of the body.
         r"^\s+;;; Safepoint table": () {
           // Code is produced during the very last compilation phase.
@@ -106,6 +111,9 @@ class PreParser extends parsing.ParserBase {
           }
 
           currentMethod.phases.add(new IR.Phase(currentMethod, "Z_Code generation", code: subrange()));
+          if (!this.optCompiler.isEmpty) {
+            currentMethod.tag(optCompiler.take());
+          }
           leaveMethod();
           // Leave this (instructions) and outer (code) states.
           leave(nstates: 2);

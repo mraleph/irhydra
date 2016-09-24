@@ -44,6 +44,10 @@ class _V8HIRDescriptor extends HIRDescriptor {
 class Mode extends BaseMode {
   final irs = const [const _V8HIRDescriptor()];
 
+  final statusObject;
+
+  Mode(this.statusObject);
+
   /** [true] if code dump file is already loaded. */
   var codeLoaded = false;
 
@@ -160,6 +164,14 @@ class Mode extends BaseMode {
       // TODO(mraleph) be more resilent and report meaningful error if
       // we can't match.
       for (var currentCode in code) {
+        if (opt2ir[currentCode.optimizationId] == null) {
+          print('Unable to find IR for ${currentCode}');
+          if (currentCode.isTagged('turbofan')) {
+            print('... ${currentCode} was compiled with TurboFan. IRHydra does not support TurboFan code and IR artifacts - only Crankshaft code. There are no plans to support TurboFan. Contact V8 team for assistance.');
+            statusObject.hasTurboFanCode = true;
+          }
+          continue;
+        }
         mergeMethod(opt2ir[currentCode.optimizationId], currentCode);
       }
       methods = ir;
@@ -183,7 +195,7 @@ class Mode extends BaseMode {
         i = currentIr + 1;
       } else {
         // Report ignored code object to console for debugging purposes.
-        print("Ignoring code artifact for '${code[j].name.full}'. It doesn't have IR graph.");
+        print("Ignoring code artifact for '${code[j].name.full}' (id = ${code[j].optimizationId}). It doesn't have IR graph.");
       }
     }
 

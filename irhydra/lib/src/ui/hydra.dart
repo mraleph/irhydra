@@ -16,12 +16,6 @@ import 'package:polymer/polymer.dart';
 
 import 'package:archive/archive.dart' show BZip2Decoder, TarDecoder;
 
-final MODES = [
-  () => new art.Mode(),  // Must come before V8 mode.
-  () => new v8.Mode(),
-  () => new dartvm.Mode(),
-];
-
 _createV8DeoptDemo(type) => [
   "demos/v8/deopt-${type}/hydrogen.cfg",
   "demos/v8/deopt-${type}/code.asm"
@@ -75,6 +69,8 @@ timeAndReport(action, report) {
 
 @CustomTag('hydra-app')
 class HydraElement extends PolymerElement {
+  var MODES;
+
   @observable var mode;
   @observable var files;
   @observable var phase;
@@ -86,6 +82,7 @@ class HydraElement extends PolymerElement {
 
   @observable var crlfDetected = false;
   @observable var sourceAnnotatorFailed = false;
+  @observable var hasTurboFanCode = false;
 
   @observable var sourcePath = toObservable([]);
 
@@ -105,7 +102,13 @@ class HydraElement extends PolymerElement {
 
   var blockRef;
 
-  HydraElement.created() : super.created();
+  HydraElement.created() : super.created() {
+    MODES = [
+      () => new art.Mode(),  // Must come before V8 mode.
+      () => new v8.Mode(this),
+      () => new dartvm.Mode(),
+    ];
+  }
 
   _requestArtifact(path) {
     done(x) {
@@ -393,6 +396,7 @@ class HydraElement extends PolymerElement {
     profile = null;
     sortMethodsBy = "time";
     crlfDetected = sourceAnnotatorFailed = false;
+    hasTurboFanCode = false;
   }
 
   methodsChanged() {

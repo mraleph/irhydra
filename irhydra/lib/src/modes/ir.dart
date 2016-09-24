@@ -179,12 +179,23 @@ class Method extends Observable {
   var srcMapping;
   var interesting;
 
+  Set<String> tags;
+
   Method(this.name, {this.optimizationId});
 
   addDeopt(deopt) {
     worstDeopt = Deopt.worst(worstDeopt, deopt);
     deopts.add(deopt);
   }
+
+  isTagged(String tag) => tags != null && tags.contains(tag);
+
+  tag(String t) {
+    if (tags == null) tags = new Set<String>();
+    tags.add(t);
+  }
+
+  toString() => "Method(${name.full}, id: ${optimizationId})";
 }
 
 class ParsedIr {

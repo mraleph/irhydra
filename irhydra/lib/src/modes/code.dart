@@ -33,7 +33,7 @@ class Code {
   Code(this.start, this.code, this.blocks);
 
   /** Empty code object. */
-  Code.empty() : start = 0, code = const [], blocks = const {};
+  Code.empty() : this(0, const [], const {});
 
   bool get isEmpty => code.isEmpty;
 
