@@ -312,6 +312,10 @@ class HydraElement extends PolymerElement {
   showLegend() => graphpane.showLegend();
 
   navigateToDeoptAction(event, deopt, target) {
+    if (activeTab == 'ir') {
+      irpane.scrollToDeopt(deopt);
+    }
+
     if (phase.method.inlined.isEmpty)
       return;
 

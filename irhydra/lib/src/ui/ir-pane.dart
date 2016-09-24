@@ -350,6 +350,19 @@ class IRPane extends PolymerElement {
     print("IRPane.render() took ${stopwatch.elapsedMilliseconds}");
   }
 
+  scrollToDeopt(IR.Deopt deopt) {
+    if (deopt.hir != null) {
+      final l = line(deopt.hir.id);
+      if (l != null) {
+        l.scrollIntoView();
+        return;
+      }
+    }
+    if (deopt.lir != null) {
+      line(deopt.lir.id)?.scrollIntoView();
+    }
+  }
+
   /** Create marker for [deopt] at the line corresponding to [deopt.lir.id]. */
   _createDeoptMarkersAt(deopt) {
     if (deopt.lir != null) _createDeoptMarkersAtId(deopt, deopt.lir.id);
@@ -392,7 +405,7 @@ class IRPane extends PolymerElement {
   href(id) => "ir-${id}";
 
   /** Return [IRPaneLine] for the given [id] */
-  line(id) {
+  IRPaneLine line(id) {
     final range = _ranges[id];
     return (range != null) ? _lines[range.start] : null;
   }
@@ -616,8 +629,10 @@ class IRPane extends PolymerElement {
 
 /** Single [IRPane] line */
 class IRPaneLine {
-  final gutter, text, row;
+  final Element gutter, text, row;
   IRPaneLine(Element this.gutter, Element this.text, Element this.row);
+
+  scrollIntoView() => row.scrollIntoView();
 }
 
 /** Range information associated with identifier on the [IRPane] */
