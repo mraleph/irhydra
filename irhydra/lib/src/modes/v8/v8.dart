@@ -108,7 +108,7 @@ class Mode extends BaseMode {
       }
 
       codeCollector.collectRest();
-      if (!codeCollector.isEmpty) {
+      if (!codeCollector.isEmpty && previous != null) {
         if (previous.code == null) previous.code = [];
         previous.code.addAll(codeCollector.collected);
       }
