@@ -89,7 +89,7 @@ _deferSubstring(str, start, end) =>
 /** Parse given phase IR stored in the deferred substring thunk. */
 Map parse(IR.Method method, Function ir, statusObject) {
   final stopwatch = new Stopwatch()..start();
-  final parser = new CfgParser(ir())..parse();
+  final parser = new CfgParser(method, ir())..parse();
 
   for (var deopt in method.deopts) {
     if (deopt.id == null) {
@@ -183,7 +183,7 @@ class CfgParser extends parsing.ParserBase {
 
   var lirOperands, hirOperands;
 
-  CfgParser(str) : super(str.split('\n')) {
+  CfgParser(IR.Method method, str) : super(str.split('\n')) {
     hirOperands = parsing.makeSplitter({
       r"0x[a-f0-9]+": (hirId, val) => new Constant(val),
       // This is to highlight %p formatted pointers on Win64.
@@ -202,9 +202,21 @@ class CfgParser extends parsing.ParserBase {
         if (pos == null) {
           pos = int.parse(functionId);
           functionId = 0;
+          if (method.sources.isNotEmpty && method.sources[0].startPos != null) {
+            pos -= method.sources[0].startPos;
+          }
         } else {
           pos = int.parse(pos);
           functionId = int.parse(functionId);
+        }
+        hir2pos[hirId] = new IR.SourcePosition(functionId, pos);
+      },
+      r"pos:inlining\((\d+)\),(\d+)": (hirId, functionId, pos) {
+        pos = int.parse(pos);
+        functionId = int.parse(functionId) + 1;
+        if (method.sources.isNotEmpty &&
+            method.sources[functionId].startPos != null) {
+          pos -= method.sources[functionId].startPos;
         }
         hir2pos[hirId] = new IR.SourcePosition(functionId, pos);
       }
