@@ -30,6 +30,13 @@
                  opened="{{sourceAnnotatorFailed}}">
     </paper-toast>
 
+    <paper-toast text="ERROR: You are using a version of V8 that is incompatible with IRHydra.
+                       See console for more details."
+                 duration="3600000"
+                 opened="{{newPositionsWithoutStartPos}}">
+    </paper-toast>
+
+
     <paper-toast text="WARNING: code.asm contains TurboFan generated code.
                       IR view is not supported for TurboFan.
                       See console for details."

@@ -106,8 +106,9 @@ class FunctionSource {
   final int id;
   final String name;
   final Iterable source;
+  final int startPos;
 
-  FunctionSource(this.id, this.name, this.source);
+  FunctionSource(this.id, this.name, this.source, this.startPos);
 }
 
 class SourcePosition {

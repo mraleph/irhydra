@@ -82,6 +82,7 @@ class HydraElement extends PolymerElement {
 
   @observable var crlfDetected = false;
   @observable var sourceAnnotatorFailed = false;
+  @observable var newPositionsWithoutStartPos = false;
   @observable var hasTurboFanCode = false;
 
   @observable var sourcePath = toObservable([]);
@@ -395,7 +396,7 @@ class HydraElement extends PolymerElement {
     demangleNames = true;
     profile = null;
     sortMethodsBy = "time";
-    crlfDetected = sourceAnnotatorFailed = false;
+    crlfDetected = sourceAnnotatorFailed = newPositionsWithoutStartPos = false;
     hasTurboFanCode = false;
   }
 

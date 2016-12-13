@@ -75,7 +75,7 @@ class Mode extends BaseMode {
     } else if (code_parser.canRecognize(text) && !codeLoaded) {
       // This is an stdout dump containing native code and deopts.
       timeline = [];
-      _merge(methods, code_parser.preparse(text, timeline));
+      _merge(methods, code_parser.preparse(text, timeline, statusObject));
       codeLoaded = true;
       return true;
     } else {
