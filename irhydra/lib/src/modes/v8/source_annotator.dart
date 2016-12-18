@@ -290,101 +290,131 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
   final mapping = {};
   final interesting = {};
 
-  for (var block in blocks.values) {
-    if (block.lir != null) {
-      var previous = null;
-      for (var instr in block.lir.where(_isInterestingOp)) {
-        final hirId = irInfo.lir2hir[instr.id];
-        if (hirId == null) continue;
+  if (method.isTagged('crankshaft')) {
+    for (var block in blocks.values) {
+      if (block.lir != null) {
+        var previous = null;
+        for (var instr in block.lir.where(_isInterestingOp)) {
+          final hirId = irInfo.lir2hir[instr.id];
+          if (hirId == null) continue;
 
-        interesting[hirId] = true;
+          interesting[hirId] = true;
 
-        final srcPos = irInfo.hir2pos[hirId];
-        if (srcPos == null || previous == srcPos) continue;
+          final srcPos = irInfo.hir2pos[hirId];
+          if (srcPos == null || previous == srcPos) continue;
 
-        mapping[hirId] = rangeStr(srcPos);
-        previous = srcPos;
-      }
+          mapping[hirId] = rangeStr(srcPos);
+          previous = srcPos;
+        }
 
-      for (var instr in block.hir) {
-        if (instr.op == "Phi") interesting[instr.id] = true;
-      }
-    }
-  }
-
-  // Attach annotation arrays to all inlined functions.
-  final annotations = method.inlined.map((f) =>
-      f.annotations = new List.filled(sources[f.source.id].length, IR.LINE_DEAD)).toList();
-
-  findBlockEntry(block) =>
-    block.hir.firstWhere((instr) => instr.op == "BlockEntry").id;
-
-  findBlockLoop(block) {
-    final blockEntry = findBlockEntry(block);
-    final blockPos = irInfo.hir2pos[blockEntry];
-
-    // Sometimes V8 produces incorrect positions for the first loop body block:
-    // it points to the loops init clause instead of pointing past it.
-    // This confuses our loop finding algorithm that skips init clause.
-    // Try working around this by looking at our predecessor: if its a direct
-    // fall-through and it's position is further ahead compared to ours than
-    // something went wrong - take its position.
-    if (block.predecessors.length == 1 &&
-        block.predecessors.first.id < block.id &&
-        block.predecessors.first.predecessors.length == 1 &&
-        block.predecessors.first.successors.length == 1) {
-      final predBlockEntry = findBlockEntry(block.predecessors.first);
-      final predBlockPos = irInfo.hir2pos[predBlockEntry];
-      if (blockPos == null ||
-          (predBlockPos != null &&
-           predBlockPos.inlineId == blockPos.inlineId &&
-           predBlockPos.position > blockPos.position)) {
-        return loopOf(predBlockPos);
-      }
-    }
-
-    return loopOf(blockPos);
-  }
-
-  // Process IR and mark lines according to IR instructions that were generated from them.
-  for (var block in blocks.values) {
-    if (block.lir != null) {
-      final blockLoop = findBlockLoop(block);
-
-      // When processing LIR skip all artificial instructions (gap moves,
-      // labels, gotos and stack-checks). Even if they have position falling
-      // into some line, that does not make that line alive.
-      for (var instr in block.lir.where(_isInterestingOp)) {
-        final hirId = irInfo.lir2hir[instr.id];
-        if (hirId == null) continue;
-
-        final srcPos = irInfo.hir2pos[hirId];
-        if (srcPos == null) continue;
-
-        // Before marking the line alive check if instruction was hoisted by
-        // LICM from its loop.
-        final instrLoop = loopOf(srcPos);
-        if (instrLoop != null && blockLoop.isOutsideOf(instrLoop)) {
-          // Instruction was hoisted from its loop. Mark the line as LICMed.
-          annotations[srcPos.inlineId][lineNum(srcPos)] |= IR.LINE_LICM;
-        } else {
-          annotations[srcPos.inlineId][lineNum(srcPos)] |= IR.LINE_LIVE;
+        for (var instr in block.hir) {
+          if (instr.op == "Phi") interesting[instr.id] = true;
         }
       }
     }
-  }
 
-  var worklist = []..addAll(method.inlined);
-  while (!worklist.isEmpty) {
-    final f = worklist.removeLast();
-    if (f.position != null && f.annotations.contains(IR.LINE_LIVE)) {
-      annotations[f.position.inlineId][lineNum(f.position)] |= IR.LINE_LIVE;
+    // Attach annotation arrays to all inlined functions.
+    final annotations = method.inlined.map((f) =>
+    f.annotations = new List.filled(sources[f.source.id].length, IR.LINE_DEAD))
+        .toList();
 
-      final outer = method.inlined[f.position.inlineId];
-      if (!worklist.contains(outer)) worklist.add(outer);
+    findBlockEntry(block) =>
+        block.hir
+            .firstWhere((instr) => instr.op == "BlockEntry")
+            .id;
+
+    findBlockLoop(block) {
+      final blockEntry = findBlockEntry(block);
+      final blockPos = irInfo.hir2pos[blockEntry];
+
+      // Sometimes V8 produces incorrect positions for the first loop body block:
+      // it points to the loops init clause instead of pointing past it.
+      // This confuses our loop finding algorithm that skips init clause.
+      // Try working around this by looking at our predecessor: if its a direct
+      // fall-through and it's position is further ahead compared to ours than
+      // something went wrong - take its position.
+      if (block.predecessors.length == 1 &&
+          block.predecessors.first.id < block.id &&
+          block.predecessors.first.predecessors.length == 1 &&
+          block.predecessors.first.successors.length == 1) {
+        final predBlockEntry = findBlockEntry(block.predecessors.first);
+        final predBlockPos = irInfo.hir2pos[predBlockEntry];
+        if (blockPos == null ||
+            (predBlockPos != null &&
+                predBlockPos.inlineId == blockPos.inlineId &&
+                predBlockPos.position > blockPos.position)) {
+          return loopOf(predBlockPos);
+        }
+      }
+
+      return loopOf(blockPos);
+    }
+
+
+    // Process IR and mark lines according to IR instructions that were generated from them.
+    for (var block in blocks.values) {
+      if (block.lir != null) {
+        final blockLoop = findBlockLoop(block);
+
+        // When processing LIR skip all artificial instructions (gap moves,
+        // labels, gotos and stack-checks). Even if they have position falling
+        // into some line, that does not make that line alive.
+        for (var instr in block.lir.where(_isInterestingOp)) {
+          final hirId = irInfo.lir2hir[instr.id];
+          if (hirId == null) continue;
+
+          final srcPos = irInfo.hir2pos[hirId];
+          if (srcPos == null) continue;
+
+          // Before marking the line alive check if instruction was hoisted by
+          // LICM from its loop.
+          final instrLoop = loopOf(srcPos);
+          if (instrLoop != null && blockLoop.isOutsideOf(instrLoop)) {
+            // Instruction was hoisted from its loop. Mark the line as LICMed.
+            annotations[srcPos.inlineId][lineNum(srcPos)] |= IR.LINE_LICM;
+          } else {
+            annotations[srcPos.inlineId][lineNum(srcPos)] |= IR.LINE_LIVE;
+          }
+        }
+      }
+    }
+
+
+    var worklist = []..addAll(method.inlined);
+    while (!worklist.isEmpty) {
+      final f = worklist.removeLast();
+      if (f.position != null && f.annotations.contains(IR.LINE_LIVE)) {
+        annotations[f.position.inlineId][lineNum(f.position)] |= IR.LINE_LIVE;
+
+        final outer = method.inlined[f.position.inlineId];
+        if (!worklist.contains(outer)) worklist.add(outer);
+      }
+    }
+  } else if (method.isTagged('turbofan')) {
+    for (var block in blocks.values) {
+      if (block.hir != null) {
+        var previous;
+        for (var ir in block.hir) {
+          final hirId = ir.id;
+          interesting[hirId] = true;
+          final srcPos = irInfo.hir2pos[hirId];
+          if (srcPos == null || previous == srcPos) continue;
+          final line = rangeStr(srcPos);
+          if (line == null || line.str.isEmpty) {
+            print("can't map ${hirId}");
+            continue;
+          }
+          mapping[hirId] = line;
+          previous = srcPos;
+        }
+      }
+    }
+
+    for (var f in method.inlined) {
+      f.annotations = null;
     }
   }
-
+  
   // Commit mappings.
   if (!mapping.isEmpty) {
     method.srcMapping = mapping;

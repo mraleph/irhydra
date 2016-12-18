@@ -269,6 +269,10 @@ class HydraElement extends PolymerElement {
       if (!phase.method.sources.isEmpty) {
         sourcePath.add(phase.method.inlined.first);
       }
+
+      if (ir.blocks.isEmpty && sourcePath.isNotEmpty) {
+        activeTab = "source";
+      }
     } else {
       ir = null;
     }

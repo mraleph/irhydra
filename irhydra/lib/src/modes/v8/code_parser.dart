@@ -181,7 +181,7 @@ class PreParser extends parsing.ParserBase {
         final s = pos.split(":").map(int.parse).toList();
         if (newPositions) {
           s[0] += 1;
-          s[1] -= currentMethod.sources[s[0]].startPos;
+          s[1] -= currentMethod.inlined[s[0]].source.startPos;
         }
         pos = new IR.SourcePosition(s[0], s[1]);
       }
@@ -276,7 +276,7 @@ class Parser extends parsing.ParserBase {
   parseComment(comment) {
     // If the last instruction was a "gap" or "label" comment then drop it.
     // Empty labels and gaps do not carry any interesting information.
-    if (_code.last is Comment) {
+    if (_code.isNotEmpty && _code.last is Comment) {
       final lastComment = _code.last.comment;
       if (lastComment.contains(": gap.") ||
           lastComment.contains(": label.")) {

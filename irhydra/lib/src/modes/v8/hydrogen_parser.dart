@@ -171,6 +171,8 @@ IRHydra assumes LF-only endings. Contact @mraleph for troubleshooting.
     print(e);
     print(stack);
     statusObject.sourceAnnotatorFailed = true;
+    for (var f in method.inlined)
+        f.annotations = null;
   }
 
   print("hydrogen_parser.parse took ${stopwatch.elapsedMilliseconds}");
@@ -198,27 +200,27 @@ class CfgParser extends parsing.ParserBase {
       },
       r"type:[-\w]+": (hirId, val) => new Type(val.split(':').last),
       r"uses:\w+": (hirId, _) => null,
-      r"pos:(\d+)(_(\d+))?": (hirId, functionId, _, pos) {
+      r"pos:(\d+)(_(\d+))?": (hirId, inliningId, _, pos) {
         if (pos == null) {
-          pos = int.parse(functionId);
-          functionId = 0;
+          pos = int.parse(inliningId);
+          inliningId = 0;
           if (method.sources.isNotEmpty && method.sources[0].startPos != null) {
             pos -= method.sources[0].startPos;
           }
         } else {
           pos = int.parse(pos);
-          functionId = int.parse(functionId);
+          inliningId = int.parse(inliningId);
         }
-        hir2pos[hirId] = new IR.SourcePosition(functionId, pos);
+        hir2pos[hirId] = new IR.SourcePosition(inliningId, pos);
       },
-      r"pos:inlining\((\d+)\),(\d+)": (hirId, functionId, pos) {
+      r"pos:inlining\((\d+)\),(\d+)": (hirId, inliningId, pos) {
         pos = int.parse(pos);
-        functionId = int.parse(functionId) + 1;
-        if (method.sources.isNotEmpty &&
-            method.sources[functionId].startPos != null) {
-          pos -= method.sources[functionId].startPos;
+        inliningId = int.parse(inliningId) + 1;
+        if (method.inlined.isNotEmpty &&
+            method.inlined[inliningId].source.startPos != null) {
+          pos -= method.inlined[inliningId].source.startPos;
         }
-        hir2pos[hirId] = new IR.SourcePosition(functionId, pos);
+        hir2pos[hirId] = new IR.SourcePosition(inliningId, pos);
       }
     });
 

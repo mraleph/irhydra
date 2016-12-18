@@ -119,10 +119,32 @@ class Mode extends BaseMode {
     }
   }
 
+  _mapTurboFanDeopts(ir.Method method) {
+    for (var deopt in method.deopts) {
+      if (deopt.srcPos != null) {
+        continue;
+      }
+
+      final m = new RegExp(r";;; deoptimize at (-?\d+)(?:_(\d+))?").firstMatch(deopt.raw.join('\n'));
+      if (m == null) continue;
+      var inliningId = m.group(1);
+      var srcPos = m.group(2);
+      if (srcPos == null) {
+        srcPos = inliningId;
+        inliningId = "-1";
+      }
+      inliningId = int.parse(inliningId) + 1;
+      srcPos = int.parse(srcPos) - method.inlined[inliningId].source.startPos;
+      deopt.srcPos = new ir.SourcePosition(inliningId, srcPos);
+    }
+
+  }
+
   toIr(method, phase, statusObject) {
-    final blocks = hydrogen_parser.parse(method, phase.ir, statusObject);
+    final blocks = phase.ir != null ? hydrogen_parser.parse(method, phase.ir, statusObject) : {};
     final code = code_parser.parse(phase.code);
     _attachCode(blocks, code);
+    _mapTurboFanDeopts(method);
     return new ir.ParsedIr(method, this, blocks, code, method.deopts);
   }
 
@@ -137,7 +159,7 @@ class Mode extends BaseMode {
     }
 
     // Both are present, thus have to merge.
-    mergeMethod(methodIr, methodCode) {
+    mergeMethod(ir.Method methodIr, ir.Method methodCode) {
       // Move code, sources and deopt information to the method with IR as it
       // can contain information about multiple phases and method with code
       // always contains only one.
@@ -152,6 +174,10 @@ class Mode extends BaseMode {
 
       methodIr.deopts.addAll(methodCode.deopts);
       methodIr.worstDeopt = methodCode.worstDeopt;
+      if (methodCode.tags != null) {
+        methodIr.tags ??= new Set<String>();
+        methodIr.tags.addAll(methodCode.tags);
+      }
     }
 
     // First try to merge based on optimization IDs.
