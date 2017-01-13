@@ -118,6 +118,9 @@ class PreParser extends parsing.ParserBase {
           currentMethod.phases.add(new IR.Phase(currentMethod, "Z_Code generation", code: subrange()));
           if (!this.optCompiler.isEmpty) {
             currentMethod.tag(optCompiler.take());
+          } else {
+            // People of the past knew one and only compiler.
+            currentMethod.tag("crankshaft");
           }
           leaveMethod();
           // Leave this (instructions) and outer (code) states.
