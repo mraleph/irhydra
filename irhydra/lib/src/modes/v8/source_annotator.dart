@@ -290,7 +290,31 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
   final mapping = {};
   final interesting = {};
 
-  if (method.isTagged('crankshaft')) {
+  if (method.isTagged('turbofan')) {
+    for (var block in blocks.values) {
+      if (block.hir != null) {
+        var previous;
+        for (var ir in block.hir) {
+          final hirId = ir.id;
+          interesting[hirId] = true;
+          final srcPos = irInfo.hir2pos[hirId];
+          if (srcPos == null || previous == srcPos) continue;
+          final line = rangeStr(srcPos);
+          if (line == null || line.str.isEmpty) {
+            print("can't map ${hirId}");
+            continue;
+          }
+          mapping[hirId] = line;
+          previous = srcPos;
+        }
+      }
+    }
+
+    for (var f in method.inlined) {
+      f.annotations = null;
+    }
+  } else {
+    // We assume that anything that is not TurboFan is Crankshaft
     for (var block in blocks.values) {
       if (block.lir != null) {
         var previous = null;
@@ -389,29 +413,6 @@ annotate(IR.Method method, Map<String, IR.Block> blocks, irInfo) {
         final outer = method.inlined[f.position.inlineId];
         if (!worklist.contains(outer)) worklist.add(outer);
       }
-    }
-  } else if (method.isTagged('turbofan')) {
-    for (var block in blocks.values) {
-      if (block.hir != null) {
-        var previous;
-        for (var ir in block.hir) {
-          final hirId = ir.id;
-          interesting[hirId] = true;
-          final srcPos = irInfo.hir2pos[hirId];
-          if (srcPos == null || previous == srcPos) continue;
-          final line = rangeStr(srcPos);
-          if (line == null || line.str.isEmpty) {
-            print("can't map ${hirId}");
-            continue;
-          }
-          mapping[hirId] = line;
-          previous = srcPos;
-        }
-      }
-    }
-
-    for (var f in method.inlined) {
-      f.annotations = null;
     }
   }
   
