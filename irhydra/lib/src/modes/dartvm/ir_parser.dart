@@ -64,7 +64,7 @@ class IRParser extends parsing.ParserBase {
     },
 
     // GotoInstr
-    r"goto[^\s]*\s+(\d+)$": (successor) {
+    r"goto[^\s]*\s+B?(\d+)$": (successor) {
       final target = "B${successor}";
       currentBlock.hir.add(new IR.Instruction(null, "goto", [new IR.BlockRef(target)]));
       builder.edge(currentBlock.name, target);
