@@ -813,7 +813,7 @@ class CodeRenderer {
     final elem = new SpanElement()..append(span('boldy', instr.opcode))
                                   ..appendText(" ");
 
-    if (0 <= instr.target && instr.target <= _code.code.last.offset) {
+    if (0 <= instr.target && instr.target <= _code.last.offset) {
       // Jump target belongs to this code object. Display it as an offset and
       // format it as a reference to enable navigation.
       final anchor = pane.href("offset-${instr.target}");
