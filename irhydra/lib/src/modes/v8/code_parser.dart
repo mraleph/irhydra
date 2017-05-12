@@ -69,6 +69,18 @@ class PreParser extends parsing.ParserBase {
 
   PreParser(text, this.timeline, this.statusObject) : super(text.split('\n'));
 
+  parse() {
+    super.parse();
+    for (var i = 0; i < methods.length; i++) {
+      var method = methods[i];
+      if (!method.isTagged("turbofan") &&
+          !method.isTagged("crankshaft")) {
+        // People of the past knew one and only compiler.
+        method.tag("crankshaft");
+      }
+    }
+  }
+
   enterMethod(name, optimizationId) {
     if (currentMethod != null && currentMethod.optimizationId == optimizationId) {
       return;
