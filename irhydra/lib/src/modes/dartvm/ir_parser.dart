@@ -95,7 +95,7 @@ class IRParser extends parsing.ParserBase {
     },
 
     // Definition (with two SSA names).
-    r"^(v\d+), (v\d+) <- (\w+)[^\(]*(\(.*\)) *(\[-?\d+, -?\d+\])?": (id1, id2, op, args, [range]) {
+    r"^\(?(v\d+), (v\d+)\)? <- (\w+)[^\(]*(\(.*\)) *(\[-?\d+, -?\d+\])?": (id1, id2, op, args, [range]) {
       if (op == "phi") op = "Phi";  // Rename phis to match style.
       currentBlock.hir.add(new IR.Instruction(new IR.MultiId([id1, id2]), op, parseOperands(args)));
       if (range != null) {
