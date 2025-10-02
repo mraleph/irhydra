@@ -12,40 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/** Scheduling actions with a delay. */
-library delayed_reaction;
+/// Scheduling actions with a delay.
+library;
 
-import "dart:async";
+import 'dart:async';
 
-/**
- * Utility class that allows to schedule an action callback with a fixed delay.
- * Scheduling an action before schduled one fired evicts pending action.
- */
+/// Utility class that allows to schedule an action callback with a fixed delay.
+/// Scheduling an action before scheduled one fired evicts pending action.
 class DelayedReaction {
-  /** Default delay */
-  static const DEFAULT_DELAY = const Duration(milliseconds: 500);
+  /// Default delay
+  static const Duration defaultDelay = Duration(milliseconds: 500);
 
-  final delay;
+  final Duration delay;
 
-  /** Timer for the currently pending action. */
-  var timer;
+  /// Timer for the currently pending action.
+  Timer? timer;
 
-  DelayedReaction({this.delay: DEFAULT_DELAY});
+  DelayedReaction({this.delay = defaultDelay});
 
-  /**
-   * Schedule an [action] callback. If there is already an action pending
-   * it will be evicted.
-   */
-  schedule(action) => _setTimer(new Timer(delay, () => action()));
+  /// Schedule an [action] callback. If there is already an action pending
+  /// it will be evicted.
+  schedule(action) => _setTimer(Timer(delay, () => action()));
 
-  /** Cancel pending action if any. */
+  /// Cancel pending action if any.
   cancel() => _setTimer(null);
 
-  /** Replace the currently pending timer. */
-  _setTimer(new_timer) {
-    if (timer != null) {
-      timer.cancel();
-    }
-    timer = new_timer;
+  /// Replace the currently pending timer.
+  void _setTimer(Timer? newTimer) {
+    timer?.cancel();
+    timer = newTimer;
   }
 }

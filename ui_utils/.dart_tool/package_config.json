@@ -1,0 +1,23 @@
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "lints",
+      "rootUri": "file:///Users/vegorov/.pub-cache/hosted/pub.dev/lints-5.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "ui_utils",
+      "rootUri": "../",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    }
+  ],
+  "generated": "2025-01-09T09:25:59.584745Z",
+  "generator": "pub",
+  "generatorVersion": "3.7.0-260.0.dev",
+  "flutterRoot": "file:///Users/vegorov/src/flutter/flutter",
+  "flutterVersion": "3.28.0-2.0.pre.38540",
+  "pubCache": "file:///Users/vegorov/.pub-cache"
+}

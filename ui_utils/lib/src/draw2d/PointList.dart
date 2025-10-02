@@ -9,18 +9,18 @@
  * Alexander Shatalin (Borland) - Contribution for Bug 238874
  */
 
-
 part of draw2d.graph;
 
 /**
  * Represents a List of Points.
  */
-class PointList {
-  final List<Point> points = new List<Point>();
+class PointList extends Iterable<Point> {
+  final List<Point> points = <Point>[];
 
-  get iterator => points.iterator;
+  @override
+  Iterator<Point> get iterator => points.iterator;
 
-  Rectangle bounds;
+  Rectangle? bounds;
 
   PointList();
 
@@ -55,12 +55,15 @@ class PointList {
   Point get midpoint {
     final midpoint = (length ~/ 2);
     if (length % 2 == 0) {
-      return points[midpoint - 1].clone().translate(points[midpoint]).scale(0.5);
+      return points[midpoint - 1]
+          .clone()
+          .translate(points[midpoint])
+          .scale(0.5);
     }
     return points[midpoint];
   }
 
-  operator[] (int i) => points[i];
+  operator [](int i) => points[i];
 
   void insertPoint(Point p, int index) {
     if (bounds != null && !bounds.containsPoint(p)) {
@@ -70,7 +73,8 @@ class PointList {
     points.insert(index, p.clone());
   }
 
-  void setPoint(Point p, int index) {  // TODO(vegorov) verify
+  void setPoint(Point p, int index) {
+    // TODO(vegorov) verify
     if (bounds != null && !bounds.containsPoint(p)) {
       bounds = null;
     }

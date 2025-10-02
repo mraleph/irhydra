@@ -13,12 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library havlak;
-
 import 'package:ui_utils/graph.dart';
 
-LSG findLoops(List<BasicBlock> cfg) =>
-  (new HavlakLoopFinder(cfg)..findLoops()).lsg;
+LSG findLoops(List<BasicBlock> cfg) => (HavlakLoopFinder(cfg)..findLoops()).lsg;
 
 //======================================================
 // Scaffold Code
@@ -35,13 +32,13 @@ LSG findLoops(List<BasicBlock> cfg) =>
 // it can be an irreducible loop, have control flow, be
 // a candidate for transformations, and what not.
 //
-class SimpleLoop  {
+class SimpleLoop {
   final List<BasicBlock> basicBlocks = [];
   final List<SimpleLoop> children = [];
   final int counter;
 
-  SimpleLoop parent;
-  BasicBlock header;
+  SimpleLoop? parent;
+  BasicBlock? header;
 
   bool isRoot = false;
   bool isReducible = true;
@@ -50,7 +47,7 @@ class SimpleLoop  {
 
   get depth {
     if (_depthLevel == -1) {
-      _depthLevel = parent == null ? 0 : (parent.depth + 1);
+      _depthLevel = (parent?.depth ?? -1) + 1;
     }
     return _depthLevel;
   }
@@ -61,7 +58,7 @@ class SimpleLoop  {
   void addChildLoop(SimpleLoop loop) => children.add(loop);
 
   void setParent(SimpleLoop p) {
-    this.parent = p;
+    parent = p;
     p.addChildLoop(this);
   }
 
@@ -78,13 +75,16 @@ class SimpleLoop  {
   }
 
   printIt([ident = ""]) {
-    print("${ident}loop-${counter} (isRoot=${isRoot}, isReducible=${isReducible}, nesting=${nestingLevel}, depth=${depth})");
-    if (header != null) print("${ident}  header: B${header.name}");
-    print("${ident}  blocks: ${basicBlocks.map((block) => 'B${block.name}').join(', ')}");
-    for (var child in children) child.printIt(ident + "  ");
+    print(
+        "${ident}loop-$counter (isRoot=$isRoot, isReducible=$isReducible, nesting=$nestingLevel, depth=$depth)");
+    if (header case final header?) print("$ident  header: B${header.name}");
+    print(
+        "$ident  blocks: ${basicBlocks.map((block) => 'B${block.name}').join(', ')}");
+    for (var child in children) {
+      child.printIt(ident + "  ");
+    }
   }
 }
-
 
 //
 // LoopStructureGraph
@@ -106,7 +106,7 @@ class LSG {
 
   int loopCounter = 1;
   final List<SimpleLoop> loops = [];
-  final SimpleLoop root = new SimpleLoop(0);
+  final SimpleLoop root = SimpleLoop(0);
 
   LSG(this.nblocks) {
     root.setNestingLevel(0);
@@ -114,20 +114,22 @@ class LSG {
   }
 
   SimpleLoop createNewLoop() {
-    SimpleLoop loop = new SimpleLoop(loopCounter++);
+    SimpleLoop loop = SimpleLoop(loopCounter++);
     return loop;
   }
 
   void addLoop(SimpleLoop loop) => loops.add(loop);
 
   printIt() {
-    for (var loop in loops) loop.printIt();
+    for (var loop in loops) {
+      loop.printIt();
+    }
   }
 
   int getNumLoops() => loops.length;
 
   get nesting {
-    final nesting = new List<int>.filled(nblocks, 0);
+    final nesting = List<int>.filled(nblocks, 0);
 
     for (var loop in loops) {
       final current = loop.depth + 1;
@@ -142,7 +144,6 @@ class LSG {
   }
 }
 
-
 //======================================================
 // Main Algorithm
 //======================================================
@@ -156,9 +157,9 @@ class LSG {
 //
 class UnionFindNode {
   int dfsNumber = 0;
-  UnionFindNode parent;
-  BasicBlock bb;
-  SimpleLoop loop;
+  late UnionFindNode parent;
+  BasicBlock? bb;
+  SimpleLoop? loop;
 
   UnionFindNode();
 
@@ -181,14 +182,13 @@ class UnionFindNode {
 
     UnionFindNode node = this;
     while (node != node.parent) {
-      if (node.parent != node.parent.parent)
-        nodeList.add(node);
+      if (node.parent != node.parent.parent) nodeList.add(node);
 
       node = node.parent;
     }
 
     // Path Compression, all nodes' parents point to the 1st level parent.
-    for (int iter=0; iter < nodeList.length; ++iter) {
+    for (int iter = 0; iter < nodeList.length; ++iter) {
       nodeList[iter].parent = node.parent;
     }
 
@@ -203,22 +203,19 @@ class UnionFindNode {
   void union(UnionFindNode unionFindNode) {
     parent = unionFindNode;
   }
-  SimpleLoop setLoop(SimpleLoop l) => loop = l;
 }
-
-
 
 class HavlakLoopFinder {
   final List<BasicBlock> cfg;
   final LSG lsg;
 
-  static const int BB_TOP          = 0; // uninitialized
-  static const int BB_NONHEADER    = 1; // a regular BB
-  static const int BB_REDUCIBLE    = 2; // reducible loop
-  static const int BB_SELF         = 3; // single BB loop
-  static const int BB_IRREDUCIBLE  = 4; // irreducible loop
-  static const int BB_DEAD         = 5; // a dead BB
-  static const int BB_LAST         = 6; // Sentinel
+  static const int BB_TOP = 0; // uninitialized
+  static const int BB_NONHEADER = 1; // a regular BB
+  static const int BB_REDUCIBLE = 2; // reducible loop
+  static const int BB_SELF = 3; // single BB loop
+  static const int BB_IRREDUCIBLE = 4; // irreducible loop
+  static const int BB_DEAD = 5; // a dead BB
+  static const int BB_LAST = 6; // Sentinel
 
   // Marker for uninitialized nodes.
   static const int UNVISITED = -1;
@@ -226,7 +223,9 @@ class HavlakLoopFinder {
   // Safeguard against pathologic algorithm behavior.
   static const int MAXNONBACKPREDS = (32 * 1024);
 
-  HavlakLoopFinder(List<BasicBlock> cfg) : cfg = cfg, lsg = new LSG(cfg.length);
+  HavlakLoopFinder(List<BasicBlock> cfg)
+      : cfg = cfg,
+        lsg = LSG(cfg.length);
 
   //
   // IsAncestor
@@ -248,18 +247,17 @@ class HavlakLoopFinder {
   // DESCRIPTION:
   // Simple depth first traversal along out edges with node numbering.
   //
-  int DFS(BasicBlock currentNode,
-          List<UnionFindNode> nodes,
-          List<int> number,
-          List<int> last, int current) {
+  int DFS(BasicBlock currentNode, List<UnionFindNode> nodes, List<int> number,
+      List<int> last, int current) {
     nodes[current].initNode(currentNode, current);
     number[currentNode.id] = current;
 
     int lastid = current;
     for (int target = 0; target < currentNode.successors.length; target++) {
-      if (number[currentNode.successors[target].id] == UNVISITED)
-        lastid = DFS(currentNode.successors[target], nodes, number,
-                     last, lastid + 1);
+      if (number[currentNode.successors[target].id] == UNVISITED) {
+        lastid = DFS(
+            currentNode.successors[target], nodes, number, last, lastid + 1);
+      }
     }
 
     last[number[currentNode.id]] = lastid;
@@ -281,23 +279,13 @@ class HavlakLoopFinder {
 
     final int size = cfg.length;
 
-    List<List<int>> nonBackPreds = new List(size);
-    List<List<int>> backPreds = new List(size);
-    List<int> number = new List(size);
-    List<int> header = new List(size);
-    List<int> types = new List(size);
-    List<int> last = new List(size);
-    List<UnionFindNode> nodes = new List(size);
-
-    for (int i = 0; i < size; ++i) {
-      nonBackPreds[i] = [];
-      backPreds[i] = [];
-      number[i] = UNVISITED;
-      header[i] = 0;
-      types[i] = BB_NONHEADER;
-      last[i] = 0;
-      nodes[i] = new UnionFindNode();
-    }
+    List<List<int>> nonBackPreds = List.generate(size, (_) => []);
+    List<List<int>> backPreds = List.generate(size, (_) => []);
+    List<int> number = List.filled(size, UNVISITED);
+    List<int> header = List.filled(size, 0);
+    List<int> types = List.filled(size, BB_NONHEADER);
+    List<int> last = List.filled(size, 0);
+    List<UnionFindNode> nodes = List.filled(size, UnionFindNode());
 
     // Step a:
     //   - initialize all nodes as unvisited.
@@ -317,20 +305,18 @@ class HavlakLoopFinder {
     //     - the list of non-backedges (nonBackPreds)
     //
     for (int w = 0; w < size; ++w) {
-      BasicBlock nodeW = nodes[w].bb;
+      final nodeW = nodes[w].bb;
       if (nodeW == null) {
         types[w] = BB_DEAD;
       } else {
-        if (nodeW.predecessors.length > 0) {
-          for (int nv = 0; nv < nodeW.predecessors.length; ++nv) {
-            BasicBlock nodeV = nodeW.predecessors[nv];
-            int v = number[nodeV.id];
-            if (v != UNVISITED) {
-              if (isAncestor(w, v, last)) {
-                backPreds[w].add(v);
-              } else {
-                nonBackPreds[w].add(v);
-              }
+        for (int nv = 0; nv < nodeW.predecessors.length; ++nv) {
+          BasicBlock nodeV = nodeW.predecessors[nv];
+          int v = number[nodeV.id];
+          if (v != UNVISITED) {
+            if (isAncestor(w, v, last)) {
+              backPreds[w].add(v);
+            } else {
+              nonBackPreds[w].add(v);
             }
           }
         }
@@ -349,11 +335,11 @@ class HavlakLoopFinder {
     // we ensure that inner loop headers will be processed before the
     // headers for surrounding loops.
     //
-    for (int w = size-1; w >=0; --w) {
+    for (int w = size - 1; w >= 0; --w) {
       // this is 'P' in Havlak's paper
       List<UnionFindNode> nodePool = [];
 
-      BasicBlock nodeW = nodes[w].bb;
+      final nodeW = nodes[w].bb;
       if (nodeW == null) {
         continue;
       }
@@ -400,7 +386,7 @@ class HavlakLoopFinder {
           return 0;
         }
 
-        for (int iter=0; iter < nonBackPreds[x.dfsNumber].length; ++iter) {
+        for (int iter = 0; iter < nonBackPreds[x.dfsNumber].length; ++iter) {
           UnionFindNode y = nodes[nonBackPreds[x.dfsNumber][iter]];
           UnionFindNode ydash = y.findSet();
 
@@ -453,10 +439,10 @@ class HavlakLoopFinder {
           node.union(nodes[w]);
 
           // Nested loops are not added, but linked together.
-          if (node.loop != null) {
-            node.loop.setParent(loop);
+          if (node.loop case final nodeLoop?) {
+            nodeLoop.setParent(loop);
           } else {
-            loop.addNode(node.bb);
+            loop.addNode(node.bb!);
           }
         }
         lsg.addLoop(loop);
